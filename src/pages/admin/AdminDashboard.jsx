@@ -48,12 +48,15 @@ export const AdminDashboard = () => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <Link to="/admin/moderasi" className="btn btn-accent btn-sm" style={{ gap: '0.35rem' }}>
             <Clock size={15} /> Review Laporan ({pendingItems.length})
           </Link>
           <Link to="/admin/klaim" className="btn btn-outline btn-sm" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', borderColor: 'rgba(255,255,255,0.3)', gap: '0.35rem' }}>
             <ShieldCheck size={15} /> Verifikasi Klaim ({pendingClaims.length})
+          </Link>
+          <Link to="/admin/pengguna" className="btn btn-outline btn-sm" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', borderColor: 'rgba(255,255,255,0.3)', gap: '0.35rem' }}>
+            <Users size={15} /> Kelola Admin
           </Link>
         </div>
       </div>

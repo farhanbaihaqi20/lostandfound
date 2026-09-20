@@ -71,7 +71,7 @@ export const ReportPage = () => {
     setCurrentStep(prev => prev - 1);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
 
@@ -85,26 +85,32 @@ export const ReportPage = () => {
           'Sebutkan isi di dalamnya atau ciri khusus untuk verifikasi?'
         ];
 
-    const submitted = submitItem({
-      type: reportType,
-      title: formData.title,
-      category: formData.category,
-      description: formData.description,
-      location_building: formData.location_building,
-      location_floor: formData.location_floor,
-      location_room: formData.location_room,
-      location_detail: formData.location_detail,
-      hidden_details: formData.hidden_details,
-      blind_test_questions: questions,
-      bounty_amount: Number(formData.bounty_amount) || 0,
-      bounty_status: Number(formData.bounty_amount) > 0 ? 'aktif' : 'tidak_ada',
-      photo_urls: photos,
-      date_lost_found: formData.date_lost_found
-    });
+    try {
+      const submitted = await submitItem({
+        type: reportType,
+        title: formData.title,
+        category: formData.category,
+        description: formData.description,
+        location_building: formData.location_building,
+        location_floor: formData.location_floor,
+        location_room: formData.location_room,
+        location_detail: formData.location_detail,
+        hidden_details: formData.hidden_details,
+        blind_test_questions: questions,
+        bounty_amount: Number(formData.bounty_amount) || 0,
+        bounty_status: Number(formData.bounty_amount) > 0 ? 'aktif' : 'tidak_ada',
+        photo_urls: photos,
+        date_lost_found: formData.date_lost_found
+      });
 
-    setSubmitting(false);
-    alert(`Laporan #${submitted.item_code} berhasil diajukan! Status: Menunggu Review Admin.`);
-    navigate(`/barang/${submitted.id}`);
+      setSubmitting(false);
+      alert(`Laporan #${submitted?.item_code || 'LF-UNNES'} berhasil diajukan! Status: Menunggu Review Admin.`);
+      navigate(`/barang/${submitted?.id || ''}`);
+    } catch (err) {
+      setSubmitting(false);
+      console.error('Gagal mengajukan laporan:', err);
+      alert('Terjadi kendala saat mengajukan laporan. Silakan coba lagi.');
+    }
   };
 
   return (

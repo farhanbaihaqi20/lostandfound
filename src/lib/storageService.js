@@ -91,6 +91,9 @@ export async function uploadImageFile(file, folder = 'items') {
       if (response.ok) {
         const data = await response.json();
         return data.secure_url;
+      } else {
+        const errorData = await response.json().catch(() => null);
+        console.warn('⚠️ Cloudinary upload gagal, beralih ke fallback:', errorData?.error?.message || response.statusText);
       }
     }
 

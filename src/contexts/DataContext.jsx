@@ -8,6 +8,9 @@ import {
   INITIAL_NOTIFICATIONS 
 } from '../data/initialData';
 import { useAuth } from './AuthContext';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+
+const isUuid = (id) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
 const DataContext = createContext(null);
 
@@ -19,6 +22,51 @@ export const DataProvider = ({ children }) => {
     const saved = localStorage.getItem('unnes_lf_items');
     return saved ? JSON.parse(saved) : INITIAL_ITEMS;
   });
+
+  // Fetch items dari Supabase & sinkronisasi otomatis
+  const fetchSupabaseItems = async () => {
+    if (!isSupabaseConfigured() || !supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('items')
+        .select('*, profiles:user_id(full_name, avatar_url, email)')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        const formatted = data.map(item => ({
+          ...item,
+          user_name: item.profiles?.full_name || 'Mahasiswa UNNES'
+        }));
+
+        setItems(prev => {
+          // Tetap sertakan mock demo items bila belum ada di Supabase
+          const baseItems = INITIAL_ITEMS.filter(b => !formatted.some(f => f.item_code === b.item_code));
+          const localOnly = prev.filter(i => !isUuid(i.id) && !baseItems.some(b => b.id === i.id));
+          return [...formatted, ...localOnly, ...baseItems];
+        });
+      }
+    } catch (err) {
+      console.warn('Gagal memuat items dari Supabase:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSupabaseItems();
+
+    if (!isSupabaseConfigured() || !supabase) return;
+
+    // Supabase Realtime: dengarkan perubahan data dari semua pengguna/browser
+    const channel = supabase
+      .channel('public:items_sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, () => {
+        fetchSupabaseItems();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   // 2. Claims state
   const [claims, setClaims] = useState(() => {
@@ -92,14 +140,77 @@ export const DataProvider = ({ children }) => {
    * User melaporkan barang hilang / temuan
    * Status awal selalu 'menunggu_review' (Harus di-ACC Admin)
    */
-  const submitItem = (itemData) => {
+  const submitItem = async (itemData) => {
     const itemCode = `LF-UNNES-${Math.floor(100 + Math.random() * 900)}`;
+    const isRealUser = isUuid(user?.id);
+
+    // 1. Simpan ke Supabase jika terhubung & user login resmi
+    if (isSupabaseConfigured() && supabase && isRealUser) {
+      try {
+        const { data, error } = await supabase
+          .from('items')
+          .insert({
+            user_id: user.id,
+            item_code: itemCode,
+            type: itemData.type,
+            title: itemData.title,
+            description: itemData.description,
+            category: itemData.category,
+            location_building: itemData.location_building,
+            location_floor: itemData.location_floor || '',
+            location_room: itemData.location_room || '',
+            location_detail: itemData.location_detail || '',
+            post_status: 'menunggu_review',
+            item_status: 'terbuka',
+            photo_urls: itemData.photo_urls || [],
+            hidden_details: itemData.hidden_details || '',
+            blind_test_questions: itemData.blind_test_questions || [],
+            bounty_amount: Number(itemData.bounty_amount) || 0,
+            bounty_status: Number(itemData.bounty_amount) > 0 ? 'aktif' : 'tidak_ada',
+            date_lost_found: itemData.date_lost_found ? new Date(itemData.date_lost_found).toISOString() : new Date().toISOString()
+          })
+          .select('*, profiles:user_id(full_name, avatar_url, email)')
+          .single();
+
+        if (!error && data) {
+          const newItem = {
+            ...data,
+            user_name: data.profiles?.full_name || user.full_name || 'Mahasiswa UNNES'
+          };
+          setItems(prev => [newItem, ...prev.filter(i => i.id !== newItem.id)]);
+
+          addNotification({
+            user_id: 'user-admin-01',
+            type: 'moderasi',
+            title: 'Laporan Baru Masuk 📝',
+            body: `${newItem.user_name} melaporkan barang ${newItem.type}: "${newItem.title}". Menunggu persetujuan.`,
+            link: '/admin/moderasi'
+          });
+
+          addNotification({
+            user_id: user?.id,
+            type: 'moderasi',
+            title: 'Laporan Berhasil Diajukan ⏳',
+            body: `Laporan #${itemCode} sedang ditinjau oleh Admin. Anda akan mendapat notifikasi setelah disetujui.`,
+            link: `/barang/${newItem.id}`
+          });
+
+          return newItem;
+        } else if (error) {
+          console.warn('Gagal insert ke Supabase, menggunakan penyimpanan lokal:', error);
+        }
+      } catch (err) {
+        console.warn('Gagal insert ke Supabase, menggunakan penyimpanan lokal:', err);
+      }
+    }
+
+    // 2. Fallback: Simpan ke local state / demo user
     const newItem = {
       id: `item-${Date.now()}`,
       user_id: user?.id || 'anonymous',
       user_name: user?.full_name || 'Mahasiswa UNNES',
       item_code: itemCode,
-      post_status: 'menunggu_review', // Selalu menunggu review admin
+      post_status: 'menunggu_review',
       item_status: 'terbuka',
       created_at: new Date().toISOString(),
       date_lost_found: itemData.date_lost_found || new Date().toISOString(),
@@ -133,10 +244,27 @@ export const DataProvider = ({ children }) => {
   /**
    * Admin menyetujui postingan (ACC)
    */
-  const approveItem = (itemId) => {
+  const approveItem = async (itemId) => {
+    if (isSupabaseConfigured() && supabase && isUuid(itemId)) {
+      try {
+        const { error } = await supabase
+          .from('items')
+          .update({
+            post_status: 'disetujui',
+            reviewed_by: isUuid(user?.id) ? user.id : null,
+            reviewed_at: new Date().toISOString(),
+            rejection_reason: ''
+          })
+          .eq('id', itemId);
+
+        if (error) console.warn('Supabase approve error:', error);
+      } catch (err) {
+        console.warn('Supabase approve error:', err);
+      }
+    }
+
     setItems(prev => prev.map(item => {
       if (item.id === itemId) {
-        // Notifikasi ke user pemilik postingan
         addNotification({
           user_id: item.user_id,
           type: 'moderasi',
@@ -160,7 +288,25 @@ export const DataProvider = ({ children }) => {
   /**
    * Admin menolak postingan dengan alasan
    */
-  const rejectItem = (itemId, reason) => {
+  const rejectItem = async (itemId, reason) => {
+    if (isSupabaseConfigured() && supabase && isUuid(itemId)) {
+      try {
+        const { error } = await supabase
+          .from('items')
+          .update({
+            post_status: 'ditolak',
+            rejection_reason: reason,
+            reviewed_by: isUuid(user?.id) ? user.id : null,
+            reviewed_at: new Date().toISOString()
+          })
+          .eq('id', itemId);
+
+        if (error) console.warn('Supabase reject error:', error);
+      } catch (err) {
+        console.warn('Supabase reject error:', err);
+      }
+    }
+
     setItems(prev => prev.map(item => {
       if (item.id === itemId) {
         addNotification({

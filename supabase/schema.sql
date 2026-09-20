@@ -239,3 +239,32 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- 12. ADMIN MANAGEMENT: Super Admin flag & Role Management RPC
+ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS is_super_admin BOOLEAN DEFAULT false;
+
+-- Function untuk admin mengubah role user lain (via RPC)
+CREATE OR REPLACE FUNCTION public.set_user_role(target_user_id UUID, new_role user_role)
+RETURNS VOID AS $$
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Unauthorized: Hanya admin yang dapat mengubah role pengguna';
+  END IF;
+  
+  IF target_user_id = auth.uid() THEN
+    RAISE EXCEPTION 'Tidak dapat mengubah role diri sendiri';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = target_user_id AND is_super_admin = true
+  ) AND new_role = 'user' THEN
+    RAISE EXCEPTION 'Tidak dapat menghapus role Super Admin';
+  END IF;
+  
+  UPDATE public.profiles 
+  SET role = new_role, updated_at = NOW()
+  WHERE id = target_user_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

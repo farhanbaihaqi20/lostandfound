@@ -23,6 +23,7 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { ModerationPage } from './pages/admin/ModerationPage';
 import { ClaimModerationPage } from './pages/admin/ClaimModerationPage';
 import { OrdersPage } from './pages/admin/OrdersPage';
+import { AdminUsersPage } from './pages/admin/AdminUsersPage';
 
 function App() {
   return (
@@ -114,6 +115,14 @@ function App() {
             element={
               <AdminRoute>
                 <OrdersPage />
+              </AdminRoute>
+            } 
+          />
+          <Route 
+            path="/admin/pengguna" 
+            element={
+              <AdminRoute>
+                <AdminUsersPage />
               </AdminRoute>
             } 
           />
