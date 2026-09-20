@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Compass, Mail, Lock, LogIn, ShieldCheck, Check } from 'lucide-react';
+import { Compass, Mail, Lock, LogIn, ShieldCheck, Check, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const LoginPage = () => {
-  const { login, loginWithGoogle, switchDemoAccount } = useAuth();
+  const { user, login, loginWithGoogle, switchDemoAccount, authError, clearAuthError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -13,12 +13,21 @@ export const LoginPage = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isNotRegistered, setIsNotRegistered] = useState(false);
 
   const from = location.state?.from?.pathname || '/beranda';
+
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    clearAuthError();
+    setIsNotRegistered(false);
     setLoading(true);
 
     const result = await login(email, password, rememberMe);
@@ -28,14 +37,39 @@ export const LoginPage = () => {
       navigate(from, { replace: true });
     } else {
       setErrorMsg(result.message || 'Email atau password salah');
+      if (result.notRegistered) {
+        setIsNotRegistered(true);
+      }
     }
   };
 
   const handleGoogle = async () => {
     setLoading(true);
-    await loginWithGoogle();
-    setLoading(false);
-    navigate(from, { replace: true });
+    setErrorMsg('');
+    clearAuthError();
+    setIsNotRegistered(false);
+    try {
+      const result = await loginWithGoogle('login');
+      if (result?.notRegistered) {
+        setErrorMsg(result.message || 'Akun Google belum terdaftar di UNNES Lost & Found.');
+        setIsNotRegistered(true);
+        setLoading(false);
+        return;
+      }
+      if (result?.error) {
+        setErrorMsg(result.error.message || 'Gagal login dengan akun Google');
+        setLoading(false);
+        return;
+      }
+      // Untuk mode demo / mock local auth
+      if (result?.user) {
+        setLoading(false);
+        navigate(from, { replace: true });
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Terjadi kesalahan saat menghubungkan ke Google');
+      setLoading(false);
+    }
   };
 
   const handleQuickDemo = (role) => {
@@ -76,17 +110,38 @@ export const LoginPage = () => {
           </p>
         </div>
 
-        {errorMsg && (
+        {(authError || errorMsg) && (
           <div style={{
-            padding: '0.65rem 0.85rem',
+            padding: '0.85rem 1rem',
             background: 'var(--danger-bg)',
             color: 'var(--danger)',
             borderRadius: 'var(--radius-md)',
-            fontSize: '0.8rem',
-            marginBottom: '1rem',
-            border: '1px solid rgba(239, 68, 68, 0.25)'
+            fontSize: '0.825rem',
+            marginBottom: '1.25rem',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.65rem'
           }}>
-            {errorMsg}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+              <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>{authError || errorMsg}</div>
+            </div>
+            {(isNotRegistered || (authError && authError.toLowerCase().includes('belum terdaftar'))) && (
+              <Link
+                to="/daftar"
+                className="btn btn-primary btn-sm"
+                style={{
+                  alignSelf: 'flex-start',
+                  fontSize: '0.78rem',
+                  textDecoration: 'none',
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: 'var(--radius-md)'
+                }}
+              >
+                Daftar Akun Mahasiswa Sekarang &rarr;
+              </Link>
+            )}
           </div>
         )}
 
@@ -130,7 +185,14 @@ export const LoginPage = () => {
                 required
                 placeholder="nama@students.unnes.ac.id"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errorMsg || authError) {
+                    setErrorMsg('');
+                    clearAuthError();
+                    setIsNotRegistered(false);
+                  }
+                }}
                 style={{ width: '100%', paddingLeft: '2.5rem' }}
               />
               <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
@@ -145,7 +207,14 @@ export const LoginPage = () => {
                 required
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errorMsg || authError) {
+                    setErrorMsg('');
+                    clearAuthError();
+                    setIsNotRegistered(false);
+                  }
+                }}
                 style={{ width: '100%', paddingLeft: '2.5rem' }}
               />
               <Lock size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />

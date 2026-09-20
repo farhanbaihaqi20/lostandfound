@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Compass, Plus, MessageSquare, User, AlertCircle, Sparkles, X } from 'lucide-react';
+import { Home, Compass, Plus, MessageSquare, User, AlertCircle, Sparkles, X, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 
@@ -18,6 +18,10 @@ export const BottomNav = () => {
 
   const handleSelectReport = (type) => {
     setShowReportSheet(false);
+    if (!user) {
+      navigate('/masuk', { state: { from: { pathname: `/lapor/${type}` } } });
+      return;
+    }
     navigate(`/lapor/${type}`);
   };
 
@@ -230,19 +234,19 @@ export const BottomNav = () => {
         </Link>
 
         <Link 
-          to="/profil"
+          to={user ? "/profil" : "/masuk"}
           style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '2px',
-            color: isActive('/profil') ? 'var(--primary-600)' : 'var(--text-muted)',
+            color: (isActive('/profil') || (!user && isActive('/masuk'))) ? 'var(--primary-600)' : 'var(--text-muted)',
             flex: 1,
             padding: '4px 0'
           }}
         >
-          <User size={20} />
-          <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>Profil</span>
+          {user ? <User size={20} /> : <LogIn size={20} />}
+          <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>{user ? 'Profil' : 'Masuk'}</span>
         </Link>
       </nav>
     </>

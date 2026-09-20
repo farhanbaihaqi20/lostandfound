@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Bike, CheckCircle2, ShieldAlert, DollarSign } from 'lucide-react';
 import { UNNES_BUILDINGS } from '../data/initialData';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 
 export const RunnerOrderModal = ({ item, isOpen, onClose, onSuccess }) => {
+  const navigate = useNavigate();
   const { createOrder } = useData();
   const { user } = useAuth();
 
@@ -16,6 +18,11 @@ export const RunnerOrderModal = ({ item, isOpen, onClose, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
 
   if (!isOpen) return null;
+  if (!user) {
+    onClose();
+    navigate('/masuk');
+    return null;
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, ShieldCheck, HelpCircle, Send, AlertTriangle } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 
 export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
+  const navigate = useNavigate();
   const { submitClaim } = useData();
   const { user } = useAuth();
 
@@ -20,6 +22,11 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
 
   if (!isOpen || !item) return null;
+  if (!user) {
+    onClose();
+    navigate('/masuk');
+    return null;
+  }
 
   const handleAnswerChange = (index, value) => {
     const updated = [...answers];

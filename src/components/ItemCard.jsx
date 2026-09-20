@@ -1,9 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Calendar, Award, ChevronRight, ShieldCheck } from 'lucide-react';
+import { MapPin, Calendar, Award, ChevronRight, ShieldCheck, Lock } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
+import { useAuth } from '../contexts/AuthContext';
 
 export const ItemCard = ({ item }) => {
+  const { user } = useAuth();
+  const isLocked = !user && item.type === 'temuan';
+
   const defaultImage = item.type === 'hilang'
     ? 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&auto=format&fit=crop&q=80'
     : 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=600&auto=format&fit=crop&q=80';
@@ -38,11 +42,57 @@ export const ItemCard = ({ item }) => {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            transition: 'transform var(--trans-slow)'
+            filter: isLocked ? 'blur(10px) brightness(0.68)' : 'none',
+            transform: isLocked ? 'scale(1.08)' : 'none',
+            transition: 'filter 0.3s ease, transform var(--trans-slow)'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseEnter={(e) => {
+            if (!isLocked) e.currentTarget.style.transform = 'scale(1.05)';
+          }}
+          onMouseLeave={(e) => {
+            if (!isLocked) e.currentTarget.style.transform = 'scale(1)';
+          }}
         />
+
+        {/* Lock Overlay for Guests on Found Items */}
+        {isLocked && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(2px)',
+            color: '#fff',
+            padding: '0.5rem',
+            textAlign: 'center',
+            zIndex: 4,
+            pointerEvents: 'none'
+          }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '0.35rem',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.25)'
+            }}>
+              <Lock size={18} color="#f59e0b" />
+            </div>
+            <span style={{ fontSize: '0.78rem', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+              Foto Disensor
+            </span>
+            <span style={{ fontSize: '0.675rem', color: 'rgba(255,255,255,0.9)', textShadow: '0 1px 2px rgba(0,0,0,0.7)' }}>
+              Masuk untuk melihat foto asli
+            </span>
+          </div>
+        )}
 
         {/* Top Badges */}
         <div style={{
@@ -53,7 +103,8 @@ export const ItemCard = ({ item }) => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          zIndex: 5
         }}>
           <StatusBadge type={item.type} />
           {item.bounty_amount > 0 && (
@@ -75,7 +126,8 @@ export const ItemCard = ({ item }) => {
           fontWeight: 700,
           padding: '2px 8px',
           borderRadius: 'var(--radius-sm)',
-          letterSpacing: '0.05em'
+          letterSpacing: '0.05em',
+          zIndex: 5
         }}>
           #{item.item_code}
         </div>

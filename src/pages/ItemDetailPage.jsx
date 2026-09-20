@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   MapPin, 
   Calendar, 
@@ -10,11 +10,12 @@ import {
   ArrowLeft, 
   Sparkles, 
   AlertCircle, 
-  Award,
+  Award, 
   Lock,
-  MessageSquare,
-  Building2,
-  CheckCircle2
+  LogIn,
+  MessageSquare, 
+  Building2, 
+  CheckCircle2 
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -25,6 +26,7 @@ import { RunnerOrderModal } from '../components/RunnerOrderModal';
 export const ItemDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { items, matches } = useData();
   const { user } = useAuth();
 
@@ -48,6 +50,7 @@ export const ItemDetailPage = () => {
   }
 
   const isOwner = user?.id === item.user_id;
+  const isLocked = !user && item.type === 'temuan';
   const existingMatch = matches.find(m => m.item_id === item.id);
 
   const photos = item.photo_urls && item.photo_urls.length > 0
@@ -100,16 +103,71 @@ export const ItemDetailPage = () => {
             <img 
               src={photos[selectedPhotoIndex]} 
               alt={item.title} 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover',
+                filter: isLocked ? 'blur(16px) brightness(0.65)' : 'none',
+                transform: isLocked ? 'scale(1.08)' : 'none',
+                transition: 'filter 0.3s ease, transform var(--trans-slow)'
+              }}
             />
 
+            {/* Lock Overlay on Found Item for Guests */}
+            {isLocked && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(15, 23, 42, 0.55)',
+                backdropFilter: 'blur(3px)',
+                color: '#fff',
+                padding: '1.5rem',
+                textAlign: 'center',
+                zIndex: 4,
+                gap: '0.65rem'
+              }}>
+                <div style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: '1.5px solid rgba(255, 255, 255, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
+                }}>
+                  <Lock size={22} color="#f59e0b" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                    Foto Barang Temuan Dikunci
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', maxWidth: '300px', margin: '0.35rem auto 0', lineHeight: 1.4 }}>
+                    Demi mencegah klaim palsu dan verifikasi yang sah, silakan masuk dengan akun Anda untuk melihat foto asli.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/masuk', { state: { from: location } })}
+                  className="btn btn-accent btn-sm"
+                  style={{ fontWeight: 700, gap: '0.4rem', marginTop: '0.25rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+                >
+                  <LogIn size={15} /> Masuk untuk Buka Foto
+                </button>
+              </div>
+            )}
+
             {/* Badges Overlay */}
-            <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '0.4rem' }}>
+            <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '0.4rem', zIndex: 6 }}>
               <StatusBadge type={item.type} status={item.item_status} postStatus={item.post_status} />
             </div>
 
             {item.bounty_amount > 0 && (
-              <div style={{ position: 'absolute', top: '12px', right: '12px' }}>
+              <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 6 }}>
                 <span className="badge badge-bounty">
                   <Award size={13} /> Hadiah Rp {item.bounty_amount.toLocaleString('id-ID')}
                 </span>
@@ -126,7 +184,8 @@ export const ItemDetailPage = () => {
               fontSize: '0.75rem',
               fontWeight: 700,
               padding: '3px 10px',
-              borderRadius: 'var(--radius-sm)'
+              borderRadius: 'var(--radius-sm)',
+              zIndex: 6
             }}>
               Kode Laporan: #{item.item_code}
             </div>
@@ -279,22 +338,63 @@ export const ItemDetailPage = () => {
             </button>
           </div>
 
+          {/* Guest Notice Banner */}
+          {!user && (
+            <div style={{
+              padding: '0.85rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--primary-50)',
+              border: '1px solid var(--primary-200)',
+              fontSize: '0.825rem',
+              color: 'var(--primary-900)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.75rem',
+              flexWrap: 'wrap'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Lock size={16} color="var(--primary-600)" style={{ flexShrink: 0 }} />
+                <span>Masuk dengan akun UNNES / Google untuk melakukan klaim barang atau pesan runner.</span>
+              </div>
+              <button 
+                onClick={() => navigate('/masuk', { state: { from: location } })}
+                className="btn btn-primary btn-sm"
+                style={{ fontSize: '0.775rem', padding: '0.35rem 0.75rem', fontWeight: 600 }}
+              >
+                Masuk Sekarang
+              </button>
+            </div>
+          )}
+
           {/* Primary Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
             
             {/* If Match already exists */}
             {existingMatch ? (
-              <Link 
-                to={`/pesan/${existingMatch.id}`}
+              <button 
+                onClick={() => {
+                  if (!user) {
+                    navigate('/masuk', { state: { from: { pathname: `/pesan/${existingMatch.id}` } } });
+                    return;
+                  }
+                  navigate(`/pesan/${existingMatch.id}`);
+                }}
                 className="btn btn-teal btn-lg"
                 style={{ gap: '0.5rem', width: '100%' }}
               >
                 <MessageSquare size={18} /> Buka Ruang Obrolan & Serah Terima
-              </Link>
+              </button>
             ) : item.type === 'temuan' && !isOwner ? (
               /* If it's a found item and user is not reporter -> Can Claim via Blind Test */
               <button
-                onClick={() => setShowBlindTestModal(true)}
+                onClick={() => {
+                  if (!user) {
+                    navigate('/masuk', { state: { from: location } });
+                    return;
+                  }
+                  setShowBlindTestModal(true);
+                }}
                 className="btn btn-primary btn-lg"
                 style={{ gap: '0.5rem', width: '100%' }}
               >
@@ -316,7 +416,13 @@ export const ItemDetailPage = () => {
 
             {/* Order Campus Runner Button */}
             <button
-              onClick={() => setShowRunnerModal(true)}
+              onClick={() => {
+                if (!user) {
+                  navigate('/masuk', { state: { from: location } });
+                  return;
+                }
+                setShowRunnerModal(true);
+              }}
               className="btn btn-accent"
               style={{ gap: '0.5rem', width: '100%' }}
             >

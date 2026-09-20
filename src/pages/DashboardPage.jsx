@@ -67,18 +67,53 @@ export const DashboardPage = () => {
       {/* 1. Top Header Profile Greeting */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <img 
-            src={user?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80'} 
-            alt={user?.full_name} 
-            style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-600)' }}
-          />
+          {user ? (
+            user.avatar_url ? (
+              <img 
+                src={user.avatar_url} 
+                alt={user.full_name} 
+                style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-600)' }}
+              />
+            ) : (
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--teal-600) 100%)',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.2rem',
+                fontWeight: 700
+              }}>
+                {(user.full_name || user.email || 'U')[0].toUpperCase()}
+              </div>
+            )
+          ) : (
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, var(--primary-800) 0%, var(--teal-600) 100%)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.25rem',
+              fontWeight: 800,
+              boxShadow: '0 4px 10px rgba(30, 58, 95, 0.25)'
+            }}>
+              U
+            </div>
+          )}
           <div>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{getGreeting()},</span>
             <h1 style={{ fontSize: '1.35rem', fontWeight: 800, lineHeight: 1.2 }}>
-              {user?.full_name || 'Mahasiswa UNNES'}
+              {user?.full_name || 'Civitas Akademika UNNES'}
             </h1>
             <span style={{ fontSize: '0.75rem', color: 'var(--teal-600)', fontWeight: 600 }}>
-              {user?.fakultas ? `${user.fakultas} UNNES` : 'Civitas UNNES'}
+              {user ? (user.fakultas ? `${user.fakultas} UNNES` : 'Mahasiswa UNNES') : 'Portal Terpadu Barang Hilang & Temuan'}
             </span>
           </div>
         </div>
@@ -86,7 +121,13 @@ export const DashboardPage = () => {
         {/* Action button */}
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button 
-            onClick={() => setShowRunnerModal(true)} 
+            onClick={() => {
+              if (!user) {
+                navigate('/masuk', { state: { from: { pathname: '/beranda' } } });
+                return;
+              }
+              setShowRunnerModal(true);
+            }} 
             className="btn btn-accent btn-sm"
             style={{ gap: '0.4rem' }}
           >
@@ -178,7 +219,8 @@ export const DashboardPage = () => {
       {/* 4. Quick Actions Grid (Matching the Dribbble Reference) */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
         <Link 
-          to="/lapor/hilang"
+          to={user ? "/lapor/hilang" : "/masuk"}
+          state={!user ? { from: { pathname: '/lapor/hilang' } } : undefined}
           className="glass-card"
           style={{
             padding: '0.9rem 0.5rem',
@@ -206,7 +248,8 @@ export const DashboardPage = () => {
         </Link>
 
         <Link 
-          to="/lapor/temuan"
+          to={user ? "/lapor/temuan" : "/masuk"}
+          state={!user ? { from: { pathname: '/lapor/temuan' } } : undefined}
           className="glass-card"
           style={{
             padding: '0.9rem 0.5rem',
@@ -234,7 +277,13 @@ export const DashboardPage = () => {
         </Link>
 
         <div 
-          onClick={() => setShowRunnerModal(true)}
+          onClick={() => {
+            if (!user) {
+              navigate('/masuk', { state: { from: { pathname: '/beranda' } } });
+              return;
+            }
+            setShowRunnerModal(true);
+          }}
           className="glass-card"
           style={{
             padding: '0.9rem 0.5rem',
@@ -262,7 +311,8 @@ export const DashboardPage = () => {
         </div>
 
         <Link 
-          to="/profil"
+          to={user ? "/profil" : "/masuk"}
+          state={!user ? { from: { pathname: '/profil' } } : undefined}
           className="glass-card"
           style={{
             padding: '0.9rem 0.5rem',
