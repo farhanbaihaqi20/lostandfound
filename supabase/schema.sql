@@ -1,0 +1,236 @@
+-- =========================================================================
+-- UNNES LOST & FOUND - SUPABASE DATABASE SCHEMA & RLS POLICIES
+-- =========================================================================
+
+-- 1. EXTENSIONS
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 2. ENUMS
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('user', 'admin');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE item_type AS ENUM ('hilang', 'temuan');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE post_status AS ENUM ('menunggu_review', 'disetujui', 'ditolak');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE item_status AS ENUM ('terbuka', 'diklaim', 'cocok', 'dikembalikan', 'ditutup');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- 3. PROFILES TABLE
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT UNIQUE NOT NULL,
+    full_name TEXT NOT NULL,
+    avatar_url TEXT DEFAULT '',
+    bio TEXT DEFAULT '',
+    phone TEXT DEFAULT '',
+    nim TEXT DEFAULT '',
+    fakultas TEXT DEFAULT '',
+    prodi TEXT DEFAULT '',
+    role user_role DEFAULT 'user',
+    is_banned BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. ITEMS TABLE
+CREATE TABLE IF NOT EXISTS public.items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+    item_code TEXT UNIQUE NOT NULL,
+    type item_type NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    category TEXT NOT NULL,
+    location_building TEXT NOT NULL,
+    location_floor TEXT DEFAULT '',
+    location_room TEXT DEFAULT '',
+    location_detail TEXT DEFAULT '',
+    post_status post_status DEFAULT 'menunggu_review',
+    item_status item_status DEFAULT 'terbuka',
+    rejection_reason TEXT DEFAULT '',
+    reviewed_by UUID REFERENCES public.profiles(id),
+    reviewed_at TIMESTAMP WITH TIME ZONE,
+    photo_urls TEXT[] DEFAULT ARRAY[]::TEXT[],
+    hidden_details TEXT DEFAULT '',
+    blind_test_questions JSONB DEFAULT '[]'::jsonb,
+    bounty_amount INTEGER DEFAULT 0,
+    bounty_status TEXT DEFAULT 'tidak_ada',
+    date_lost_found TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 5. CLAIMS TABLE
+CREATE TABLE IF NOT EXISTS public.claims (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    item_id UUID REFERENCES public.items(id) ON DELETE CASCADE NOT NULL,
+    claimer_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+    status TEXT DEFAULT 'menunggu_admin',
+    blind_test_answers JSONB DEFAULT '[]'::jsonb,
+    blind_test_score INTEGER DEFAULT 0,
+    admin_notes TEXT DEFAULT '',
+    verified_by UUID REFERENCES public.profiles(id),
+    verified_at TIMESTAMP WITH TIME ZONE,
+    message TEXT DEFAULT '',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 6. MATCHES TABLE
+CREATE TABLE IF NOT EXISTS public.matches (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    item_id UUID REFERENCES public.items(id) ON DELETE CASCADE NOT NULL,
+    finder_id UUID REFERENCES public.profiles(id) NOT NULL,
+    owner_id UUID REFERENCES public.profiles(id) NOT NULL,
+    status TEXT DEFAULT 'aktif',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    completed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- 7. MESSAGES TABLE
+CREATE TABLE IF NOT EXISTS public.messages (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    match_id UUID REFERENCES public.matches(id) ON DELETE CASCADE NOT NULL,
+    sender_id UUID REFERENCES public.profiles(id) NOT NULL,
+    content TEXT NOT NULL,
+    type TEXT DEFAULT 'text',
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 8. ORDERS TABLE (Runner / Jasa Antar Kampus)
+CREATE TABLE IF NOT EXISTS public.orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    match_id UUID REFERENCES public.matches(id),
+    requester_id UUID REFERENCES public.profiles(id) NOT NULL,
+    service_type TEXT NOT NULL,
+    status TEXT DEFAULT 'menunggu',
+    pickup_location TEXT NOT NULL,
+    delivery_location TEXT NOT NULL,
+    fee_amount INTEGER DEFAULT 8000,
+    payment_status TEXT DEFAULT 'belum_bayar',
+    payment_method TEXT DEFAULT 'tunai',
+    runner_notes TEXT DEFAULT '',
+    evidence_photos TEXT[] DEFAULT ARRAY[]::TEXT[],
+    managed_by UUID REFERENCES public.profiles(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    completed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- 9. NOTIFICATIONS TABLE
+CREATE TABLE IF NOT EXISTS public.notifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+    type TEXT NOT NULL,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    link TEXT DEFAULT '',
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 10. ROW LEVEL SECURITY (RLS)
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.claims ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.matches ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
+-- Helper function to check if current user is admin
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Profiles Policies
+CREATE POLICY "Public profiles are readable by anyone" ON public.profiles
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can update their own profile" ON public.profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+-- Items Policies: Public can only see approved items
+CREATE POLICY "Approved items are viewable by everyone" ON public.items
+  FOR SELECT USING (post_status = 'disetujui' OR auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Users can insert their own items" ON public.items
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own open items or Admin can update anything" ON public.items
+  FOR UPDATE USING (auth.uid() = user_id OR public.is_admin());
+
+-- Claims Policies
+CREATE POLICY "Claimer, Item Owner, or Admin can see claims" ON public.claims
+  FOR SELECT USING (
+    auth.uid() = claimer_id OR
+    auth.uid() IN (SELECT user_id FROM public.items WHERE id = item_id) OR
+    public.is_admin()
+  );
+
+CREATE POLICY "Authenticated users can submit a claim" ON public.claims
+  FOR INSERT WITH CHECK (auth.uid() = claimer_id);
+
+CREATE POLICY "Admins can update claims status" ON public.claims
+  FOR UPDATE USING (public.is_admin());
+
+-- Matches & Messages
+CREATE POLICY "Involved parties or admin can see match" ON public.matches
+  FOR SELECT USING (auth.uid() = finder_id OR auth.uid() = owner_id OR public.is_admin());
+
+CREATE POLICY "Involved parties can read messages" ON public.messages
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.matches m
+      WHERE m.id = match_id AND (m.finder_id = auth.uid() OR m.owner_id = auth.uid() OR public.is_admin())
+    )
+  );
+
+CREATE POLICY "Involved parties can post messages" ON public.messages
+  FOR INSERT WITH CHECK (
+    auth.uid() = sender_id AND
+    EXISTS (
+      SELECT 1 FROM public.matches m
+      WHERE m.id = match_id AND (m.finder_id = auth.uid() OR m.owner_id = auth.uid())
+    )
+  );
+
+-- Auto create profile on signup trigger
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, role)
+  VALUES (
+    new.id,
+    new.email,
+    COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    'user'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();

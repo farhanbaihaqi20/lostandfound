@@ -1,0 +1,472 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
+import { 
+  INITIAL_ITEMS, 
+  INITIAL_CLAIMS, 
+  INITIAL_MATCHES, 
+  INITIAL_ORDERS, 
+  INITIAL_NOTIFICATIONS 
+} from '../data/initialData';
+import { useAuth } from './AuthContext';
+
+const DataContext = createContext(null);
+
+export const DataProvider = ({ children }) => {
+  const { user } = useAuth();
+
+  // 1. Items state
+  const [items, setItems] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_items');
+    return saved ? JSON.parse(saved) : INITIAL_ITEMS;
+  });
+
+  // 2. Claims state
+  const [claims, setClaims] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_claims');
+    return saved ? JSON.parse(saved) : INITIAL_CLAIMS;
+  });
+
+  // 3. Matches state
+  const [matches, setMatches] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_matches');
+    return saved ? JSON.parse(saved) : INITIAL_MATCHES;
+  });
+
+  // 4. Messages state
+  const [messages, setMessages] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_messages');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // 5. Runner Orders state
+  const [orders, setOrders] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_orders');
+    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+  });
+
+  // 6. Notifications state
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_notifications');
+    return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
+  });
+
+  // Persist to localStorage
+  useEffect(() => {
+    localStorage.setItem('unnes_lf_items', JSON.stringify(items));
+  }, [items]);
+
+  useEffect(() => {
+    localStorage.setItem('unnes_lf_claims', JSON.stringify(claims));
+  }, [claims]);
+
+  useEffect(() => {
+    localStorage.setItem('unnes_lf_matches', JSON.stringify(matches));
+  }, [matches]);
+
+  useEffect(() => {
+    localStorage.setItem('unnes_lf_messages', JSON.stringify(messages));
+  }, [messages]);
+
+  useEffect(() => {
+    localStorage.setItem('unnes_lf_orders', JSON.stringify(orders));
+  }, [orders]);
+
+  useEffect(() => {
+    localStorage.setItem('unnes_lf_notifications', JSON.stringify(notifications));
+  }, [notifications]);
+
+  // Notification helper
+  const addNotification = (notif) => {
+    const newNotif = {
+      id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      created_at: new Date().toISOString(),
+      is_read: false,
+      ...notif
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+  };
+
+  // --- ITEM ACTIONS ---
+
+  /**
+   * User melaporkan barang hilang / temuan
+   * Status awal selalu 'menunggu_review' (Harus di-ACC Admin)
+   */
+  const submitItem = (itemData) => {
+    const itemCode = `LF-UNNES-${Math.floor(100 + Math.random() * 900)}`;
+    const newItem = {
+      id: `item-${Date.now()}`,
+      user_id: user?.id || 'anonymous',
+      user_name: user?.full_name || 'Mahasiswa UNNES',
+      item_code: itemCode,
+      post_status: 'menunggu_review', // Selalu menunggu review admin
+      item_status: 'terbuka',
+      created_at: new Date().toISOString(),
+      date_lost_found: itemData.date_lost_found || new Date().toISOString(),
+      photo_urls: itemData.photo_urls || [],
+      ...itemData
+    };
+
+    setItems(prev => [newItem, ...prev]);
+
+    // Notifikasi ke Admin
+    addNotification({
+      user_id: 'user-admin-01',
+      type: 'moderasi',
+      title: 'Laporan Baru Masuk 📝',
+      body: `${newItem.user_name} melaporkan barang ${newItem.type}: "${newItem.title}". Menunggu persetujuan.`,
+      link: '/admin/moderasi'
+    });
+
+    // Notifikasi ke User Pelapor
+    addNotification({
+      user_id: user?.id,
+      type: 'moderasi',
+      title: 'Laporan Berhasil Diajukan ⏳',
+      body: `Laporan #${itemCode} sedang ditinjau oleh Admin. Anda akan mendapat notifikasi setelah disetujui.`,
+      link: `/barang/${newItem.id}`
+    });
+
+    return newItem;
+  };
+
+  /**
+   * Admin menyetujui postingan (ACC)
+   */
+  const approveItem = (itemId) => {
+    setItems(prev => prev.map(item => {
+      if (item.id === itemId) {
+        // Notifikasi ke user pemilik postingan
+        addNotification({
+          user_id: item.user_id,
+          type: 'moderasi',
+          title: 'Laporan Telah Disetujui! 🎉',
+          body: `Laporan #${item.item_code} ("${item.title}") telah disetujui Admin dan sekarang aktif di Feed UNNES.`,
+          link: `/barang/${item.id}`
+        });
+
+        return {
+          ...item,
+          post_status: 'disetujui',
+          reviewed_by: user?.id,
+          reviewed_at: new Date().toISOString(),
+          rejection_reason: ''
+        };
+      }
+      return item;
+    }));
+  };
+
+  /**
+   * Admin menolak postingan dengan alasan
+   */
+  const rejectItem = (itemId, reason) => {
+    setItems(prev => prev.map(item => {
+      if (item.id === itemId) {
+        addNotification({
+          user_id: item.user_id,
+          type: 'moderasi',
+          title: 'Laporan Ditolak Admin ❌',
+          body: `Laporan #${item.item_code} ditolak. Alasan: ${reason || 'Foto atau informasi kurang jelas'}.`,
+          link: '/profil'
+        });
+
+        return {
+          ...item,
+          post_status: 'ditolak',
+          reviewed_by: user?.id,
+          reviewed_at: new Date().toISOString(),
+          rejection_reason: reason
+        };
+      }
+      return item;
+    }));
+  };
+
+  // --- CLAIM & BLIND TEST ACTIONS ---
+
+  /**
+   * User mengajukan klaim barang temuan via Blind Test
+   */
+  const submitClaim = ({ itemId, blindTestAnswers, message }) => {
+    const targetItem = items.find(i => i.id === itemId);
+    if (!targetItem) return;
+
+    // Perhitungan kecocokan otomatis sederhana (skor 80 - 100%)
+    const score = Math.floor(80 + Math.random() * 20);
+
+    const newClaim = {
+      id: `claim-${Date.now()}`,
+      item_id: itemId,
+      item_title: targetItem.title,
+      item_code: targetItem.item_code,
+      claimer_id: user?.id,
+      claimer_name: user?.full_name || 'Mahasiswa UNNES',
+      claimer_email: user?.email,
+      claimer_phone: user?.phone || '08xxxxxxxxxx',
+      status: 'menunggu_admin',
+      blind_test_answers: blindTestAnswers,
+      blind_test_score: score,
+      message: message || '',
+      created_at: new Date().toISOString()
+    };
+
+    setClaims(prev => [newClaim, ...prev]);
+
+    // Notifikasi ke Admin untuk verifikasi
+    addNotification({
+      user_id: 'user-admin-01',
+      type: 'klaim',
+      title: 'Klaim Baru Menunggu Verifikasi 🔍',
+      body: `${newClaim.claimer_name} mengklaim barang #${targetItem.item_code}. Skor kecocokan: ${score}%.`,
+      link: '/admin/klaim'
+    });
+
+    return newClaim;
+  };
+
+  /**
+   * Admin memverifikasi klaim (Valid / Tidak Valid)
+   */
+  const verifyClaim = (claimId, isApproved, adminNotes = '') => {
+    const claim = claims.find(c => c.id === claimId);
+    if (!claim) return;
+
+    const targetItem = items.find(i => i.id === claim.item_id);
+
+    if (isApproved) {
+      // 1. Update status klaim
+      setClaims(prev => prev.map(c => c.id === claimId ? {
+        ...c,
+        status: 'disetujui',
+        admin_notes: adminNotes,
+        verified_by: user?.id,
+        verified_at: new Date().toISOString()
+      } : c));
+
+      // 2. Update status barang ke 'cocok'
+      if (targetItem) {
+        setItems(prev => prev.map(i => i.id === claim.item_id ? {
+          ...i,
+          item_status: 'cocok'
+        } : i));
+      }
+
+      // 3. Buat Match & Chat room
+      const newMatch = {
+        id: `match-${Date.now()}`,
+        item_id: claim.item_id,
+        item_title: claim.item_title,
+        item_code: claim.item_code,
+        finder_id: targetItem?.user_id,
+        finder_name: targetItem?.user_name,
+        owner_id: claim.claimer_id,
+        owner_name: claim.claimer_name,
+        status: 'aktif',
+        created_at: new Date().toISOString()
+      };
+      setMatches(prev => [newMatch, ...prev]);
+
+      // 4. Kirim pesan selamat datang dari sistem di ruang chat
+      const welcomeMsg = {
+        id: `msg-${Date.now()}`,
+        match_id: newMatch.id,
+        sender_id: 'system',
+        content: `🎉 Selamat! Klaim barang #${claim.item_code} telah diverifikasi oleh Admin. Silakan berkoordinasi untuk menentukan waktu dan lokasi titik temu penyerahan barang (disarankan di Pos Satpam / Kantin Kampus). Butuh bantuan antar? Anda juga dapat memesan Jasa Runner Resmi UNNES di tombol atas!`,
+        type: 'system',
+        created_at: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, welcomeMsg]);
+
+      // 5. Notifikasi ke kedua belah pihak
+      addNotification({
+        user_id: claim.claimer_id,
+        type: 'cocok',
+        title: 'Klaim Kamu DIVERIFIKASI! 🎯',
+        body: `Klaim barang #${claim.item_code} berhasil diverifikasi Admin. Ruang obrolan dengan penemu sudah dibuka!`,
+        link: `/pesan/${newMatch.id}`
+      });
+
+      if (targetItem?.user_id) {
+        addNotification({
+          user_id: targetItem.user_id,
+          type: 'cocok',
+          title: 'Pemilik Asli Ditemukan! 🤝',
+          body: `Admin telah memverifikasi klaim barang #${claim.item_code}. Hubungkan obrolan untuk serah terima.`,
+          link: `/pesan/${newMatch.id}`
+        });
+      }
+
+      try {
+        confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+      } catch (e) {
+        // Safe fallback
+      }
+    } else {
+      // Tolak klaim
+      setClaims(prev => prev.map(c => c.id === claimId ? {
+        ...c,
+        status: 'ditolak',
+        admin_notes: adminNotes,
+        verified_by: user?.id,
+        verified_at: new Date().toISOString()
+      } : c));
+
+      addNotification({
+        user_id: claim.claimer_id,
+        type: 'klaim',
+        title: 'Klaim Belum Dapat Diverifikasi ❌',
+        body: `Klaim barang #${claim.item_code} tidak sesuai dengan verifikasi Admin. Catatan: ${adminNotes || 'Jawaban tidak cocok'}.`,
+        link: `/barang/${claim.item_id}`
+      });
+    }
+  };
+
+  // --- MESSAGES ACTIONS ---
+  const sendMessage = (matchId, content, type = 'text') => {
+    const newMsg = {
+      id: `msg-${Date.now()}`,
+      match_id: matchId,
+      sender_id: user?.id,
+      sender_name: user?.full_name,
+      content,
+      type,
+      created_at: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, newMsg]);
+    return newMsg;
+  };
+
+  // --- RUNNER SERVICE ORDERS ---
+  const createOrder = (orderData) => {
+    const newOrder = {
+      id: `ord-${Date.now()}`,
+      requester_id: user?.id,
+      requester_name: user?.full_name,
+      requester_phone: user?.phone || '',
+      status: 'menunggu',
+      fee_amount: orderData.service_type === 'active_hunting' ? 15000 : 8000,
+      payment_status: 'belum_bayar',
+      payment_method: 'tunai_saat_antar',
+      evidence_photos: [],
+      created_at: new Date().toISOString(),
+      ...orderData
+    };
+
+    setOrders(prev => [newOrder, ...prev]);
+
+    addNotification({
+      user_id: 'user-admin-01',
+      type: 'pesanan',
+      title: 'Pesanan Jasa Runner Baru 🚗',
+      body: `${user?.full_name} memesan layanan ${orderData.service_type === 'active_hunting' ? 'Active Hunting' : 'Pick-up & Delivery'} ke ${orderData.delivery_location}.`,
+      link: '/admin/pesanan'
+    });
+
+    addNotification({
+      user_id: user?.id,
+      type: 'pesanan',
+      title: 'Pesanan Runner Dibuat 📦',
+      body: `Pesanan jasa runner Anda sedang menunggu konfirmasi shift runner UNNES.`,
+      link: '/profil'
+    });
+
+    return newOrder;
+  };
+
+  const updateOrderStatus = (orderId, updates) => {
+    setOrders(prev => prev.map(o => {
+      if (o.id === orderId) {
+        const updated = { ...o, ...updates };
+        if (updates.status) {
+          addNotification({
+            user_id: o.requester_id,
+            type: 'pesanan',
+            title: `Update Pesanan Runner: ${updates.status.toUpperCase()}`,
+            body: updates.runner_notes || `Status pesanan Anda telah diperbarui menjadi ${updates.status}.`,
+            link: '/profil'
+          });
+        }
+        return updated;
+      }
+      return o;
+    }));
+  };
+
+  // --- DIGITAL BAST SERAH TERIMA ---
+  const completeHandover = (matchId, evidencePhoto = null) => {
+    const match = matches.find(m => m.id === matchId);
+    if (!match) return;
+
+    // Update match
+    setMatches(prev => prev.map(m => m.id === matchId ? {
+      ...m,
+      status: 'selesai',
+      completed_at: new Date().toISOString()
+    } : m));
+
+    // Update item status to 'dikembalikan'
+    setItems(prev => prev.map(i => i.id === match.item_id ? {
+      ...i,
+      item_status: 'dikembalikan'
+    } : i));
+
+    // Kirim pesan sistem di chat
+    sendMessage(matchId, '✅ Serah Terima Barang Resmi Selesai! Berita Acara Serah Terima (BAST) Digital telah ditandatangani oleh kedua pihak.', 'system');
+
+    try {
+      confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
+    } catch (e) {}
+  };
+
+  // --- STATS CALCULATION ---
+  const stats = {
+    totalItems: items.filter(i => i.post_status === 'disetujui').length,
+    totalReturned: items.filter(i => i.item_status === 'dikembalikan').length,
+    pendingReviews: items.filter(i => i.post_status === 'menunggu_review').length,
+    pendingClaims: claims.filter(c => c.status === 'menunggu_admin').length,
+    activeOrders: orders.filter(o => o.status !== 'selesai' && o.status !== 'dibatalkan').length,
+    totalBounties: items
+      .filter(i => i.post_status === 'disetujui' && i.bounty_amount > 0)
+      .reduce((sum, i) => sum + (i.bounty_amount || 0), 0)
+  };
+
+  return (
+    <DataContext.Provider value={{
+      items,
+      approvedItems: items.filter(i => i.post_status === 'disetujui'),
+      claims,
+      matches,
+      messages,
+      orders,
+      notifications,
+      stats,
+      submitItem,
+      approveItem,
+      rejectItem,
+      submitClaim,
+      verifyClaim,
+      sendMessage,
+      createOrder,
+      updateOrderStatus,
+      completeHandover,
+      addNotification,
+      markNotificationAsRead: (id) => {
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      },
+      markAllNotificationsAsRead: () => {
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      }
+    }}>
+      {children}
+    </DataContext.Provider>
+  );
+};
+
+export const useData = () => {
+  const context = useContext(DataContext);
+  if (!context) {
+    throw new Error('useData must be used within a DataProvider');
+  }
+  return context;
+};
