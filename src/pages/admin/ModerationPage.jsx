@@ -10,12 +10,14 @@ import {
   Eye, 
   MapPin, 
   Lock,
-  ArrowLeft
+  ArrowLeft,
+  Trash2,
+  CheckCheck
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 
 export const ModerationPage = () => {
-  const { items, approveItem, rejectItem } = useData();
+  const { items, approveItem, rejectItem, deleteItem, markItemAsReturned } = useData();
 
   const [activeFilter, setActiveFilter] = useState('menunggu_review');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -41,6 +43,19 @@ export const ModerationPage = () => {
     setRejectModalItem(null);
     setRejectionReason('');
     if (selectedItem?.id === rejectModalItem.id) setSelectedItem(null);
+  };
+
+  const handleDelete = async (item) => {
+    const confirm = window.confirm(
+      `⚠️ Hapus laporan #${item.item_code} ("${item.title}") secara permanen?\n\n` +
+      `• Data akan dihapus dari Supabase.\n` +
+      `• Seluruh foto yang diunggah akan dihapus dari Cloudinary.`
+    );
+    if (!confirm) return;
+
+    await deleteItem(item.id);
+    alert(`Laporan #${item.item_code} berhasil dihapus.`);
+    if (selectedItem?.id === item.id) setSelectedItem(null);
   };
 
   return (
@@ -162,6 +177,31 @@ export const ModerationPage = () => {
                       </button>
                     </>
                   )}
+
+                  {item.post_status === 'disetujui' && item.item_status !== 'dikembalikan' && (
+                    <button
+                      onClick={async () => {
+                        if (window.confirm(`Tandai laporan #${item.item_code} ("${item.title}") sudah kembali ke pemilik?\nFoto asli di Cloudinary akan dihapus & diganti banner status.`)) {
+                          await markItemAsReturned(item.id);
+                          alert(`Laporan #${item.item_code} berhasil ditandai telah kembali.`);
+                        }
+                      }}
+                      className="btn btn-outline btn-sm"
+                      style={{ gap: '0.3rem', color: 'var(--teal-600)' }}
+                      title="Tandai kasus selesai & bersihkan foto Cloudinary"
+                    >
+                      <CheckCheck size={14} /> Tandai Selesai
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => handleDelete(item)}
+                    className="btn btn-ghost btn-sm"
+                    style={{ gap: '0.3rem', color: 'var(--danger)' }}
+                    title="Hapus permanen postingan & foto Cloudinary"
+                  >
+                    <Trash2 size={14} /> Hapus
+                  </button>
                 </div>
               </div>
 

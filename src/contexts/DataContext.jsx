@@ -9,6 +9,7 @@ import {
 } from '../data/initialData';
 import { useAuth } from './AuthContext';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { deleteCloudinaryImage, generateReturnedBannerSvg } from '../lib/storageService';
 
 const isUuid = (id) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
@@ -329,6 +330,111 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  /**
+   * Admin / Pemilik menghapus postingan secara permanen:
+   * 1. Hapus semua foto asli di Cloudinary (menghemat storage)
+   * 2. Hapus data di Supabase items table (menghemat DB quota)
+   * 3. Hapus relasi klaim/match lokal terkait
+   */
+  const deleteItem = async (itemId) => {
+    const targetItem = items.find(i => i.id === itemId);
+    if (!targetItem) return { success: false, error: 'Item not found' };
+
+    // 1. Bersihkan foto di Cloudinary
+    if (targetItem.photo_urls && Array.isArray(targetItem.photo_urls)) {
+      for (const url of targetItem.photo_urls) {
+        if (url && typeof url === 'string' && url.includes('cloudinary.com')) {
+          await deleteCloudinaryImage(url);
+        }
+      }
+    }
+
+    // 2. Hapus di database Supabase
+    if (isSupabaseConfigured() && supabase && isUuid(itemId)) {
+      try {
+        const { error } = await supabase.from('items').delete().eq('id', itemId);
+        if (error) {
+          console.warn('Gagal menghapus item di Supabase:', error);
+        }
+      } catch (err) {
+        console.warn('Gagal menghapus item di Supabase:', err);
+      }
+    }
+
+    // 3. Bersihkan dari local state
+    setItems(prev => prev.filter(i => i.id !== itemId));
+    setClaims(prev => prev.filter(c => c.item_id !== itemId));
+    setMatches(prev => prev.filter(m => m.item_id !== itemId));
+
+    return { success: true };
+  };
+
+  /**
+   * Tandai Barang Telah Kembali ke Pemilik:
+   * 1. Hapus foto asli di Cloudinary untuk menghemat ruang & privasi
+   * 2. Gantikan foto dengan SVG Banner resmi UNNES (0 KB Cloudinary)
+   * 3. Update status item_status ke 'dikembalikan' di Supabase & kosongkan data rahasia
+   */
+  const markItemAsReturned = async (itemId) => {
+    const targetItem = items.find(i => i.id === itemId);
+    if (!targetItem) return { success: false, error: 'Item not found' };
+
+    // 1. Hapus foto asli dari Cloudinary untuk efisiensi penyimpanan & privasi
+    if (targetItem.photo_urls && Array.isArray(targetItem.photo_urls)) {
+      for (const url of targetItem.photo_urls) {
+        if (url && typeof url === 'string' && url.includes('cloudinary.com')) {
+          await deleteCloudinaryImage(url);
+        }
+      }
+    }
+
+    // 2. Buat Banner SVG Pengganti (0 KB Cloudinary, instan render)
+    const returnedBannerUrl = generateReturnedBannerSvg(targetItem.item_code, targetItem.title);
+
+    // 3. Update di Supabase (item_status 'dikembalikan', hapus hidden_details untuk hemat DB)
+    if (isSupabaseConfigured() && supabase && isUuid(itemId)) {
+      try {
+        const { error } = await supabase.from('items').update({
+          item_status: 'dikembalikan',
+          photo_urls: [returnedBannerUrl],
+          hidden_details: '',
+          updated_at: new Date().toISOString()
+        }).eq('id', itemId);
+
+        if (error) {
+          console.warn('Gagal update status dikembalikan di Supabase:', error);
+        }
+      } catch (err) {
+        console.warn('Gagal update status dikembalikan di Supabase:', err);
+      }
+    }
+
+    // 4. Update local state
+    setItems(prev => prev.map(i => i.id === itemId ? {
+      ...i,
+      item_status: 'dikembalikan',
+      photo_urls: [returnedBannerUrl],
+      hidden_details: '',
+      updated_at: new Date().toISOString()
+    } : i));
+
+    // 5. Efek selebrasi Confetti
+    try {
+      confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+    } catch (e) {}
+
+    // 6. Notifikasi ke pemilik postingan
+    addNotification({
+      user_id: targetItem.user_id,
+      type: 'serah_terima',
+      title: 'Barang Telah Kembali ke Pemilik! 🎉',
+      body: `Kasus barang #${targetItem.item_code} ("${targetItem.title}") telah resmi ditandai selesai. Foto asli telah dihapus dari server demi privasi & efisiensi.`,
+      link: `/barang/${targetItem.id}`
+    });
+
+    return { success: true };
+  };
+
   // --- CLAIM & BLIND TEST ACTIONS ---
 
   /**
@@ -590,6 +696,8 @@ export const DataProvider = ({ children }) => {
       submitItem,
       approveItem,
       rejectItem,
+      deleteItem,
+      markItemAsReturned,
       submitClaim,
       verifyClaim,
       sendMessage,

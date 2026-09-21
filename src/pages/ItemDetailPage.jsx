@@ -15,7 +15,9 @@ import {
   LogIn,
   MessageSquare, 
   Building2, 
-  CheckCircle2 
+  CheckCircle2,
+  CheckCheck,
+  Trash2
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -27,8 +29,8 @@ export const ItemDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { items, matches } = useData();
-  const { user } = useAuth();
+  const { items, matches, deleteItem, markItemAsReturned } = useData();
+  const { user, isAdmin } = useAuth();
 
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [showBlindTestModal, setShowBlindTestModal] = useState(false);
@@ -66,6 +68,45 @@ export const ItemDetailPage = () => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleMarkReturned = async () => {
+    const confirm = window.confirm(
+      `Tandai laporan #${item.item_code} ("${item.title}") sebagai SUDAH KEMBALI KE PEMILIK?\n\n` +
+      `⚡ Efisiensi Penyimpanan & Privasi:\n` +
+      `• Foto asli akan dihapus dari server Cloudinary untuk menghemat kuota penyimpanan.\n` +
+      `• Foto digantikan oleh Banner Verifikasi Resmi UNNES (0 KB Cloudinary).\n` +
+      `• Status barang berubah menjadi 'Sudah Kembali' (Kasus Selesai).`
+    );
+    if (!confirm) return;
+
+    try {
+      await markItemAsReturned(item.id);
+      alert('Berhasil! Status barang telah ditandai kembali ke pemilik dan foto asli telah dibersihkan demi privasi.');
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menandai barang kembali.');
+    }
+  };
+
+  const handleDeleteItem = async () => {
+    const confirm = window.confirm(
+      `⚠️ PERINGATAN HAPUS POSTINGAN:\n\n` +
+      `Apakah Anda yakin ingin MENGHAPUS laporan #${item.item_code} ("${item.title}") secara permanen?\n\n` +
+      `• Data akan dihapus dari database Supabase.\n` +
+      `• Seluruh foto yang diunggah akan dihapus dari Cloudinary.\n` +
+      `• Tindakan ini tidak dapat dibatalkan!`
+    );
+    if (!confirm) return;
+
+    try {
+      await deleteItem(item.id);
+      alert('Postingan dan foto terkait berhasil dihapus permanen!');
+      navigate('/jelajahi');
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menghapus postingan.');
+    }
   };
 
   return (
@@ -337,6 +378,70 @@ export const ItemDetailPage = () => {
               <Share2 size={14} /> {copied ? 'Tersalin!' : 'Bagikan'}
             </button>
           </div>
+
+          {/* Panel Pengelolaan (Admin & Pemilik) */}
+          {(isAdmin || isOwner) && (
+            <div className="glass-card" style={{
+              padding: '1rem 1.25rem',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border-light)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem',
+              background: 'var(--bg-surface-alt)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <span style={{ fontWeight: 700, fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  ⚙️ Panel Pengelolaan Laporan {isAdmin ? '(Akses Admin)' : '(Akses Pelapor)'}
+                </span>
+                {isAdmin && (
+                  <span className="badge badge-admin" style={{ fontSize: '0.7rem' }}>
+                    Super/Admin Mode
+                  </span>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {/* Tombol Tandai Kembali ke Pemilik */}
+                {item.item_status !== 'dikembalikan' ? (
+                  <button
+                    onClick={handleMarkReturned}
+                    className="btn btn-teal btn-sm"
+                    style={{ gap: '0.4rem', flex: 1, minWidth: '220px' }}
+                    title="Tandai kasus selesai, hapus foto asli di Cloudinary & ganti banner status"
+                  >
+                    <CheckCheck size={16} /> Tandai Barang Telah Kembali
+                  </button>
+                ) : (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    color: 'var(--success)',
+                    padding: '0.4rem 0.75rem',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    flex: 1
+                  }}>
+                    <CheckCircle2 size={16} /> Barang Sudah Dikembalikan (Foto Asli Dihapus Demi Privasi)
+                  </div>
+                )}
+
+                {/* Tombol Hapus Postingan (Admin & Owner) */}
+                <button
+                  onClick={handleDeleteItem}
+                  className="btn btn-danger btn-sm"
+                  style={{ gap: '0.4rem' }}
+                  title="Hapus permanen dari Supabase & bersihkan foto Cloudinary"
+                >
+                  <Trash2 size={16} /> Hapus Postingan
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Guest Notice Banner */}
           {!user && (
