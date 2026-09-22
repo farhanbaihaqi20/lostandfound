@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { AdminNavTabs } from '../../components/AdminNavTabs';
 import { getAllUsers, searchUsers, setUserRole } from '../../lib/adminService';
 
 export const AdminUsersPage = () => {
@@ -130,7 +131,9 @@ export const AdminUsersPage = () => {
   };
 
   return (
-    <div className="container pb-mobile-nav" style={{ paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '960px' }}>
+    <div className="container pb-mobile-nav" style={{ paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '960px' }}>
+
+      <AdminNavTabs />
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

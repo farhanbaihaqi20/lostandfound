@@ -15,6 +15,8 @@ import {
   CheckCheck
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { AdminNavTabs } from '../../components/AdminNavTabs';
 
 export const ModerationPage = () => {
   const { items, approveItem, rejectItem, deleteItem, markItemAsReturned } = useData();
@@ -59,7 +61,9 @@ export const ModerationPage = () => {
   };
 
   return (
-    <div className="container pb-mobile-nav" style={{ paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="container pb-mobile-nav" style={{ paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      
+      <AdminNavTabs />
       
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

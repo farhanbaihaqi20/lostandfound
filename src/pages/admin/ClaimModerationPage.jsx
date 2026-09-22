@@ -13,6 +13,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
+import { AdminNavTabs } from '../../components/AdminNavTabs';
 
 export const ClaimModerationPage = () => {
   const { claims, items, verifyClaim } = useData();
@@ -37,8 +38,11 @@ export const ClaimModerationPage = () => {
   };
 
   return (
-    <div className="container pb-mobile-nav" style={{ paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="container pb-mobile-nav" style={{ paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
+      {/* Unified Admin Sub-Navigation */}
+      <AdminNavTabs />
+
       {/* Top Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

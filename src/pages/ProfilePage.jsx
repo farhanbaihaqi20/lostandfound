@@ -284,18 +284,83 @@ export const ProfilePage = () => {
       {/* Content Tab 2: Runner Orders */}
       {activeTab === 'pesanan' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          
+          {/* Admin Banner for Runner Service Management */}
+          {isAdmin && (
+            <div className="glass-card" style={{
+              padding: '1rem 1.25rem',
+              background: 'linear-gradient(135deg, rgba(30, 58, 95, 0.08) 0%, rgba(13, 148, 136, 0.12) 100%)',
+              border: '1.5px solid var(--teal-600)',
+              borderRadius: 'var(--radius-lg)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              marginBottom: '0.5rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: 'var(--teal-600)',
+                  color: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 10px rgba(13, 148, 136, 0.3)',
+                  flexShrink: 0
+                }}>
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '0.925rem', color: 'var(--primary-900)' }}>
+                    Mode Administrator Posko Jasa Runner
+                  </div>
+                  <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>
+                    Kelola penugasan shift runner kampus, perbarui status OTW/Selesai, dan konfirmasi tarif jasa secara terpusat di Panel Admin.
+                  </div>
+                </div>
+              </div>
+              <Link 
+                to="/admin/pesanan" 
+                className="btn btn-teal btn-sm"
+                style={{ gap: '0.4rem', fontWeight: 700 }}
+              >
+                <Bike size={16} /> Kelola di Panel Admin
+              </Link>
+            </div>
+          )}
+
           {myOrders.length === 0 ? (
             <div className="glass-card" style={{ padding: '3rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
               <p>Belum ada riwayat pesanan jasa runner kampus.</p>
+              {isAdmin && (
+                <Link to="/admin/pesanan" className="btn btn-teal btn-sm" style={{ marginTop: '0.75rem', gap: '0.35rem' }}>
+                  <Bike size={15} /> Lihat Semua Pesanan di Panel Admin
+                </Link>
+              )}
             </div>
           ) : (
             myOrders.map(o => (
               <div key={o.id} className="glass-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', border: '1px solid var(--border-light)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>{o.item_title}</span>
-                  <span className="badge badge-review" style={{ textTransform: 'capitalize' }}>
-                    {o.status.replace('_', ' ')}
-                  </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>{o.item_title}</span>
+                    <span className="badge badge-review" style={{ textTransform: 'capitalize' }}>
+                      {o.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                  {isAdmin && (
+                    <Link
+                      to="/admin/pesanan"
+                      className="btn btn-outline btn-sm"
+                      style={{ fontSize: '0.75rem', padding: '0.25rem 0.65rem', gap: '0.35rem' }}
+                    >
+                      <Bike size={13} /> Kelola di Panel Admin
+                    </Link>
+                  )}
                 </div>
                 <div style={{ fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
                   📍 Ambil: <strong>{o.pickup_location}</strong> ➔ Antar ke: <strong>{o.delivery_location}</strong>

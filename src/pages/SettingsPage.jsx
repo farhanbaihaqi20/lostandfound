@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Settings, 
   Sun, 
@@ -8,12 +8,67 @@ import {
   HelpCircle, 
   Lock, 
   Check, 
-  ExternalLink 
+  ExternalLink,
+  Navigation,
+  Eye,
+  EyeOff,
+  ArrowDownUp,
+  Smartphone
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export const SettingsPage = () => {
   const { theme, toggleTheme, logout, user, isAdmin, switchDemoAccount } = useAuth();
+
+  // Floating Bottom Nav Settings
+  const [bottomNavCollapsed, setBottomNavCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('unnes_bottom_nav_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [autoHideNav, setAutoHideNav] = useState(() => {
+    try {
+      return localStorage.getItem('unnes_bottom_nav_autohide') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleBottomNavCollapsed = (collapsed) => {
+    setBottomNavCollapsed(collapsed);
+    try {
+      localStorage.setItem('unnes_bottom_nav_collapsed', String(collapsed));
+      window.dispatchEvent(new CustomEvent('unnes_bottom_nav_change', { detail: { isCollapsed: collapsed } }));
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleAutoHideNav = (enabled) => {
+    setAutoHideNav(enabled);
+    try {
+      localStorage.setItem('unnes_bottom_nav_autohide', String(enabled));
+      window.dispatchEvent(new CustomEvent('unnes_bottom_nav_change', { detail: { autoHide: enabled } }));
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    const handleNavChange = (e) => {
+      if (e.detail?.isCollapsed !== undefined) {
+        setBottomNavCollapsed(e.detail.isCollapsed);
+      }
+      if (e.detail?.autoHide !== undefined) {
+        setAutoHideNav(e.detail.autoHide);
+      }
+    };
+    window.addEventListener('unnes_bottom_nav_change', handleNavChange);
+    return () => window.removeEventListener('unnes_bottom_nav_change', handleNavChange);
+  }, []);
 
   return (
     <div className="container pb-mobile-nav" style={{ paddingTop: '1.5rem', maxWidth: '680px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -70,6 +125,103 @@ export const SettingsPage = () => {
               <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Mode Gelap</span>
             </div>
             {theme === 'dark' && <Check size={18} color="var(--primary-600)" />}
+          </div>
+        </div>
+      </div>
+
+      {/* Pengaturan Navigasi Bawah Mengambang */}
+      <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h2 style={{ fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Navigation size={18} color="var(--primary-600)" /> Navigasi Bawah Mengambang
+            </h2>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+              Atur keterlihatan bilah menu bawah agar tidak menghalangi tampilan saat membaca konten.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {/* Status Visibilitas Navigasi */}
+          <div 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.85rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-light)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              {bottomNavCollapsed ? <EyeOff size={18} color="var(--text-muted)" /> : <Eye size={18} color="var(--primary-600)" />}
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>Status Navigasi Bawah</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  {bottomNavCollapsed ? 'Sedang disembunyikan (hanya tombol pemicu)' : 'Sedang ditampilkan penuh'}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => toggleBottomNavCollapsed(!bottomNavCollapsed)}
+              className={`btn btn-sm ${bottomNavCollapsed ? 'btn-primary' : 'btn-outline'}`}
+              style={{ fontSize: '0.8rem', padding: '0.35rem 0.85rem' }}
+            >
+              {bottomNavCollapsed ? 'Tampilkan' : 'Sembunyikan'}
+            </button>
+          </div>
+
+          {/* Opsi Auto-Hide saat Scroll */}
+          <div 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.85rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-light)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <ArrowDownUp size={18} color="var(--amber-500)" />
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>Sembunyikan Otomatis saat Gulir Layar</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  Navigasi otomatis turun saat scroll ke bawah dan naik saat scroll ke atas
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => toggleAutoHideNav(!autoHideNav)}
+              className={`btn btn-sm ${autoHideNav ? 'btn-primary' : 'btn-outline'}`}
+              style={{ fontSize: '0.8rem', padding: '0.35rem 0.85rem' }}
+            >
+              {autoHideNav ? 'Aktif' : 'Nonaktif'}
+            </button>
+          </div>
+
+          {/* Petunjuk Gestur Pengguna */}
+          <div 
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.6rem',
+              padding: '0.75rem 0.9rem',
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--primary-50)',
+              border: '1px solid var(--primary-200)',
+              fontSize: '0.775rem',
+              color: 'var(--primary-900)',
+              lineHeight: 1.5
+            }}
+          >
+            <Smartphone size={18} color="var(--primary-600)" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div>
+              <strong>Gestur Cepat Layar Sentuh:</strong> Anda dapat langsung menggeser/mengusap (*swipe down*) bilah navigasi ke bawah untuk menyembunyikannya, dan mengetuk atau menggeser ke atas (*swipe up*) tombol <em>"Buka Navigasi"</em> untuk memunculkannya kembali.
+            </div>
           </div>
         </div>
       </div>

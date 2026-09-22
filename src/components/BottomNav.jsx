@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Compass, Plus, MessageSquare, User, AlertCircle, Sparkles, X, LogIn } from 'lucide-react';
+import { Home, Compass, Plus, MessageSquare, User, AlertCircle, Sparkles, X, LogIn, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 
@@ -10,6 +10,107 @@ export const BottomNav = () => {
   const { user } = useAuth();
   const { matches } = useData();
   const [showReportSheet, setShowReportSheet] = useState(false);
+
+  // Collapsed state (persisted in localStorage)
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('unnes_bottom_nav_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  // Auto-hide on scroll state (persisted in localStorage)
+  const [autoHide, setAutoHide] = useState(() => {
+    try {
+      return localStorage.getItem('unnes_bottom_nav_autohide') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const updateCollapsed = (collapsed) => {
+    setIsCollapsed(collapsed);
+    try {
+      localStorage.setItem('unnes_bottom_nav_collapsed', String(collapsed));
+      window.dispatchEvent(new CustomEvent('unnes_bottom_nav_change', { detail: { isCollapsed: collapsed } }));
+    } catch {
+      // ignore
+    }
+  };
+
+  // Sync state when changed elsewhere (e.g. from SettingsPage)
+  useEffect(() => {
+    const handleNavChange = (e) => {
+      if (e.detail?.isCollapsed !== undefined) {
+        setIsCollapsed(e.detail.isCollapsed);
+      }
+      if (e.detail?.autoHide !== undefined) {
+        setAutoHide(e.detail.autoHide);
+      }
+    };
+    window.addEventListener('unnes_bottom_nav_change', handleNavChange);
+    return () => window.removeEventListener('unnes_bottom_nav_change', handleNavChange);
+  }, []);
+
+  // Optional: Auto-hide when scrolling down, show when scrolling up
+  useEffect(() => {
+    if (!autoHide) return;
+
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          if (currentScrollY > 80) {
+            if (currentScrollY > lastScrollY + 20) {
+              setIsCollapsed(true);
+            } else if (currentScrollY < lastScrollY - 20) {
+              setIsCollapsed(false);
+            }
+          }
+          lastScrollY = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [autoHide]);
+
+  // Touch gesture handling (Swipe Down to hide, Swipe Up to show)
+  const touchStartY = useRef(null);
+  const touchStartX = useRef(null);
+
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e, targetAction) => {
+    if (touchStartY.current === null) return;
+    const touchEndY = e.changedTouches[0].clientY;
+    const touchEndX = e.changedTouches[0].clientX;
+    const deltaY = touchEndY - touchStartY.current;
+    const deltaX = Math.abs(touchEndX - touchStartX.current);
+
+    // Only respond if the swipe is mostly vertical
+    if (Math.abs(deltaY) > deltaX) {
+      if (targetAction === 'collapse' && deltaY > 30) {
+        // Swiped down -> hide
+        updateCollapsed(true);
+      } else if (targetAction === 'expand' && deltaY < -20) {
+        // Swiped up -> show
+        updateCollapsed(false);
+      }
+    }
+    touchStartY.current = null;
+    touchStartX.current = null;
+  };
 
   // Active matches count for chat
   const activeChatsCount = matches.length;
@@ -135,11 +236,16 @@ export const BottomNav = () => {
       {/* Floating Bottom Navigation Bar for Mobile */}
       <nav 
         className="glass-panel"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={(e) => handleTouchEnd(e, 'collapse')}
         style={{
           position: 'fixed',
           bottom: '12px',
           left: '50%',
-          transform: 'translateX(-50%)',
+          transform: isCollapsed ? 'translate(-50%, calc(100% + 30px))' : 'translate(-50%, 0)',
+          opacity: isCollapsed ? 0 : 1,
+          pointerEvents: isCollapsed ? 'none' : 'auto',
+          transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease',
           width: 'calc(100% - 24px)',
           maxWidth: '460px',
           borderRadius: 'var(--radius-full)',
@@ -152,6 +258,38 @@ export const BottomNav = () => {
           border: '1px solid var(--border-glass)'
         }}
       >
+        {/* Sleek Collapse Button at Top-Right */}
+        <button
+          onClick={() => updateCollapsed(true)}
+          title="Sembunyikan navigasi ke bawah (bisa juga geser ke bawah)"
+          aria-label="Sembunyikan navigasi"
+          style={{
+            position: 'absolute',
+            top: '-12px',
+            right: '18px',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-glass)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
+            borderRadius: 'var(--radius-full)',
+            padding: '2px 10px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '3px',
+            color: 'var(--text-secondary)',
+            fontSize: '0.65rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            backdropFilter: 'blur(8px)',
+            zIndex: 45,
+            transition: 'transform var(--trans-fast)'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <ChevronDown size={13} strokeWidth={2.5} />
+          <span>Sembunyi</span>
+        </button>
+
         <Link 
           to="/beranda"
           style={{
@@ -249,6 +387,76 @@ export const BottomNav = () => {
           <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>{user ? 'Profil' : 'Masuk'}</span>
         </Link>
       </nav>
+
+      {/* Floating Trigger Pill when Navigation is Collapsed */}
+      {isCollapsed && (
+        <div
+          onTouchStart={handleTouchStart}
+          onTouchEnd={(e) => handleTouchEnd(e, 'expand')}
+          style={{
+            position: 'fixed',
+            bottom: '14px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 40,
+            animation: 'fadeIn 0.25s ease-out'
+          }}
+        >
+          <button
+            onClick={() => updateCollapsed(false)}
+            title="Klik atau geser ke atas untuk membuka navigasi"
+            aria-label="Tampilkan bilah navigasi"
+            className="glass-panel"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '0.45rem 1.15rem',
+              borderRadius: 'var(--radius-full)',
+              boxShadow: '0 8px 24px rgba(15, 23, 42, 0.2)',
+              border: '1.5px solid var(--border-glass)',
+              background: 'var(--bg-glass)',
+              backdropFilter: 'blur(16px)',
+              cursor: 'pointer',
+              color: 'var(--primary-700)',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              transition: 'all var(--trans-fast)'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, var(--primary-600), var(--primary-800))',
+                color: '#fff',
+                boxShadow: '0 2px 6px rgba(30, 58, 95, 0.35)'
+              }}
+            >
+              <ChevronUp size={16} strokeWidth={2.5} />
+            </div>
+            <span>Buka Navigasi</span>
+            {activeChatsCount > 0 && (
+              <span
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: 'var(--teal-500)',
+                  boxShadow: '0 0 8px var(--teal-500)'
+                }}
+                title={`${activeChatsCount} pesan aktif`}
+              />
+            )}
+          </button>
+        </div>
+      )}
     </>
   );
 };

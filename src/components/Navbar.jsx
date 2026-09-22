@@ -14,7 +14,8 @@ import {
   CheckCircle,
   Menu,
   X,
-  ChevronDown
+  ChevronDown,
+  Bike
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
@@ -348,13 +349,22 @@ export const Navbar = () => {
                   </Link>
 
                   {isAdmin && (
-                    <Link 
-                      to="/admin" 
-                      onClick={() => setShowUserDropdown(false)}
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', fontSize: '0.85rem', color: '#6d28d9', borderRadius: 'var(--radius-sm)' }}
-                    >
-                      <ShieldCheck size={16} /> Dashboard Admin
-                    </Link>
+                    <>
+                      <Link 
+                        to="/admin" 
+                        onClick={() => setShowUserDropdown(false)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', fontSize: '0.85rem', color: '#6d28d9', borderRadius: 'var(--radius-sm)' }}
+                      >
+                        <ShieldCheck size={16} /> Dashboard Admin
+                      </Link>
+                      <Link 
+                        to="/admin/pesanan" 
+                        onClick={() => setShowUserDropdown(false)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', fontSize: '0.85rem', color: 'var(--teal-700)', borderRadius: 'var(--radius-sm)' }}
+                      >
+                        <Bike size={16} /> Jasa Runner Posko
+                      </Link>
+                    </>
                   )}
 
                   <Link 

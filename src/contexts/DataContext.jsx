@@ -645,6 +645,10 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  const deleteOrder = (orderId) => {
+    setOrders(prev => prev.filter(o => o.id !== orderId));
+  };
+
   // --- DIGITAL BAST SERAH TERIMA ---
   const completeHandover = (matchId, evidencePhoto = null) => {
     const match = matches.find(m => m.id === matchId);
@@ -703,6 +707,7 @@ export const DataProvider = ({ children }) => {
       sendMessage,
       createOrder,
       updateOrderStatus,
+      deleteOrder,
       completeHandover,
       addNotification,
       markNotificationAsRead: (id) => {

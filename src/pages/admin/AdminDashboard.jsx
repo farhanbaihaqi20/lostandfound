@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { AdminNavTabs } from '../../components/AdminNavTabs';
 
 export const AdminDashboard = () => {
   const { items, claims, orders, stats } = useData();
@@ -23,8 +24,11 @@ export const AdminDashboard = () => {
   const activeOrders = orders.filter(o => o.status !== 'selesai' && o.status !== 'dibatalkan');
 
   return (
-    <div className="container pb-mobile-nav" style={{ paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+    <div className="container pb-mobile-nav" style={{ paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
+      {/* Unified Admin Sub-Navigation Tabs */}
+      <AdminNavTabs />
+
       {/* Top Banner */}
       <div className="glass-card" style={{
         padding: '1.5rem',
@@ -54,6 +58,9 @@ export const AdminDashboard = () => {
           </Link>
           <Link to="/admin/klaim" className="btn btn-outline btn-sm" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', borderColor: 'rgba(255,255,255,0.3)', gap: '0.35rem' }}>
             <ShieldCheck size={15} /> Verifikasi Klaim ({pendingClaims.length})
+          </Link>
+          <Link to="/admin/pesanan" className="btn btn-teal btn-sm" style={{ gap: '0.35rem' }}>
+            <Bike size={15} /> Jasa Runner ({activeOrders.length})
           </Link>
           <Link to="/admin/pengguna" className="btn btn-outline btn-sm" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', borderColor: 'rgba(255,255,255,0.3)', gap: '0.35rem' }}>
             <Users size={15} /> Kelola Admin
@@ -99,7 +106,7 @@ export const AdminDashboard = () => {
         {/* Metric 3: Active Orders */}
         <Link to="/admin/pesanan" className="glass-card" style={{ padding: '1.25rem', borderLeft: '4px solid var(--teal-600)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Jasa Runner Berjalan</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Jasa Runner Aktif</span>
             <div style={{ width: '32px', height: '32px', borderRadius: 'var(--radius-sm)', background: 'var(--teal-50)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Bike size={18} color="var(--teal-600)" />
             </div>
@@ -108,7 +115,7 @@ export const AdminDashboard = () => {
             {activeOrders.length}
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--teal-600)', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}>
-            Kelola pesanan antar <ArrowRight size={13} />
+            Kelola & Tugaskan Runner <ArrowRight size={13} />
           </div>
         </Link>
 
@@ -130,23 +137,23 @@ export const AdminDashboard = () => {
 
       </div>
 
-      {/* Two Columns: Action Queues */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+      {/* Action Queues: 3 Columns Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '1.25rem' }}>
         
-        {/* Left Queue: Pending Post Approvals */}
+        {/* Queue 1: Pending Post Approvals */}
         <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem', border: '1px solid var(--border-light)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Clock size={18} color="var(--amber-600)" /> Antrean Postingan ({pendingItems.length})
+            <h2 style={{ fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Clock size={17} color="var(--amber-600)" /> Antrean Postingan ({pendingItems.length})
             </h2>
-            <Link to="/admin/moderasi" style={{ fontSize: '0.775rem', fontWeight: 600, color: 'var(--primary-600)' }}>
+            <Link to="/admin/moderasi" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--primary-600)' }}>
               Kelola Semua
             </Link>
           </div>
 
           {pendingItems.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              <CheckCircle2 size={32} color="var(--success)" style={{ margin: '0 auto 0.5rem' }} />
+              <CheckCircle2 size={28} color="var(--success)" style={{ margin: '0 auto 0.5rem' }} />
               Semua laporan user telah dimoderasi.
             </div>
           ) : (
@@ -154,8 +161,8 @@ export const AdminDashboard = () => {
               <div key={item.id} style={{ padding: '0.75rem', background: 'var(--bg-surface-alt)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
                 <div>
                   <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-700)' }}>#{item.item_code}</span>
-                  <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>{item.title}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Oleh: {item.user_name} • {item.location_building}</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>{item.title}</div>
+                  <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>Oleh: {item.user_name} • {item.location_building}</div>
                 </div>
                 <Link to="/admin/moderasi" className="btn btn-outline btn-sm" style={{ fontSize: '0.75rem' }}>
                   Review
@@ -165,20 +172,20 @@ export const AdminDashboard = () => {
           )}
         </div>
 
-        {/* Right Queue: Pending Claims */}
+        {/* Queue 2: Pending Claims */}
         <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem', border: '1px solid var(--border-light)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <ShieldCheck size={18} color="var(--primary-600)" /> Antrean Klaim Blind Test ({pendingClaims.length})
+            <h2 style={{ fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <ShieldCheck size={17} color="var(--primary-600)" /> Antrean Klaim ({pendingClaims.length})
             </h2>
-            <Link to="/admin/klaim" style={{ fontSize: '0.775rem', fontWeight: 600, color: 'var(--primary-600)' }}>
+            <Link to="/admin/klaim" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--primary-600)' }}>
               Kelola Semua
             </Link>
           </div>
 
           {pendingClaims.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              <CheckCircle2 size={32} color="var(--success)" style={{ margin: '0 auto 0.5rem' }} />
+              <CheckCircle2 size={28} color="var(--success)" style={{ margin: '0 auto 0.5rem' }} />
               Tidak ada klaim yang menunggu verifikasi.
             </div>
           ) : (
@@ -186,11 +193,48 @@ export const AdminDashboard = () => {
               <div key={c.id} style={{ padding: '0.75rem', background: 'var(--bg-surface-alt)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
                 <div>
                   <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-700)' }}>#{c.item_code}</span>
-                  <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>{c.item_title}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Pengklaim: {c.claimer_name} (Skor: {c.blind_test_score}%)</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>{c.item_title}</div>
+                  <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>Pengklaim: {c.claimer_name} (Skor: {c.blind_test_score}%)</div>
                 </div>
                 <Link to="/admin/klaim" className="btn btn-primary btn-sm" style={{ fontSize: '0.75rem' }}>
                   Verifikasi
+                </Link>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Queue 3: Active Runner Orders */}
+        <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem', border: '1px solid var(--border-light)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Bike size={17} color="var(--teal-600)" /> Pesanan Jasa Runner ({activeOrders.length})
+            </h2>
+            <Link to="/admin/pesanan" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--teal-600)' }}>
+              Kelola Semua
+            </Link>
+          </div>
+
+          {activeOrders.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+              <CheckCircle2 size={28} color="var(--success)" style={{ margin: '0 auto 0.5rem' }} />
+              Tidak ada pesanan runner yang aktif.
+            </div>
+          ) : (
+            activeOrders.slice(0, 3).map(o => (
+              <div key={o.id} style={{ padding: '0.75rem', background: 'var(--bg-surface-alt)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--teal-700)' }}>#{o.item_code}</span>
+                    <span className="badge badge-review" style={{ fontSize: '0.6rem', padding: '0.1rem 0.35rem', textTransform: 'capitalize' }}>
+                      {o.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '2px' }}>{o.item_title}</div>
+                  <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>Pemesan: {o.requester_name} • Antar ke: {o.delivery_location}</div>
+                </div>
+                <Link to="/admin/pesanan" className="btn btn-teal btn-sm" style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}>
+                  Atur
                 </Link>
               </div>
             ))
