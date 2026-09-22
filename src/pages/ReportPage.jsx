@@ -246,16 +246,58 @@ export const ReportPage = () => {
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Kategori:</label>
-              <select
-                value={formData.category}
-                onChange={(e) => handleChange('category', e.target.value)}
-              >
-                {CATEGORIES.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Pilih Kategori Barang:</label>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                gap: '0.65rem'
+              }}>
+                {CATEGORIES.map(c => {
+                  const isSelected = formData.category === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => handleChange('category', c.id)}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.45rem',
+                        padding: '0.75rem 0.5rem',
+                        borderRadius: 'var(--radius-lg)',
+                        border: isSelected ? '2px solid var(--primary-600)' : '1px solid var(--border-light)',
+                        background: isSelected ? 'var(--primary-50)' : 'var(--bg-surface)',
+                        boxShadow: isSelected ? '0 4px 12px rgba(30, 58, 95, 0.15)' : 'var(--shadow-sm)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        textAlign: 'center'
+                      }}
+                    >
+                      <div style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        background: '#FAF6EB',
+                        border: '1px solid rgba(0,0,0,0.06)',
+                        flexShrink: 0
+                      }}>
+                        <img src={c.image} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <span style={{
+                        fontSize: '0.75rem',
+                        fontWeight: isSelected ? 700 : 600,
+                        color: isSelected ? 'var(--primary-800)' : 'var(--text-primary)',
+                        lineHeight: 1.2
+                      }}>
+                        {c.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>

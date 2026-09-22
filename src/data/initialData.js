@@ -20,12 +20,12 @@ export const UNNES_BUILDINGS = [
 ];
 
 export const CATEGORIES = [
-  { id: 'elektronik', name: 'Elektronik & Gadget', icon: 'Laptop', count: 12 },
-  { id: 'dompet', name: 'Dompet & Uang', icon: 'Wallet', count: 8 },
-  { id: 'dokumen', name: 'Dokumen & KTM', icon: 'FileText', count: 15 },
-  { id: 'kunci', name: 'Kunci & Kendaraan', icon: 'Key', count: 9 },
-  { id: 'tas', name: 'Tas & Pakaian', icon: 'ShoppingBag', count: 11 },
-  { id: 'aksesoris', name: 'Aksesoris & Lainnya', icon: 'Watch', count: 6 }
+  { id: 'elektronik', name: 'Elektronik & Gadget', icon: 'Laptop', image: '/categories/elektronik.jpg', count: 12 },
+  { id: 'dompet', name: 'Dompet & Uang', icon: 'Wallet', image: '/categories/dompet.jpg', count: 8 },
+  { id: 'dokumen', name: 'Dokumen & KTM', icon: 'FileText', image: '/categories/dokumen.jpg', count: 15 },
+  { id: 'kunci', name: 'Kunci & Kendaraan', icon: 'Key', image: '/categories/kunci.jpg', count: 9 },
+  { id: 'tas', name: 'Tas & Pakaian', icon: 'ShoppingBag', image: '/categories/tas.jpg', count: 11 },
+  { id: 'aksesoris', name: 'Aksesoris & Lainnya', icon: 'Watch', image: '/categories/aksesoris.jpg', count: 6 }
 ];
 
 export const INITIAL_USERS = [

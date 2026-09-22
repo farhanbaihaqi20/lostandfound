@@ -119,6 +119,81 @@ export const ExplorePage = () => {
         )}
       </div>
 
+      {/* Visual Category Quick Filter Chips */}
+      <div style={{
+        display: 'flex',
+        gap: '0.65rem',
+        overflowX: 'auto',
+        paddingBottom: '0.35rem',
+        paddingTop: '0.2rem'
+      }}>
+        <button
+          type="button"
+          onClick={() => setCategoryFilter('semua')}
+          className="glass-card"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.4rem 0.85rem',
+            borderRadius: 'var(--radius-full)',
+            border: categoryFilter === 'semua' ? '2px solid var(--primary-600)' : '1px solid var(--border-light)',
+            background: categoryFilter === 'semua' ? 'var(--primary-50)' : 'var(--bg-glass-card)',
+            color: categoryFilter === 'semua' ? 'var(--primary-800)' : 'var(--text-primary)',
+            fontWeight: 700,
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <Sparkles size={14} color={categoryFilter === 'semua' ? 'var(--primary-600)' : 'var(--text-muted)'} />
+          Semua Kategori
+        </button>
+
+        {CATEGORIES.map(cat => {
+          const isSelected = categoryFilter === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setCategoryFilter(isSelected ? 'semua' : cat.id)}
+              className="glass-card"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.55rem',
+                padding: '0.3rem 0.85rem 0.3rem 0.4rem',
+                borderRadius: 'var(--radius-full)',
+                border: isSelected ? '2px solid var(--primary-600)' : '1px solid var(--border-light)',
+                background: isSelected ? 'var(--primary-50)' : 'var(--bg-glass-card)',
+                color: isSelected ? 'var(--primary-800)' : 'var(--text-primary)',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <img 
+                src={cat.image} 
+                alt={cat.name} 
+                style={{
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '1.5px solid rgba(0,0,0,0.06)'
+                }}
+              />
+              <span>{cat.name}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Secondary Dropdown Filters */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
         

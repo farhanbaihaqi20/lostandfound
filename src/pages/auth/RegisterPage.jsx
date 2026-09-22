@@ -384,17 +384,22 @@ export const RegisterPage = () => {
         
         <div style={{ textAlign: 'center', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
           <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: 'var(--radius-lg)',
-            background: 'linear-gradient(135deg, var(--primary-800) 0%, var(--teal-600) 100%)',
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#fff',
-            boxShadow: '0 6px 16px rgba(30, 58, 95, 0.3)'
+            boxShadow: '0 8px 20px rgba(30, 58, 95, 0.22)',
+            border: '2.5px solid var(--amber-400)',
+            background: '#FAF6EB'
           }}>
-            <Compass size={28} />
+            <img 
+              src="/logo.png" 
+              alt="Logo UNNES Lost & Found" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
           </div>
           <h1 style={{ fontSize: '1.45rem', fontWeight: 800 }}>Daftar Akun Mahasiswa</h1>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>

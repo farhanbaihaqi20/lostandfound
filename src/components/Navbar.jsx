@@ -63,19 +63,25 @@ export const Navbar = () => {
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
         
         {/* Brand Logo & UNNES Identity */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
           <div style={{
-            width: '38px',
-            height: '38px',
-            borderRadius: 'var(--radius-md)',
-            background: 'linear-gradient(135deg, var(--primary-800) 0%, var(--teal-600) 100%)',
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
+            overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#fff',
-            boxShadow: '0 4px 10px rgba(30, 58, 95, 0.25)'
+            boxShadow: '0 4px 12px rgba(30, 58, 95, 0.2)',
+            border: '2px solid var(--amber-400)',
+            background: '#FAF6EB',
+            flexShrink: 0
           }}>
-            <Compass size={22} />
+            <img 
+              src="/logo.png" 
+              alt="Logo UNNES Lost & Found" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
           </div>
           <div>
             <div style={{ 

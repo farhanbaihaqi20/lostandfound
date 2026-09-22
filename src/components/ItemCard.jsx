@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Calendar, Award, ChevronRight, ShieldCheck, Lock } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { useAuth } from '../contexts/AuthContext';
+import { CATEGORIES } from '../data/initialData';
 
 export const ItemCard = ({ item }) => {
   const { user } = useAuth();
@@ -135,6 +136,30 @@ export const ItemCard = ({ item }) => {
 
       {/* Content Container */}
       <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', flex: 1, gap: '0.65rem' }}>
+        {(() => {
+          const cat = CATEGORIES.find(c => c.id === item.category);
+          if (!cat) return null;
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '-0.25rem' }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                color: 'var(--primary-700)',
+                background: 'var(--primary-50)',
+                padding: '0.15rem 0.5rem',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--primary-100)'
+              }}>
+                <img src={cat.image} alt="" style={{ width: '14px', height: '14px', borderRadius: '50%', objectFit: 'cover' }} />
+                {cat.name}
+              </span>
+            </div>
+          );
+        })()}
+
         <h3 style={{ 
           fontSize: '1.05rem', 
           fontWeight: 700, 

@@ -39,16 +39,31 @@ export const LandingPage = () => {
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '0.4rem',
-            padding: '0.35rem 0.9rem',
+            gap: '0.65rem',
+            padding: '0.35rem 1rem 0.35rem 0.45rem',
             borderRadius: 'var(--radius-full)',
-            background: 'var(--primary-100)',
+            background: 'var(--primary-50)',
             color: 'var(--primary-800)',
-            fontSize: '0.8rem',
+            fontSize: '0.825rem',
             fontWeight: 700,
-            border: '1px solid var(--primary-300)'
+            border: '1px solid var(--primary-200)',
+            boxShadow: 'var(--shadow-sm)'
           }}>
-            <ShieldCheck size={16} /> Portal Resmi Crowdsourcing Civitas UNNES
+            <div style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              background: '#FAF6EB',
+              border: '1.5px solid var(--amber-400)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <img src="/logo.png" alt="Logo UNNES" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            <span>Portal Resmi Crowdsourcing Civitas UNNES</span>
           </div>
 
           <h1 style={{
@@ -133,49 +148,52 @@ export const LandingPage = () => {
 
       {/* 2. Kategori Populer */}
       <section className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.35rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Kategori Barang</h2>
+            <div style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '0.35rem', 
+              fontSize: '0.78rem', 
+              fontWeight: 700, 
+              color: 'var(--teal-600)', 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.04em',
+              marginBottom: '0.2rem' 
+            }}>
+              <Sparkles size={13} /> Kategori Barang Kampus
+            </div>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Pilih Kategori Temuan</h2>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Kategori yang paling sering dilaporkan di lingkungan UNNES</p>
           </div>
-          <Link to="/jelajahi" style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+          <Link to="/jelajahi" style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             Lihat Semua <ArrowRight size={14} />
           </Link>
         </div>
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-          gap: '0.85rem'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: '1rem'
         }}>
           {CATEGORIES.map(cat => (
             <Link 
               key={cat.id} 
               to={`/jelajahi?kategori=${cat.id}`}
-              className="glass-card"
-              style={{
-                padding: '1.25rem 1rem',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                textAlign: 'center',
-                gap: '0.5rem',
-                border: '1px solid var(--border-light)'
-              }}
+              className="category-card"
             >
-              <div style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--primary-50)',
-                color: 'var(--primary-800)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Sparkles size={20} />
+              <div className="category-img-box">
+                <img 
+                  src={cat.image} 
+                  alt={cat.name} 
+                  className="category-card-img" 
+                  loading="lazy"
+                />
               </div>
-              <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>{cat.name}</span>
+              <span className="category-title">{cat.name}</span>
+              <span className="category-badge-count">
+                {cat.count} Laporan
+              </span>
             </Link>
           ))}
         </div>
@@ -372,12 +390,29 @@ export const LandingPage = () => {
       }}>
         <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '1.5rem', alignItems: 'center' }}>
-            <div>
-              <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.1rem' }}>
-                UNNES <span style={{ color: 'var(--amber-500)' }}>Lost & Found</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                background: '#FAF6EB',
+                border: '2px solid var(--amber-400)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 3px 10px rgba(0,0,0,0.08)'
+              }}>
+                <img src="/logo.png" alt="UNNES Lost & Found Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                Platform Crowdsourcing Barang Hilang Civitas Universitas Negeri Semarang
+              <div>
+                <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.1rem' }}>
+                  UNNES <span style={{ color: 'var(--amber-500)' }}>Lost & Found</span>
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  Platform Crowdsourcing Barang Hilang Civitas Universitas Negeri Semarang
+                </div>
               </div>
             </div>
 
