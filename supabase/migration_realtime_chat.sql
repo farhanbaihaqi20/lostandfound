@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS public.found_reports (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. ALTER TABLE matches: Tambah tipe match & referensi ke found_reports
+-- 2. ALTER TABLE matches: Tambah tipe match, referensi ke found_reports & admin yang menyetujui
 ALTER TABLE public.matches 
 ADD COLUMN IF NOT EXISTS match_type TEXT DEFAULT 'claim_verified'; 
 -- Nilai: 'claim_verified' (dari klaim barang temuan) atau 'found_report' (dari laporan penemuan barang hilang)
@@ -37,10 +37,15 @@ ADD COLUMN IF NOT EXISTS match_type TEXT DEFAULT 'claim_verified';
 ALTER TABLE public.matches 
 ADD COLUMN IF NOT EXISTS found_report_id UUID REFERENCES public.found_reports(id) ON DELETE SET NULL;
 
+-- Admin yang menyetujui match ini (hanya admin ini yang ikut sesi chat untuk hemat kuota realtime)
+ALTER TABLE public.matches 
+ADD COLUMN IF NOT EXISTS approved_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
+
 -- 3. INDEX UNTUK OPTIMASI PERFORMA
 CREATE INDEX IF NOT EXISTS idx_found_reports_item_id ON public.found_reports(item_id);
 CREATE INDEX IF NOT EXISTS idx_found_reports_reporter_id ON public.found_reports(reporter_id);
 CREATE INDEX IF NOT EXISTS idx_found_reports_status ON public.found_reports(status);
+CREATE INDEX IF NOT EXISTS idx_matches_approved_by ON public.matches(approved_by);
 CREATE INDEX IF NOT EXISTS idx_messages_match_id ON public.messages(match_id);
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON public.messages(created_at);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON public.notifications(user_id);
@@ -77,31 +82,75 @@ DO $$ BEGIN
 EXCEPTION WHEN undefined_object THEN NULL;
 END $$;
 
--- 5. RLS POLICIES UNTUK messages & notifications
--- Pastikan admin bisa mengirim pesan (mediator / system message)
+-- 5. RLS POLICIES UNTUK matches (Dibatasi hanya ke Finder, Owner, dan Admin yang Menyetujui)
 DO $$ BEGIN
-  DROP POLICY IF EXISTS "Admin can post messages in any match" ON public.messages;
-  CREATE POLICY "Admin can post messages in any match" ON public.messages
-    FOR INSERT WITH CHECK (
-      auth.uid() = sender_id AND public.is_admin()
+  DROP POLICY IF EXISTS "Involved parties or admin can see match" ON public.matches;
+  DROP POLICY IF EXISTS "Involved parties or approving admin can see match" ON public.matches;
+  CREATE POLICY "Involved parties or approving admin can see match" ON public.matches
+    FOR SELECT USING (
+      auth.uid() = finder_id OR 
+      auth.uid() = owner_id OR 
+      auth.uid() = approved_by
     );
 EXCEPTION WHEN undefined_object THEN NULL;
 END $$;
 
--- Pastikan user bisa update status read pesan di chat room yang diikutinya
 DO $$ BEGIN
-  DROP POLICY IF EXISTS "Involved parties can update messages" ON public.messages;
-  CREATE POLICY "Involved parties can update messages" ON public.messages
-    FOR UPDATE USING (
+  DROP POLICY IF EXISTS "Admins or involved parties can delete matches" ON public.matches;
+  DROP POLICY IF EXISTS "Involved parties or approving admin can delete matches" ON public.matches;
+  CREATE POLICY "Involved parties or approving admin can delete matches" ON public.matches
+    FOR DELETE USING (
+      auth.uid() = finder_id OR 
+      auth.uid() = owner_id OR 
+      auth.uid() = approved_by OR
+      public.is_admin()
+    );
+EXCEPTION WHEN undefined_object THEN NULL;
+END $$;
+
+-- 6. RLS POLICIES UNTUK messages (Dibatasi hanya ke Finder, Owner, dan Admin yang Menyetujui)
+DO $$ BEGIN
+  DROP POLICY IF EXISTS "Involved parties can read messages" ON public.messages;
+  DROP POLICY IF EXISTS "Involved parties or approving admin can read messages" ON public.messages;
+  CREATE POLICY "Involved parties or approving admin can read messages" ON public.messages
+    FOR SELECT USING (
       EXISTS (
         SELECT 1 FROM public.matches m
-        WHERE m.id = match_id AND (m.finder_id = auth.uid() OR m.owner_id = auth.uid() OR public.is_admin())
+        WHERE m.id = match_id AND (m.finder_id = auth.uid() OR m.owner_id = auth.uid() OR m.approved_by = auth.uid())
       )
     );
 EXCEPTION WHEN undefined_object THEN NULL;
 END $$;
 
--- Kebijakan RLS untuk tabel notifications
+DO $$ BEGIN
+  DROP POLICY IF EXISTS "Involved parties can post messages" ON public.messages;
+  DROP POLICY IF EXISTS "Admin can post messages in any match" ON public.messages;
+  DROP POLICY IF EXISTS "Involved parties or approving admin can post messages" ON public.messages;
+  CREATE POLICY "Involved parties or approving admin can post messages" ON public.messages
+    FOR INSERT WITH CHECK (
+      auth.uid() = sender_id AND
+      EXISTS (
+        SELECT 1 FROM public.matches m
+        WHERE m.id = match_id AND (m.finder_id = auth.uid() OR m.owner_id = auth.uid() OR m.approved_by = auth.uid())
+      )
+    );
+EXCEPTION WHEN undefined_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  DROP POLICY IF EXISTS "Involved parties can update messages" ON public.messages;
+  DROP POLICY IF EXISTS "Involved parties or approving admin can update messages" ON public.messages;
+  CREATE POLICY "Involved parties or approving admin can update messages" ON public.messages
+    FOR UPDATE USING (
+      EXISTS (
+        SELECT 1 FROM public.matches m
+        WHERE m.id = match_id AND (m.finder_id = auth.uid() OR m.owner_id = auth.uid() OR m.approved_by = auth.uid())
+      )
+    );
+EXCEPTION WHEN undefined_object THEN NULL;
+END $$;
+
+-- 7. RLS POLICIES UNTUK notifications
 DO $$ BEGIN
   DROP POLICY IF EXISTS "Users can view their own notifications" ON public.notifications;
   CREATE POLICY "Users can view their own notifications" ON public.notifications
@@ -130,7 +179,7 @@ DO $$ BEGIN
 EXCEPTION WHEN undefined_object THEN NULL;
 END $$;
 
--- 6. REALTIME PUBLICATION SETUP
+-- 8. REALTIME PUBLICATION SETUP
 -- Mengaktifkan Realtime broadcast untuk pesan, notifikasi, dan laporan penemuan
 DO $$ 
 BEGIN

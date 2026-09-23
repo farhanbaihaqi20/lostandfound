@@ -205,13 +205,14 @@ export const DataProvider = ({ children }) => {
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select('*, sender:sender_id(full_name, avatar_url)')
+        .select('*, sender:sender_id(full_name, avatar_url, role)')
         .order('created_at', { ascending: true });
 
       if (!error && data) {
         const formatted = data.map(msg => ({
           ...msg,
-          sender_name: msg.sender?.full_name || (msg.sender_id === 'system' ? 'Sistem' : 'Pengguna')
+          sender_name: msg.sender?.full_name || (msg.sender_id === 'system' ? 'Sistem' : 'Pengguna'),
+          sender_role: msg.sender?.role || (msg.sender_id === 'system' ? 'system' : 'user')
         }));
         setMessages(prev => {
           const localOnly = prev.filter(m => !isUuid(m.id) && !formatted.some(f => f.id === m.id));
@@ -315,8 +316,13 @@ export const DataProvider = ({ children }) => {
 
     const matchesChannel = supabase
       .channel('public:matches_sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
-        fetchSupabaseMatches();
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, (payload) => {
+        if (payload.eventType === 'DELETE' && payload.old) {
+          setMatches(prev => prev.filter(m => m.id !== payload.old.id));
+          setMessages(prev => prev.filter(m => m.match_id !== payload.old.id));
+        } else {
+          fetchSupabaseMatches();
+        }
       })
       .subscribe();
 
@@ -324,10 +330,9 @@ export const DataProvider = ({ children }) => {
       .channel('public:messages_sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
         if (payload.eventType === 'INSERT' && payload.new) {
-          setMessages(prev => {
-            if (prev.some(m => m.id === payload.new.id)) return prev;
-            return [...prev, payload.new];
-          });
+          fetchSupabaseMessages();
+        } else if (payload.eventType === 'DELETE' && payload.old) {
+          setMessages(prev => prev.filter(m => m.id !== payload.old.id));
         } else {
           fetchSupabaseMessages();
         }
@@ -989,6 +994,8 @@ export const DataProvider = ({ children }) => {
             finder_name: targetItem.user_name || 'Penemu',
             owner_id: claim.claimer_id,
             owner_name: claim.claimer_name,
+            match_type: 'claim_verified',
+            approved_by: isUuid(user?.id) ? user.id : null,
             status: 'aktif',
             created_at: new Date().toISOString()
           };
@@ -1016,6 +1023,8 @@ export const DataProvider = ({ children }) => {
         finder_name: targetItem?.user_name,
         owner_id: claim.claimer_id,
         owner_name: claim.claimer_name,
+        match_type: 'claim_verified',
+        approved_by: user?.id,
         status: 'aktif',
         created_at: new Date().toISOString()
       };
@@ -1257,6 +1266,7 @@ export const DataProvider = ({ children }) => {
       match_id: matchId,
       sender_id: user?.id || (type === 'system' ? 'system' : 'user-unknown'),
       sender_name: user?.full_name || (type === 'system' ? 'Sistem' : 'Pengguna'),
+      sender_role: user?.role || (type === 'system' ? 'system' : 'user'),
       content,
       type,
       is_read: false,
@@ -1275,13 +1285,14 @@ export const DataProvider = ({ children }) => {
             type,
             is_read: false
           })
-          .select('*, sender:sender_id(full_name, avatar_url)')
+          .select('*, sender:sender_id(full_name, avatar_url, role)')
           .single();
 
         if (!error && data) {
           const formatted = {
             ...data,
-            sender_name: data.sender?.full_name || user?.full_name || 'Pengguna'
+            sender_name: data.sender?.full_name || user?.full_name || 'Pengguna',
+            sender_role: data.sender?.role || user?.role || 'user'
           };
           setMessages(prev => prev.map(m => m.id === localId ? formatted : m));
           return formatted;
@@ -1310,6 +1321,35 @@ export const DataProvider = ({ children }) => {
         console.warn('Gagal update is_read pesan di Supabase:', err);
       }
     }
+  };
+
+  /**
+   * Menghapus sesi obrolan (Match) beserta seluruh riwayat pesannya
+   */
+  const deleteMatchSession = async (matchId) => {
+    if (!matchId) return { error: 'ID sesi tidak valid' };
+
+    if (isSupabaseConfigured() && supabase && isUuid(matchId)) {
+      try {
+        const { error } = await supabase
+          .from('matches')
+          .delete()
+          .eq('id', matchId);
+
+        if (error) {
+          console.error('Gagal menghapus match di Supabase:', error);
+          return { error: error.message || 'Gagal menghapus sesi obrolan dari database' };
+        }
+      } catch (err) {
+        console.error('Exception hapus match di Supabase:', err);
+        return { error: 'Terjadi kendala jaringan saat menghapus obrolan' };
+      }
+    }
+
+    setMatches(prev => prev.filter(m => m.id !== matchId));
+    setMessages(prev => prev.filter(m => m.match_id !== matchId));
+
+    return { success: true };
   };
 
   // --- FOUND REPORTS ACTIONS (Laporan Penemuan Barang Hilang) ---
@@ -1470,6 +1510,7 @@ export const DataProvider = ({ children }) => {
           owner_name: targetItem.user_name || 'Pemilik Barang',
           match_type: 'found_report',
           found_report_id: isValidReportId ? report.id : null,
+          approved_by: isUuid(user?.id) ? user.id : null,
           status: 'aktif',
           created_at: new Date().toISOString()
         };
@@ -1501,6 +1542,7 @@ export const DataProvider = ({ children }) => {
       owner_name: targetItem.user_name,
       match_type: 'found_report',
       found_report_id: report.id,
+      approved_by: user?.id,
       status: 'aktif',
       created_at: new Date().toISOString()
     };
@@ -1814,6 +1856,7 @@ export const DataProvider = ({ children }) => {
       createOrder,
       updateOrderStatus,
       deleteOrder,
+      deleteMatchSession,
       completeHandover,
       addNotification,
       markNotificationAsRead: async (id) => {

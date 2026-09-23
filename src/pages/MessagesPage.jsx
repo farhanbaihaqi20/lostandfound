@@ -9,7 +9,9 @@ import {
   Share2,
   Sparkles,
   MapPin,
-  CheckCircle2
+  CheckCircle2,
+  Trash2,
+  ShieldCheck
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,10 +20,20 @@ import { BASTModal } from '../components/BASTModal';
 
 export const MessagesPage = () => {
   const { matchId } = useParams();
-  const { matches, messages, sendMessage, markMessagesAsRead } = useData();
+  const { matches, messages, sendMessage, markMessagesAsRead, deleteMatchSession } = useData();
   const { user } = useAuth();
 
-  const [activeMatchId, setActiveMatchId] = useState(matchId || (matches.length > 0 ? matches[0].id : null));
+  // Filter matches:
+  // - Jika Admin: hanya tampilkan match yang disetujui oleh admin ini (approved_by) atau di mana admin terlibat langsung
+  // - Jika Mahasiswa: hanya tampilkan match di mana user adalah finder atau owner
+  const userMatches = (matches || []).filter(m => {
+    if (user?.role === 'admin') {
+      return !m.approved_by || m.approved_by === user?.id || m.finder_id === user?.id || m.owner_id === user?.id;
+    }
+    return m.finder_id === user?.id || m.owner_id === user?.id;
+  });
+
+  const [activeMatchId, setActiveMatchId] = useState(matchId || (userMatches.length > 0 ? userMatches[0].id : null));
   const [inputText, setInputText] = useState('');
   const [showRunnerModal, setShowRunnerModal] = useState(false);
   const [showBASTModal, setShowBASTModal] = useState(false);
@@ -31,12 +43,12 @@ export const MessagesPage = () => {
   useEffect(() => {
     if (matchId) {
       setActiveMatchId(matchId);
-    } else if (!activeMatchId && matches.length > 0) {
-      setActiveMatchId(matches[0].id);
+    } else if (!activeMatchId && userMatches.length > 0) {
+      setActiveMatchId(userMatches[0].id);
     }
-  }, [matchId, matches]);
+  }, [matchId, userMatches]);
 
-  const activeMatch = matches.find(m => m.id === activeMatchId);
+  const activeMatch = userMatches.find(m => m.id === activeMatchId);
   const matchMessages = messages.filter(m => m.match_id === activeMatchId);
 
   // Auto-scroll ke pesan terbaru
@@ -59,6 +71,30 @@ export const MessagesPage = () => {
     await sendMessage(activeMatchId, text);
   };
 
+  const handleDeleteSession = async () => {
+    if (!activeMatch) return;
+    const confirmDelete = window.confirm(
+      `HAPUS SESI OBROLAN #${activeMatch.item_code}?\n\n` +
+      `Seluruh riwayat percakapan pada sesi ini akan dihapus secara permanen.\n` +
+      `Apakah Anda yakin ingin menghapus sesi obrolan ini?`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const res = await deleteMatchSession(activeMatch.id);
+      if (res?.error) {
+        alert(res.error);
+      } else {
+        alert('Sesi obrolan berhasil dihapus.');
+        const remaining = userMatches.filter(m => m.id !== activeMatch.id);
+        setActiveMatchId(remaining.length > 0 ? remaining[0].id : null);
+      }
+    } catch (err) {
+      console.error('Gagal menghapus sesi obrolan:', err);
+      alert('Terjadi kesalahan saat menghapus sesi obrolan.');
+    }
+  };
+
   // WhatsApp script from blueprint 7.B
   const handleCopyWAScript = () => {
     if (!activeMatch) return;
@@ -78,7 +114,7 @@ export const MessagesPage = () => {
         </p>
       </div>
 
-      {matches.length === 0 ? (
+      {userMatches.length === 0 ? (
         <div className="glass-card" style={{ padding: '3.5rem 1.5rem', textAlign: 'center', margin: 'auto', maxWidth: '480px' }}>
           <MessageSquare size={48} color="var(--text-muted)" style={{ margin: '0 auto 0.75rem' }} />
           <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Belum Ada Obrolan Aktif</h3>
@@ -104,9 +140,9 @@ export const MessagesPage = () => {
           {/* Matches List (Sidebar) */}
           <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '0.5rem', border: '1px solid var(--border-light)' }}>
             <div style={{ padding: '0.5rem', fontWeight: 700, fontSize: '0.85rem', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>Percakapan Aktif ({matches.length})</span>
+              <span>Percakapan Aktif ({userMatches.length})</span>
             </div>
-            {matches.map(m => (
+            {userMatches.map(m => (
               <div
                 key={m.id}
                 onClick={() => setActiveMatchId(m.id)}
@@ -191,7 +227,7 @@ export const MessagesPage = () => {
                 </div>
 
                 {/* Quick Action Tools */}
-                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   <button 
                     onClick={handleCopyWAScript} 
                     className="btn btn-outline btn-sm"
@@ -218,6 +254,22 @@ export const MessagesPage = () => {
                       <FileCheck size={13} /> Tanda Tangan BAST
                     </button>
                   )}
+
+                  {/* Tombol Hapus Sesi Percakapan */}
+                  <button 
+                    onClick={handleDeleteSession} 
+                    className="btn btn-outline btn-sm"
+                    title="Hapus sesi percakapan ini secara permanen"
+                    style={{ 
+                      fontSize: '0.75rem', 
+                      padding: '0.35rem 0.65rem', 
+                      gap: '0.3rem', 
+                      color: 'var(--danger-600, #dc2626)', 
+                      borderColor: 'var(--danger-300, #fca5a5)' 
+                    }}
+                  >
+                    <Trash2 size={13} /> Hapus Sesi
+                  </button>
                 </div>
               </div>
 
@@ -240,7 +292,7 @@ export const MessagesPage = () => {
                   }}>
                     <Sparkles size={16} style={{ flexShrink: 0, color: 'var(--teal-600, #0d9488)' }} />
                     <span>
-                      <strong>Koneksi Laporan Temuan:</strong> Percakapan ini dibuka karena <strong>{activeMatch.finder_name}</strong> melaporkan telah menemukan barang hilang milik <strong>{activeMatch.owner_name}</strong> dan telah disetujui Admin Posko.
+                      <strong>Koneksi Laporan Temuan:</strong> Percakapan ini dibuka karena <strong>{activeMatch.finder_name}</strong> melaporkan telah menemukan barang hilang milik <strong>{activeMatch.owner_name}</strong> dan telah diverifikasi oleh Admin Posko.
                     </span>
                   </div>
                 ) : null}
@@ -266,6 +318,7 @@ export const MessagesPage = () => {
                 {matchMessages.map(msg => {
                   const isMe = msg.sender_id === user?.id;
                   const isSystem = msg.type === 'system';
+                  const isSenderAdmin = msg.sender_role === 'admin' || msg.sender?.role === 'admin' || (activeMatch?.approved_by && msg.sender_id === activeMatch.approved_by);
 
                   if (isSystem) {
                     return (
@@ -297,22 +350,56 @@ export const MessagesPage = () => {
                         gap: '0.2rem'
                       }}
                     >
-                      {!isMe && (
-                        <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', marginLeft: '0.3rem' }}>
-                          {msg.sender_name || (user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name)}
+                      {/* Sender Name & Admin Badge */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        marginBottom: '0.15rem',
+                        alignSelf: isMe ? 'flex-end' : 'flex-start'
+                      }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                          {isMe ? 'Anda' : (msg.sender_name || (isSenderAdmin ? 'Admin Posko' : 'Pengguna'))}
                         </span>
-                      )}
+                        {isSenderAdmin && (
+                          <span style={{
+                            fontSize: '0.6rem',
+                            fontWeight: 800,
+                            padding: '0.1rem 0.4rem',
+                            borderRadius: 'var(--radius-full, 9999px)',
+                            background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)',
+                            color: '#fbbf24',
+                            border: '1px solid rgba(251, 191, 36, 0.5)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.15)'
+                          }}>
+                            <ShieldCheck size={11} color="#fbbf24" /> Admin Posko UNNES
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Chat Bubble with visual distinction for Admin */}
                       <div style={{
                         padding: '0.65rem 0.9rem',
                         borderRadius: 'var(--radius-lg)',
-                        background: isMe ? 'var(--primary-800)' : 'var(--bg-surface-alt)',
-                        color: isMe ? '#ffffff' : 'var(--text-primary)',
+                        background: isSenderAdmin 
+                          ? (isMe ? 'linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%)' : '#f0fdf4')
+                          : (isMe ? 'var(--primary-800)' : 'var(--bg-surface-alt)'),
+                        color: isSenderAdmin
+                          ? (isMe ? '#ffffff' : '#064e3b')
+                          : (isMe ? '#ffffff' : 'var(--text-primary)'),
+                        border: isSenderAdmin 
+                          ? (isMe ? '1.5px solid rgba(251, 191, 36, 0.6)' : '1.5px solid #86efac')
+                          : 'none',
                         fontSize: '0.85rem',
-                        boxShadow: 'var(--shadow-sm)',
+                        boxShadow: isSenderAdmin ? '0 2px 8px rgba(16, 185, 129, 0.12)' : 'var(--shadow-sm)',
                         lineHeight: 1.4
                       }}>
                         {msg.content}
                       </div>
+
                       <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', alignSelf: isMe ? 'flex-end' : 'flex-start' }}>
                         {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                       </div>
