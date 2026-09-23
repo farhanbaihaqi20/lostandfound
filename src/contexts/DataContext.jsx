@@ -25,6 +25,36 @@ export const DataProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : INITIAL_ITEMS;
   });
 
+  // 2. Claims state
+  const [claims, setClaims] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_claims');
+    return saved ? JSON.parse(saved) : INITIAL_CLAIMS;
+  });
+
+  // 3. Matches state
+  const [matches, setMatches] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_matches');
+    return saved ? JSON.parse(saved) : INITIAL_MATCHES;
+  });
+
+  // 4. Messages state
+  const [messages, setMessages] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_messages');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // 5. Runner Orders state
+  const [orders, setOrders] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_orders');
+    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+  });
+
+  // 6. Notifications state
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_notifications');
+    return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
+  });
+
   // Fetch items dari Supabase & sinkronisasi otomatis
   const fetchSupabaseItems = async () => {
     if (!isSupabaseConfigured() || !supabase) return;
@@ -82,9 +112,58 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  // Fetch claims dari Supabase & sinkronisasi otomatis antar akun (user & admin)
+  const fetchSupabaseClaims = async () => {
+    if (!isSupabaseConfigured() || !supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('claims')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setClaims(prev => {
+          // Sinkronisasi claims dari database dengan fallback data demo lokal jika ada
+          const baseClaims = INITIAL_CLAIMS.filter(b => !data.some(d => d.id === b.id || (d.item_code === b.item_code && d.claimer_email === b.claimer_email)));
+          const localOnly = prev.filter(c => !isUuid(c.id) && !baseClaims.some(b => b.id === c.id));
+          return [...data, ...localOnly, ...baseClaims];
+        });
+      } else if (error) {
+        console.warn('Gagal memuat claims dari Supabase:', error);
+      }
+    } catch (err) {
+      console.warn('Gagal memuat claims dari Supabase:', err);
+    }
+  };
+
+  // Fetch matches dari Supabase & sinkronisasi otomatis
+  const fetchSupabaseMatches = async () => {
+    if (!isSupabaseConfigured() || !supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setMatches(prev => {
+          const baseMatches = INITIAL_MATCHES.filter(b => !data.some(d => d.id === b.id || (d.item_id === b.item_id && d.owner_id === b.owner_id)));
+          const localOnly = prev.filter(m => !isUuid(m.id) && !baseMatches.some(b => b.id === m.id));
+          return [...data, ...localOnly, ...baseMatches];
+        });
+      } else if (error) {
+        console.warn('Gagal memuat matches dari Supabase:', error);
+      }
+    } catch (err) {
+      console.warn('Gagal memuat matches dari Supabase:', err);
+    }
+  };
+
   useEffect(() => {
     fetchSupabaseItems();
     fetchSupabaseOrders();
+    fetchSupabaseClaims();
+    fetchSupabaseMatches();
 
     if (!isSupabaseConfigured() || !supabase) return;
 
@@ -103,42 +182,27 @@ export const DataProvider = ({ children }) => {
       })
       .subscribe();
 
+    const claimsChannel = supabase
+      .channel('public:claims_sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'claims' }, () => {
+        fetchSupabaseClaims();
+      })
+      .subscribe();
+
+    const matchesChannel = supabase
+      .channel('public:matches_sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
+        fetchSupabaseMatches();
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(itemsChannel);
       supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(claimsChannel);
+      supabase.removeChannel(matchesChannel);
     };
   }, [user?.id]);
-
-
-  // 2. Claims state
-  const [claims, setClaims] = useState(() => {
-    const saved = localStorage.getItem('unnes_lf_claims');
-    return saved ? JSON.parse(saved) : INITIAL_CLAIMS;
-  });
-
-  // 3. Matches state
-  const [matches, setMatches] = useState(() => {
-    const saved = localStorage.getItem('unnes_lf_matches');
-    return saved ? JSON.parse(saved) : INITIAL_MATCHES;
-  });
-
-  // 4. Messages state
-  const [messages, setMessages] = useState(() => {
-    const saved = localStorage.getItem('unnes_lf_messages');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  // 5. Runner Orders state
-  const [orders, setOrders] = useState(() => {
-    const saved = localStorage.getItem('unnes_lf_orders');
-    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
-  });
-
-  // 6. Notifications state
-  const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem('unnes_lf_notifications');
-    return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
-  });
 
   // Persist to localStorage
   useEffect(() => {
@@ -481,8 +545,9 @@ export const DataProvider = ({ children }) => {
   /**
    * User mengajukan klaim barang temuan via Blind Test
    * Mendukung pengajuan dari banyak pengguna berbeda, serta pengajuan ulang jika ditolak sebelumnya
+   * Tersinkronisasi penuh dengan tabel public.claims di Supabase & Realtime ke Admin
    */
-  const submitClaim = ({ itemId, blindTestAnswers, message }) => {
+  const submitClaim = async ({ itemId, blindTestAnswers, message }) => {
     const targetItem = items.find(i => i.id === itemId);
     if (!targetItem) return { error: 'Barang tidak ditemukan' };
 
@@ -503,16 +568,17 @@ export const DataProvider = ({ children }) => {
       )
     );
 
-    const isReapplication = existingIndex !== -1 && claims[existingIndex].status === 'ditolak';
+    const existingClaim = existingIndex !== -1 ? claims[existingIndex] : null;
+    const isReapplication = existingClaim?.status === 'ditolak';
 
-    const claimData = {
-      id: existingIndex !== -1 ? claims[existingIndex].id : `claim-${Date.now()}`,
+    let savedClaim = {
+      id: existingClaim ? existingClaim.id : `claim-${Date.now()}`,
       item_id: itemId,
       item_title: targetItem.title,
       item_code: targetItem.item_code,
       claimer_id: user?.id,
       claimer_name: user?.full_name || 'Mahasiswa UNNES',
-      claimer_email: user?.email,
+      claimer_email: user?.email || '',
       claimer_phone: user?.phone || '08xxxxxxxxxx',
       status: 'menunggu_admin',
       blind_test_answers: blindTestAnswers,
@@ -521,13 +587,80 @@ export const DataProvider = ({ children }) => {
       admin_notes: '',
       is_reapplication: isReapplication,
       updated_at: new Date().toISOString(),
-      created_at: existingIndex !== -1 ? claims[existingIndex].created_at : new Date().toISOString()
+      created_at: existingClaim ? existingClaim.created_at : new Date().toISOString()
     };
 
+    // Sinkronisasi ke Supabase jika configured
+    if (isSupabaseConfigured() && supabase && isUuid(itemId) && isUuid(user?.id)) {
+      try {
+        const payload = {
+          item_id: itemId,
+          item_title: targetItem.title,
+          item_code: targetItem.item_code,
+          claimer_id: user.id,
+          claimer_name: user.full_name || 'Mahasiswa UNNES',
+          claimer_email: user.email || '',
+          claimer_phone: user.phone || '08xxxxxxxxxx',
+          status: 'menunggu_admin',
+          blind_test_answers: blindTestAnswers,
+          blind_test_score: score,
+          message: message || '',
+          admin_notes: '',
+          is_reapplication: isReapplication,
+          updated_at: new Date().toISOString()
+        };
+
+        if (existingClaim && isUuid(existingClaim.id)) {
+          const { data, error } = await supabase
+            .from('claims')
+            .update(payload)
+            .eq('id', existingClaim.id)
+            .select()
+            .single();
+
+          if (!error && data) {
+            savedClaim = data;
+          } else if (error) {
+            console.warn('Gagal update klaim di Supabase:', error);
+          }
+        } else {
+          // Cari dulu jika di database sebenarnya sudah ada klaim dari user untuk item ini
+          const { data: existingDbClaim } = await supabase
+            .from('claims')
+            .select('id')
+            .eq('item_id', itemId)
+            .eq('claimer_id', user.id)
+            .maybeSingle();
+
+          if (existingDbClaim) {
+            const { data, error } = await supabase
+              .from('claims')
+              .update(payload)
+              .eq('id', existingDbClaim.id)
+              .select()
+              .single();
+
+            if (!error && data) savedClaim = data;
+          } else {
+            const { data, error } = await supabase
+              .from('claims')
+              .insert(payload)
+              .select()
+              .single();
+
+            if (!error && data) savedClaim = data;
+          }
+        }
+      } catch (err) {
+        console.warn('Error sinkronisasi klaim ke Supabase:', err);
+      }
+    }
+
+    // Update local state
     if (existingIndex !== -1) {
-      setClaims(prev => prev.map((c, idx) => idx === existingIndex ? claimData : c));
+      setClaims(prev => prev.map((c, idx) => idx === existingIndex ? savedClaim : c));
     } else {
-      setClaims(prev => [claimData, ...prev]);
+      setClaims(prev => [savedClaim, ...prev.filter(c => c.id !== savedClaim.id)]);
     }
 
     // Notifikasi ke Admin untuk verifikasi
@@ -536,27 +669,52 @@ export const DataProvider = ({ children }) => {
       type: 'klaim',
       title: isReapplication ? 'Pengajuan Ulang Klaim Blind Test 🔄' : 'Klaim Baru Menunggu Verifikasi 🔍',
       body: isReapplication 
-        ? `${claimData.claimer_name} memperbarui rincian jawaban Blind Test untuk #${targetItem.item_code}.`
-        : `${claimData.claimer_name} mengklaim barang #${targetItem.item_code}. Skor kecocokan: ${score}%.`,
+        ? `${savedClaim.claimer_name} memperbarui rincian jawaban Blind Test untuk #${targetItem.item_code}.`
+        : `${savedClaim.claimer_name} mengklaim barang #${targetItem.item_code}. Skor kecocokan: ${score}%.`,
       link: '/admin/klaim'
     });
 
-    return claimData;
+    return { success: true, claim: savedClaim };
   };
 
   /**
    * Admin memverifikasi klaim (Valid / Tidak Valid)
    * Jika di-ACC, barang otomatis berstatus 'dikembalikan' dan tidak dapat diklaim lagi oleh pihak lain
    */
-  const verifyClaim = (claimId, isApproved, adminNotes = '') => {
+  const verifyClaim = async (claimId, isApproved, adminNotes = '') => {
     const claim = claims.find(c => c.id === claimId);
-    if (!claim) return;
+    if (!claim) return { error: 'Klaim tidak ditemukan' };
 
     const targetItem = items.find(i => i.id === claim.item_id);
 
     if (isApproved) {
-      // 1. Update status klaim yang disetujui
-      // Serta update klaim lain untuk item yang sama menjadi ditolak karena sudah diserahkan ke pemilik paling cocok
+      // 1. Sinkronisasi status klaim yang disetujui ke Supabase
+      if (isSupabaseConfigured() && supabase && isUuid(claimId)) {
+        try {
+          await supabase.from('claims').update({
+            status: 'disetujui',
+            admin_notes: adminNotes || 'Terverifikasi sebagai pemilik sah paling cocok.',
+            verified_by: isUuid(user?.id) ? user.id : null,
+            verified_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }).eq('id', claimId);
+
+          // Update klaim lain pada item yang sama menjadi ditolak
+          if (isUuid(claim.item_id)) {
+            await supabase.from('claims').update({
+              status: 'ditolak',
+              admin_notes: 'Barang telah berhasil diverifikasi dan diserahkan kepada pemohon lain yang deskripsinya lebih sesuai.',
+              verified_by: isUuid(user?.id) ? user.id : null,
+              verified_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }).eq('item_id', claim.item_id).neq('id', claimId).eq('status', 'menunggu_admin');
+          }
+        } catch (err) {
+          console.warn('Gagal update klaim di Supabase:', err);
+        }
+      }
+
+      // Update local state klaim
       setClaims(prev => prev.map(c => {
         if (c.id === claimId) {
           return {
@@ -564,49 +722,83 @@ export const DataProvider = ({ children }) => {
             status: 'disetujui',
             admin_notes: adminNotes || 'Terverifikasi sebagai pemilik sah paling cocok.',
             verified_by: user?.id,
-            verified_at: new Date().toISOString()
+            verified_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           };
         }
-        // Jika klaim lain pada item yang sama masih menunggu_admin, tutup secara otomatis
         if (c.item_id === claim.item_id && c.status === 'menunggu_admin') {
           return {
             ...c,
             status: 'ditolak',
             admin_notes: 'Barang telah berhasil diverifikasi dan diserahkan kepada pemohon lain yang deskripsinya lebih sesuai.',
             verified_by: user?.id,
-            verified_at: new Date().toISOString()
+            verified_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           };
         }
         return c;
       }));
 
-      // 2. Update status barang ke 'dikembalikan' (Barang Berhasil Dikembalikan)
-      const returnedBannerUrl = targetItem ? generateReturnedBannerSvg(targetItem.item_code, targetItem.title) : null;
-
+      // 2. Update status barang ke 'diproses' (Tahap Koordinasi Serah Terima & Pesanan Runner)
+      // JANGAN langsung ubah ke 'dikembalikan' atau ganti foto asli dengan banner sampai barang benar-benar tuntas diserahterimakan!
       if (targetItem) {
         setItems(prev => prev.map(i => i.id === claim.item_id ? {
           ...i,
-          item_status: 'dikembalikan',
-          photo_urls: returnedBannerUrl ? [returnedBannerUrl] : i.photo_urls,
-          hidden_details: '',
-          returned_to: claim.claimer_name,
-          returned_at: new Date().toISOString()
+          item_status: 'diproses',
+          updated_at: new Date().toISOString()
         } : i));
 
-        // Sync Supabase jika configured
         if (isSupabaseConfigured() && supabase && isUuid(claim.item_id)) {
-          supabase.from('items').update({
-            item_status: 'dikembalikan',
-            photo_urls: returnedBannerUrl ? [returnedBannerUrl] : undefined,
-            hidden_details: '',
-            updated_at: new Date().toISOString()
-          }).eq('id', claim.item_id).then();
+          try {
+            await supabase.from('items').update({
+              item_status: 'diproses',
+              updated_at: new Date().toISOString()
+            }).eq('id', claim.item_id);
+          } catch (err) {
+            console.warn('Gagal update item status di Supabase:', err);
+          }
         }
       }
 
-      // 3. Buat Match & Chat room
+      // 3. Buat Match & Simpan ke Supabase jika valid UUID
+      let createdMatchId = `match-${Date.now()}`;
+      if (
+        isSupabaseConfigured() && 
+        supabase && 
+        isUuid(claim.item_id) && 
+        isUuid(claim.claimer_id) && 
+        targetItem?.user_id && 
+        isUuid(targetItem.user_id)
+      ) {
+        try {
+          const matchPayload = {
+            item_id: claim.item_id,
+            item_title: claim.item_title || targetItem.title,
+            item_code: claim.item_code || targetItem.item_code,
+            finder_id: targetItem.user_id,
+            finder_name: targetItem.user_name || 'Penemu',
+            owner_id: claim.claimer_id,
+            owner_name: claim.claimer_name,
+            status: 'aktif',
+            created_at: new Date().toISOString()
+          };
+
+          const { data: dbMatch, error: matchErr } = await supabase
+            .from('matches')
+            .insert(matchPayload)
+            .select()
+            .single();
+
+          if (!matchErr && dbMatch) {
+            createdMatchId = dbMatch.id;
+          }
+        } catch (err) {
+          console.warn('Gagal membuat match di Supabase:', err);
+        }
+      }
+
       const newMatch = {
-        id: `match-${Date.now()}`,
+        id: createdMatchId,
         item_id: claim.item_id,
         item_title: claim.item_title,
         item_code: claim.item_code,
@@ -617,34 +809,34 @@ export const DataProvider = ({ children }) => {
         status: 'aktif',
         created_at: new Date().toISOString()
       };
-      setMatches(prev => [newMatch, ...prev]);
+      setMatches(prev => [newMatch, ...prev.filter(m => m.id !== newMatch.id)]);
 
       // 4. Kirim pesan selamat datang dari sistem di ruang chat
       const welcomeMsg = {
         id: `msg-${Date.now()}`,
         match_id: newMatch.id,
         sender_id: 'system',
-        content: `🎉 Selamat! Klaim barang #${claim.item_code} telah diverifikasi oleh Admin. Status barang kini resmi: 'Barang Berhasil Dikembalikan'. Silakan berkoordinasi untuk serah terima atau gunakan Jasa Runner Resmi UNNES!`,
+        content: `🎉 Selamat! Klaim kepemilikan barang #${claim.item_code} telah diverifikasi oleh Admin Posko. Ruang obrolan serah terima resmi dibuka. Pemohon dapat mengobrol langsung di sini atau memesan Jasa Runner Resmi UNNES untuk mengambil dan mengantarkan barang!`,
         type: 'system',
         created_at: new Date().toISOString()
       };
       setMessages(prev => [...prev, welcomeMsg]);
 
-      // 5. Notifikasi ke pemohon yang disetujui
+      // 5. Notifikasi ke pemohon yang disetujui & penemu
       addNotification({
         user_id: claim.claimer_id,
         type: 'cocok',
         title: 'Klaim Kamu DIVERIFIKASI! 🎯',
-        body: `Klaim barang #${claim.item_code} berhasil diverifikasi Admin Posko sebagai yang paling cocok! Ruang obrolan dengan penemu sudah dibuka.`,
-        link: `/pesan/${newMatch.id}`
+        body: `Klaim barang #${claim.item_code} disetujui Admin! Akses Pesan Jasa Runner UNNES & Ruang Obrolan dengan penemu kini sudah terbuka.`,
+        link: `/barang/${claim.item_id}`
       });
 
       if (targetItem?.user_id) {
         addNotification({
           user_id: targetItem.user_id,
           type: 'cocok',
-          title: 'Pemilik Asli Ditemukan! 🤝',
-          body: `Admin telah memverifikasi klaim barang #${claim.item_code} (${claim.claimer_name}). Kasus selesai & barang berhasil dikembalikan.`,
+          title: 'Pemilik Terverifikasi Ditemukan! 🤝',
+          body: `Admin telah memverifikasi klaim barang #${claim.item_code} dari ${claim.claimer_name}. Ruang obrolan serah terima telah dibuka.`,
           link: `/pesan/${newMatch.id}`
         });
       }
@@ -663,17 +855,32 @@ export const DataProvider = ({ children }) => {
 
       try {
         confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
-      } catch (e) {
-        // Safe fallback
-      }
+      } catch (e) {}
+
+      return { success: true };
     } else {
-      // Tolak klaim (pengguna diizinkan mengajukan ulang dengan penjelasan lebih lengkap)
+      // Tolak klaim
+      if (isSupabaseConfigured() && supabase && isUuid(claimId)) {
+        try {
+          await supabase.from('claims').update({
+            status: 'ditolak',
+            admin_notes: adminNotes || 'Penjelasan ciri rahasia belum cocok. Silakan ajukan ulang dengan rincian yang lebih detail.',
+            verified_by: isUuid(user?.id) ? user.id : null,
+            verified_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }).eq('id', claimId);
+        } catch (err) {
+          console.warn('Gagal tolak klaim di Supabase:', err);
+        }
+      }
+
       setClaims(prev => prev.map(c => c.id === claimId ? {
         ...c,
         status: 'ditolak',
         admin_notes: adminNotes || 'Penjelasan ciri rahasia belum cocok. Silakan ajukan ulang dengan rincian yang lebih detail.',
         verified_by: user?.id,
-        verified_at: new Date().toISOString()
+        verified_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       } : c));
 
       addNotification({
@@ -683,6 +890,8 @@ export const DataProvider = ({ children }) => {
         body: `Klaim barang #${claim.item_code} belum sesuai verifikasi Admin. Catatan: ${adminNotes || 'Penjelasan kurang detail'}. Anda dapat mengajukan klaim ulang.`,
         link: `/barang/${claim.item_id}`
       });
+
+      return { success: true };
     }
   };
 

@@ -21,31 +21,40 @@ export const ClaimModerationPage = () => {
   const [activeFilter, setActiveFilter] = useState('menunggu_admin');
   const [selectedClaim, setSelectedClaim] = useState(null);
   const [adminNotes, setAdminNotes] = useState('');
+  const [processingId, setProcessingId] = useState(null);
 
   const filteredClaims = claims.filter(c => {
     if (activeFilter === 'semua') return true;
     return c.status === activeFilter;
   });
 
-  const handleVerify = (claim, isApproved) => {
+  const handleVerify = async (claim, isApproved) => {
     if (isApproved) {
       const confirmAcc = window.confirm(
         `ACC & VALIDASI KEPEMILIKAN:\n\n` +
         `Apakah Anda yakin menyetujui klaim dari "${claim.claimer_name}" sebagai pemilik sah barang #${claim.item_code}?\n\n` +
-        `• Status barang akan berubah menjadi "Barang Berhasil Dikembalikan".\n` +
-        `• Kasus resmi selesai & barang TIDAK DAPAT DIKLAIM LAGI oleh pihak lain.\n` +
-        `• Ruang obrolan serah terima dibuka untuk kedua pihak.`
+        `• Status klaim akan disetujui dan verifikasi Blind Test dinyatakan valid.\n` +
+        `• Akses Pesan Jasa Runner UNNES & Ruang Obrolan akan DIBUKA untuk pemohon.\n` +
+        `• Pemohon dapat langsung berkoordinasi dengan penemu atau memesan runner untuk mengambil barang.`
       );
       if (!confirmAcc) return;
     }
 
-    verifyClaim(claim.id, isApproved, adminNotes);
-    alert(isApproved 
-      ? 'Klaim berhasil di-ACC! Status barang kini resmi "Barang Berhasil Dikembalikan" dan kasus ditutup.' 
-      : 'Klaim DITOLAK. Pemohon diberikan kesempatan mengajukan klaim ulang jika terdapat detail yang belum sempat dijelaskan.'
-    );
-    setSelectedClaim(null);
-    setAdminNotes('');
+    setProcessingId(claim.id);
+    try {
+      await verifyClaim(claim.id, isApproved, adminNotes);
+      alert(isApproved 
+        ? 'Klaim berhasil di-ACC! Pemohon kini terverifikasi sebagai pemilik sah dan dapat memesan Jasa Runner atau menghubungi penemu di ruang obrolan.' 
+        : 'Klaim DITOLAK. Pemohon diberikan kesempatan mengajukan klaim ulang jika terdapat detail yang belum sempat dijelaskan.'
+      );
+      setSelectedClaim(null);
+      setAdminNotes('');
+    } catch (err) {
+      console.error('Error saat verifikasi klaim:', err);
+      alert('Terjadi kesalahan saat memproses verifikasi klaim.');
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   return (
@@ -243,19 +252,21 @@ export const ClaimModerationPage = () => {
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                           <button
                             onClick={() => handleVerify(claim, false)}
+                            disabled={processingId === claim.id}
                             className="btn btn-danger btn-sm"
                             style={{ gap: '0.35rem' }}
                             title="Tolak klaim (pemohon dapat mengajukan klaim ulang jika memiliki rincian tambahan)"
                           >
-                            <X size={15} /> Tolak Klaim
+                            <X size={15} /> {processingId === claim.id ? 'Memproses...' : 'Tolak Klaim'}
                           </button>
                           <button
                             onClick={() => handleVerify(claim, true)}
+                            disabled={processingId === claim.id}
                             className="btn btn-teal btn-sm"
                             style={{ gap: '0.35rem' }}
-                            title="ACC klaim ini sebagai pemilik sah paling cocok & selesaikan laporan"
+                            title="ACC klaim ini sebagai pemilik sah paling cocok & buka akses runner/chat serah terima"
                           >
-                            <Check size={15} /> ACC Pemilik Sah (Barang Berhasil Dikembalikan)
+                            <Check size={15} /> {processingId === claim.id ? 'Memproses...' : 'ACC Pemilik Sah (Buka Akses Runner & Chat)'}
                           </button>
                         </div>
                       </div>

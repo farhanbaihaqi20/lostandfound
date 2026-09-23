@@ -43,10 +43,10 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
     setAnswers(updated);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validasi: minimal 2 pertanyaan harus dijawab
+    // Validasi: minimal 1 pertanyaan harus dijawab dengan detail
     const answeredCount = answers.filter(a => a.trim().length > 3).length;
     if (answeredCount < 1) {
       alert('Mohon jawab minimal 1-2 pertanyaan blind test dengan detail untuk membuktikan kepemilikan Anda.');
@@ -60,15 +60,27 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
       answer: answers[idx] || '(Tidak dijawab)'
     }));
 
-    submitClaim({
-      itemId: item.id,
-      blindTestAnswers: formattedAnswers,
-      message: additionalMessage
-    });
+    try {
+      const res = await submitClaim({
+        itemId: item.id,
+        blindTestAnswers: formattedAnswers,
+        message: additionalMessage
+      });
 
-    setSubmitting(false);
-    onSuccess();
-    onClose();
+      if (res?.error) {
+        alert(res.error);
+        setSubmitting(false);
+        return;
+      }
+
+      setSubmitting(false);
+      onSuccess();
+      onClose();
+    } catch (err) {
+      console.error('Gagal mengajukan klaim:', err);
+      alert('Terjadi kesalahan saat mengajukan klaim. Silakan coba lagi.');
+      setSubmitting(false);
+    }
   };
 
   return (

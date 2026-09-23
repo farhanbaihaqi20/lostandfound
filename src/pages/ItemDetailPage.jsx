@@ -70,6 +70,7 @@ export const ItemDetailPage = () => {
   const isVerifiedOwner = Boolean(userMatch && userMatch.owner_id === user?.id) || userClaim?.status === 'disetujui';
   const isClaimPending = userClaim?.status === 'menunggu_admin';
   const isClaimRejected = userClaim?.status === 'ditolak';
+  const approvedClaim = claims?.find(c => c.item_id === item.id && c.status === 'disetujui');
 
   // Daftar klaim menunggu untuk admin posko
   const pendingClaimsForItem = claims?.filter(c => c.item_id === item.id && c.status === 'menunggu_admin') || [];
@@ -730,44 +731,63 @@ export const ItemDetailPage = () => {
                     <Lock size={18} color="var(--amber-600)" /> Pesan Jasa Runner UNNES (Terkunci)
                   </button>
                 </>
-              ) : (
-                /* 5. Belum pernah Blind Test sama sekali -> SEMUA PENGGUNA BISA KLAIM */
-                <>
-                  <button
-                    onClick={() => {
-                      if (!user) {
-                        navigate('/masuk', { state: { from: location } });
-                        return;
-                      }
-                      setShowBlindTestModal(true);
-                    }}
-                    className="btn btn-primary btn-lg"
-                    style={{ gap: '0.5rem', width: '100%' }}
-                  >
-                    <ShieldCheck size={20} /> Ini Barang Saya! (Klaim via Blind Test)
-                  </button>
-
-                  {/* Tombol Runner Terkunci dengan Interaksi Edukatif */}
-                  <button
-                    onClick={handleLockedRunnerClick}
-                    className="btn btn-outline"
-                    style={{
-                      gap: '0.5rem',
-                      width: '100%',
-                      background: 'var(--bg-surface-alt)',
-                      borderColor: 'var(--border-medium)',
-                      color: 'var(--text-secondary)'
-                    }}
-                    title="Klik untuk membuka verifikasi Blind Test terlebih dahulu"
-                  >
-                    <Lock size={18} color="var(--amber-600)" /> Pesan Jasa Runner UNNES (Wajib Verifikasi Blind Test Dahulu)
-                  </button>
-
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.4 }}>
-                    🛡️ <strong>SOP Keamanan UNNES:</strong> Siapa pun yang merasa kehilangan barang ini dapat mengajukan klaim. Admin akan mencocokkan seluruh jawaban pemohon dengan data rahasia penemu untuk memilih pemilik yang paling sah.
+              ) : approvedClaim ? (
+                /* Barang sudah ada pemilik terverifikasi yang disetujui admin */
+                  <div style={{
+                    padding: '1.25rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--bg-surface-alt)',
+                    border: '1px solid var(--border-medium)',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.4rem'
+                  }}>
+                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                      <Lock size={18} color="var(--primary-600)" /> Laporan Sedang Dalam Proses Serah Terima
+                    </div>
+                    <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                      Klaim kepemilikan untuk barang ini telah disetujui oleh Admin Posko dan saat ini sedang dalam proses koordinasi / pengantaran oleh Runner UNNES dengan pemilik yang sah.
+                    </p>
                   </div>
-                </>
-              )
+                ) : (
+                  /* 5. Belum ada klaim disetujui -> SEMUA PENGGUNA BISA KLAIM */
+                  <>
+                    <button
+                      onClick={() => {
+                        if (!user) {
+                          navigate('/masuk', { state: { from: location } });
+                          return;
+                        }
+                        setShowBlindTestModal(true);
+                      }}
+                      className="btn btn-primary btn-lg"
+                      style={{ gap: '0.5rem', width: '100%' }}
+                    >
+                      <ShieldCheck size={20} /> Ini Barang Saya! (Klaim via Blind Test)
+                    </button>
+
+                    {/* Tombol Runner Terkunci dengan Interaksi Edukatif */}
+                    <button
+                      onClick={handleLockedRunnerClick}
+                      className="btn btn-outline"
+                      style={{
+                        gap: '0.5rem',
+                        width: '100%',
+                        background: 'var(--bg-surface-alt)',
+                        borderColor: 'var(--border-medium)',
+                        color: 'var(--text-secondary)'
+                      }}
+                      title="Klik untuk membuka verifikasi Blind Test terlebih dahulu"
+                    >
+                      <Lock size={18} color="var(--amber-600)" /> Pesan Jasa Runner UNNES (Wajib Verifikasi Blind Test Dahulu)
+                    </button>
+
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.4 }}>
+                      🛡️ <strong>SOP Keamanan UNNES:</strong> Siapa pun yang merasa kehilangan barang ini dapat mengajukan klaim. Admin akan mencocokkan seluruh jawaban pemohon dengan data rahasia penemu untuk memilih pemilik yang paling sah.
+                    </div>
+                  </>
+                )
             ) : (
               /* ==================== ALUR BARANG HILANG ==================== */
               isOwner ? (

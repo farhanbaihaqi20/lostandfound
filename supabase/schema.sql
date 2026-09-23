@@ -71,6 +71,8 @@ CREATE TABLE IF NOT EXISTS public.items (
     bounty_amount INTEGER DEFAULT 0,
     bounty_status TEXT DEFAULT 'tidak_ada',
     date_lost_found TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    returned_to TEXT DEFAULT '',
+    returned_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -80,6 +82,11 @@ CREATE TABLE IF NOT EXISTS public.claims (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     item_id UUID REFERENCES public.items(id) ON DELETE CASCADE NOT NULL,
     claimer_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+    item_title TEXT DEFAULT '',
+    item_code TEXT DEFAULT '',
+    claimer_name TEXT DEFAULT '',
+    claimer_email TEXT DEFAULT '',
+    claimer_phone TEXT DEFAULT '',
     status TEXT DEFAULT 'menunggu_admin',
     blind_test_answers JSONB DEFAULT '[]'::jsonb,
     blind_test_score INTEGER DEFAULT 0,
@@ -87,15 +94,21 @@ CREATE TABLE IF NOT EXISTS public.claims (
     verified_by UUID REFERENCES public.profiles(id),
     verified_at TIMESTAMP WITH TIME ZONE,
     message TEXT DEFAULT '',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    is_reapplication BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- 6. MATCHES TABLE
 CREATE TABLE IF NOT EXISTS public.matches (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     item_id UUID REFERENCES public.items(id) ON DELETE CASCADE NOT NULL,
+    item_title TEXT,
+    item_code TEXT,
     finder_id UUID REFERENCES public.profiles(id) NOT NULL,
+    finder_name TEXT,
     owner_id UUID REFERENCES public.profiles(id) NOT NULL,
+    owner_name TEXT,
     status TEXT DEFAULT 'aktif',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     completed_at TIMESTAMP WITH TIME ZONE
@@ -199,14 +212,26 @@ CREATE POLICY "Claimer, Item Owner, or Admin can see claims" ON public.claims
   );
 
 CREATE POLICY "Authenticated users can submit a claim" ON public.claims
-  FOR INSERT WITH CHECK (auth.uid() = claimer_id);
+  FOR INSERT WITH CHECK (auth.uid() = claimer_id OR public.is_admin());
 
-CREATE POLICY "Admins can update claims status" ON public.claims
-  FOR UPDATE USING (public.is_admin());
+CREATE POLICY "Claimer or Admin can update claims" ON public.claims
+  FOR UPDATE USING (auth.uid() = claimer_id OR public.is_admin());
+
+CREATE POLICY "Claimer or Admin can delete claims" ON public.claims
+  FOR DELETE USING (auth.uid() = claimer_id OR public.is_admin());
 
 -- Matches & Messages
 CREATE POLICY "Involved parties or admin can see match" ON public.matches
   FOR SELECT USING (auth.uid() = finder_id OR auth.uid() = owner_id OR public.is_admin());
+
+CREATE POLICY "Admins or involved parties can insert matches" ON public.matches
+  FOR INSERT WITH CHECK (public.is_admin() OR auth.uid() = finder_id OR auth.uid() = owner_id);
+
+CREATE POLICY "Admins or involved parties can update matches" ON public.matches
+  FOR UPDATE USING (public.is_admin() OR auth.uid() = finder_id OR auth.uid() = owner_id);
+
+CREATE POLICY "Admins or involved parties can delete matches" ON public.matches
+  FOR DELETE USING (public.is_admin() OR auth.uid() = finder_id OR auth.uid() = owner_id);
 
 CREATE POLICY "Involved parties can read messages" ON public.messages
   FOR SELECT USING (
