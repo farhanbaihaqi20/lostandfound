@@ -5,20 +5,17 @@ import {
   Moon, 
   ShieldAlert, 
   LogOut, 
-  HelpCircle, 
-  Lock, 
   Check, 
-  ExternalLink,
-  Navigation,
-  Eye,
-  EyeOff,
-  ArrowDownUp,
+  Navigation, 
+  Eye, 
+  EyeOff, 
+  ArrowDownUp, 
   Smartphone
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export const SettingsPage = () => {
-  const { theme, toggleTheme, logout, user, isAdmin, switchDemoAccount } = useAuth();
+  const { theme, toggleTheme, logout, user, isAdmin } = useAuth();
 
   // Floating Bottom Nav Settings
   const [bottomNavCollapsed, setBottomNavCollapsed] = useState(() => {
@@ -223,28 +220,6 @@ export const SettingsPage = () => {
               <strong>Gestur Cepat Layar Sentuh:</strong> Anda dapat langsung menggeser/mengusap (*swipe down*) bilah navigasi ke bawah untuk menyembunyikannya, dan mengetuk atau menggeser ke atas (*swipe up*) tombol <em>"Buka Navigasi"</em> untuk memunculkannya kembali.
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Demo Switcher Quick Action */}
-      <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        <h2 style={{ fontSize: '1rem', fontWeight: 700 }}>Mode Testing / Demo Role</h2>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-          Fitur ini memudahkan Anda menguji kedua sudut pandang: sebagai Mahasiswa pelapor maupun Admin Posko yang memverifikasi.
-        </p>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <button 
-            onClick={() => switchDemoAccount('user')}
-            className={`btn btn-sm ${!isAdmin ? 'btn-primary' : 'btn-outline'}`}
-          >
-            🎓 Masuk Sebagai Mahasiswa
-          </button>
-          <button 
-            onClick={() => switchDemoAccount('admin')}
-            className={`btn btn-sm ${isAdmin ? 'btn-primary' : 'btn-outline'}`}
-          >
-            🛡️ Masuk Sebagai Admin Posko
-          </button>
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, AlertTriangle, Send, ShieldAlert, Phone, MessageSquare } from 'lucide-react';
+import { X, Send, ShieldAlert } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 

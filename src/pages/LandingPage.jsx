@@ -1,17 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  ShieldCheck, 
   Search, 
   PlusCircle, 
-  MapPin, 
   CheckCircle2, 
   ArrowRight, 
   Bike, 
-  Award, 
-  Sparkles, 
-  Clock,
-  HeartHandshake
+  Sparkles
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { CATEGORIES } from '../data/initialData';
@@ -192,7 +187,7 @@ export const LandingPage = () => {
               </div>
               <span className="category-title">{cat.name}</span>
               <span className="category-badge-count">
-                {cat.count} Laporan
+                {approvedItems.filter(item => item.category === cat.id).length} Laporan
               </span>
             </Link>
           ))}

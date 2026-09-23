@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  MapPin, 
-  Calendar, 
   Clock, 
   ShieldCheck, 
   Share2, 

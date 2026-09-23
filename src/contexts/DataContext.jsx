@@ -13,6 +13,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { deleteCloudinaryImage, generateReturnedBannerSvg } from '../lib/storageService';
 
 const isUuid = (id) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+const isLegacyDummyId = (id) => typeof id === 'string' && (id.startsWith('item-00') || id.startsWith('claim-00') || id.startsWith('ord-00') || id.startsWith('notif-00') || id.startsWith('LF-UNNES-20'));
 
 const DataContext = createContext(null);
 
@@ -22,13 +23,29 @@ export const DataProvider = ({ children }) => {
   // 1. Items state
   const [items, setItems] = useState(() => {
     const saved = localStorage.getItem('unnes_lf_items');
-    return saved ? JSON.parse(saved) : INITIAL_ITEMS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.filter(i => !isLegacyDummyId(i.id) && !isLegacyDummyId(i.item_code));
+      } catch (e) {
+        return [];
+      }
+    }
+    return INITIAL_ITEMS;
   });
 
   // 2. Claims state
   const [claims, setClaims] = useState(() => {
     const saved = localStorage.getItem('unnes_lf_claims');
-    return saved ? JSON.parse(saved) : INITIAL_CLAIMS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.filter(c => !isLegacyDummyId(c.id));
+      } catch (e) {
+        return [];
+      }
+    }
+    return INITIAL_CLAIMS;
   });
 
   // 3. Matches state
@@ -46,13 +63,29 @@ export const DataProvider = ({ children }) => {
   // 5. Runner Orders state
   const [orders, setOrders] = useState(() => {
     const saved = localStorage.getItem('unnes_lf_orders');
-    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.filter(o => !isLegacyDummyId(o.id));
+      } catch (e) {
+        return [];
+      }
+    }
+    return INITIAL_ORDERS;
   });
 
   // 6. Notifications state
   const [notifications, setNotifications] = useState(() => {
     const saved = localStorage.getItem('unnes_lf_notifications');
-    return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.filter(n => !isLegacyDummyId(n.id));
+      } catch (e) {
+        return [];
+      }
+    }
+    return INITIAL_NOTIFICATIONS;
   });
 
   // Fetch items dari Supabase & sinkronisasi otomatis
@@ -71,10 +104,8 @@ export const DataProvider = ({ children }) => {
         }));
 
         setItems(prev => {
-          // Tetap sertakan mock demo items bila belum ada di Supabase
-          const baseItems = INITIAL_ITEMS.filter(b => !formatted.some(f => f.item_code === b.item_code));
-          const localOnly = prev.filter(i => !isUuid(i.id) && !baseItems.some(b => b.id === i.id));
-          return [...formatted, ...localOnly, ...baseItems];
+          const localOnly = prev.filter(i => !isUuid(i.id) && !isLegacyDummyId(i.id) && !formatted.some(f => f.id === i.id));
+          return [...formatted, ...localOnly];
         });
       }
     } catch (err) {
@@ -99,10 +130,8 @@ export const DataProvider = ({ children }) => {
         }));
 
         setOrders(prev => {
-          // Tetap pertahankan mock orders demo bila belum ada di Supabase
-          const baseOrders = INITIAL_ORDERS.filter(b => !formatted.some(f => f.item_code === b.item_code || f.id === b.id));
-          const localOnly = prev.filter(o => !isUuid(o.id) && !baseOrders.some(b => b.id === o.id));
-          return [...formatted, ...localOnly, ...baseOrders];
+          const localOnly = prev.filter(o => !isUuid(o.id) && !isLegacyDummyId(o.id) && !formatted.some(f => f.id === o.id));
+          return [...formatted, ...localOnly];
         });
       } else if (error) {
         console.warn('Gagal memuat orders dari Supabase:', error);
@@ -123,10 +152,8 @@ export const DataProvider = ({ children }) => {
 
       if (!error && data) {
         setClaims(prev => {
-          // Sinkronisasi claims dari database dengan fallback data demo lokal jika ada
-          const baseClaims = INITIAL_CLAIMS.filter(b => !data.some(d => d.id === b.id || (d.item_code === b.item_code && d.claimer_email === b.claimer_email)));
-          const localOnly = prev.filter(c => !isUuid(c.id) && !baseClaims.some(b => b.id === c.id));
-          return [...data, ...localOnly, ...baseClaims];
+          const localOnly = prev.filter(c => !isUuid(c.id) && !isLegacyDummyId(c.id) && !data.some(d => d.id === c.id));
+          return [...data, ...localOnly];
         });
       } else if (error) {
         console.warn('Gagal memuat claims dari Supabase:', error);
@@ -147,9 +174,8 @@ export const DataProvider = ({ children }) => {
 
       if (!error && data) {
         setMatches(prev => {
-          const baseMatches = INITIAL_MATCHES.filter(b => !data.some(d => d.id === b.id || (d.item_id === b.item_id && d.owner_id === b.owner_id)));
-          const localOnly = prev.filter(m => !isUuid(m.id) && !baseMatches.some(b => b.id === m.id));
-          return [...data, ...localOnly, ...baseMatches];
+          const localOnly = prev.filter(m => !isUuid(m.id) && !data.some(d => d.id === m.id));
+          return [...data, ...localOnly];
         });
       } else if (error) {
         console.warn('Gagal memuat matches dari Supabase:', error);

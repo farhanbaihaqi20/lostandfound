@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  User, 
   Camera, 
   Save, 
   FileText, 
@@ -19,7 +18,7 @@ import { ItemCard } from '../components/ItemCard';
 import { getRunnerStatusInfo } from '../data/initialData';
 
 export const ProfilePage = () => {
-  const { user, isAdmin, updateProfile, switchDemoAccount } = useAuth();
+  const { user, isAdmin, updateProfile } = useAuth();
   const { items, orders } = useData();
 
   const [activeTab, setActiveTab] = useState('laporan');

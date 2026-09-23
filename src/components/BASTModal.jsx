@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, FileCheck, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { X, FileCheck, CheckCircle2 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 

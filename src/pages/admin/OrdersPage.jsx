@@ -2,18 +2,10 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Bike, 
-  CheckCircle2, 
-  Clock, 
-  MapPin, 
-  Phone, 
-  DollarSign, 
-  User, 
   ArrowLeft,
   Edit2,
   Trash2,
   MessageCircle,
-  AlertCircle,
-  Check,
   X
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';

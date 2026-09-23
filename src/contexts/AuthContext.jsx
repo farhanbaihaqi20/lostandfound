@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { INITIAL_USERS } from '../data/initialData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const AuthContext = createContext(null);
@@ -32,7 +31,7 @@ export const AuthProvider = ({ children }) => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed && parsed.id && parsed.id !== 'user-mhs-01' && parsed.id !== 'user-admin-01' && parsed.nim) {
+        if (parsed && parsed.id && !parsed.id.startsWith('user-admin-') && !parsed.id.startsWith('user-mahasiswa-') && parsed.nim) {
           return parsed;
         }
       } catch (e) {
@@ -214,23 +213,12 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: existingProfile };
       }
 
-      // Mock Local Auth
-      const foundUser = INITIAL_USERS.find(u => u.email.toLowerCase() === cleanEmail);
-      if (!foundUser) {
-        return {
-          success: false,
-          notRegistered: true,
-          message: 'Akun belum terdaftar di UNNES Lost & Found. Silakan daftar akun mahasiswa terlebih dahulu.'
-        };
-      }
-
-      setUser(foundUser);
-      if (rememberMe) {
-        localStorage.setItem('unnes_lf_current_user', JSON.stringify(foundUser));
-      } else {
-        sessionStorage.setItem('unnes_lf_current_user', JSON.stringify(foundUser));
-      }
-      return { success: true, user: foundUser };
+      // Jika Supabase belum dikonfigurasi
+      return {
+        success: false,
+        notRegistered: true,
+        message: 'Koneksi database belum terhubung. Silakan konfigurasi Supabase terlebih dahulu.'
+      };
     } catch (error) {
       return { success: false, message: error.message || 'Gagal masuk akun' };
     } finally {
@@ -501,10 +489,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('unnes_lf_current_user');
   };
 
-  const switchDemoAccount = (role) => {
-    const targetUser = role === 'admin' ? INITIAL_USERS[0] : INITIAL_USERS[1];
-    setUser(targetUser);
-    localStorage.setItem('unnes_lf_current_user', JSON.stringify(targetUser));
+  const switchDemoAccount = () => {
+    // Mode demo dinonaktifkan: aplikasi menggunakan akun riil Supabase
   };
 
   const updateProfile = (updatedFields) => {

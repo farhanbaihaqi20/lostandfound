@@ -5,10 +5,7 @@ import {
   Clock, 
   CheckCircle2, 
   Bike, 
-  Award, 
   ArrowRight, 
-  AlertCircle,
-  FileText,
   Users
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';

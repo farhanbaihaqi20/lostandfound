@@ -24,28 +24,6 @@ export async function getAllUsers() {
   return { data: data || [], error: null };
 }
 
-/**
- * Cari user berdasarkan email, nama, atau NIM
- */
-export async function searchUsers(query) {
-  if (!isSupabaseConfigured() || !supabase) {
-    return { data: [], error: 'Supabase belum dikonfigurasi' };
-  }
-
-  const cleanQuery = query.trim();
-  if (!cleanQuery) return getAllUsers();
-
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, email, full_name, avatar_url, nim, fakultas, prodi, phone, role, is_super_admin, is_banned, created_at, updated_at')
-    .or(`email.ilike.%${cleanQuery}%,full_name.ilike.%${cleanQuery}%,nim.ilike.%${cleanQuery}%`)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    return { data: [], error: error.message };
-  }
-  return { data: data || [], error: null };
-}
 
 /**
  * Ubah role user via Supabase RPC (set_user_role)

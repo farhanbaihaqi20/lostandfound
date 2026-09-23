@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ShieldCheck, HelpCircle, Send, AlertTriangle } from 'lucide-react';
+import { X, ShieldCheck, Send } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 

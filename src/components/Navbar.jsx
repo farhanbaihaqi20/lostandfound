@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  Compass, 
   PlusCircle, 
-  MessageSquare, 
   Bell, 
   Sun, 
   Moon, 
@@ -11,17 +9,13 @@ import {
   ShieldCheck, 
   LogOut, 
   Settings, 
-  CheckCircle,
-  Menu,
-  X,
-  ChevronDown,
   Bike
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 
 export const Navbar = () => {
-  const { user, isAdmin, theme, toggleTheme, logout, switchDemoAccount } = useAuth();
+  const { user, isAdmin, theme, toggleTheme, logout } = useAuth();
   const { notifications, markNotificationAsRead } = useData();
   const navigate = useNavigate();
   const location = useLocation();

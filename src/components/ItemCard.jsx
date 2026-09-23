@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Calendar, Award, ChevronRight, ShieldCheck, Lock } from 'lucide-react';
+import { MapPin, Calendar, Award, ChevronRight, Lock } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { useAuth } from '../contexts/AuthContext';
 import { CATEGORIES } from '../data/initialData';

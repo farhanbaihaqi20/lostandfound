@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Bell, 
-  CheckCircle2, 
-  Clock, 
   ShieldCheck, 
   Bike, 
   Sparkles, 
-  CheckCheck,
+  CheckCheck, 
   AlertCircle
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';

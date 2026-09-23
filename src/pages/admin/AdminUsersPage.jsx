@@ -24,7 +24,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminNavTabs } from '../../components/AdminNavTabs';
-import { getAllUsers, searchUsers, setUserRole } from '../../lib/adminService';
+import { getAllUsers, setUserRole } from '../../lib/adminService';
 
 export const AdminUsersPage = () => {
   const { user: currentUser } = useAuth();

@@ -7,16 +7,13 @@ import {
   FileText, 
   Bike, 
   MapPin, 
-  ChevronRight, 
   Clock, 
-  CheckCircle2, 
   Award,
-  BellRing,
   Filter
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
-import { UNNES_BUILDINGS, CATEGORIES, getRunnerStatusInfo } from '../data/initialData';
+import { getRunnerStatusInfo } from '../data/initialData';
 import { ItemCard } from '../components/ItemCard';
 import { RunnerOrderModal } from '../components/RunnerOrderModal';
 

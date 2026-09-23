@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   CheckCircle2, 
   AlertCircle, 
   Sparkles, 
-  MapPin, 
-  UploadCloud, 
   Lock, 
   Award, 
-  Send,
-  Building2
+  Send
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UploadCloud, X, Image as ImageIcon, ShieldAlert, Check } from 'lucide-react';
+import { UploadCloud, X, ShieldAlert, Check } from 'lucide-react';
 import { uploadImageFile } from '../lib/storageService';
 
 export const ImageUploadCompressor = ({ photos = [], onPhotosChange, maxPhotos = 4, label = 'Upload Foto Barang' }) => {

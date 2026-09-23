@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Compass, Mail, Lock, LogIn, ShieldCheck, Check, AlertCircle } from 'lucide-react';
+import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const LoginPage = () => {
-  const { user, login, loginWithGoogle, switchDemoAccount, authError, clearAuthError } = useAuth();
+  const { user, login, loginWithGoogle, authError, clearAuthError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -72,10 +72,6 @@ export const LoginPage = () => {
     }
   };
 
-  const handleQuickDemo = (role) => {
-    switchDemoAccount(role);
-    navigate(from, { replace: true });
-  };
 
   return (
     <div className="container" style={{ minHeight: '85vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
@@ -250,31 +246,6 @@ export const LoginPage = () => {
             {loading ? 'Memproses...' : 'Masuk Sekarang'}
           </button>
         </form>
-
-        {/* Quick Demo Fill Buttons for immediate testing */}
-        <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-light)', textAlign: 'center' }}>
-          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
-            ⚡ Uji Langsung Cepat (Tanpa Ketik):
-          </span>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('user')}
-              className="btn btn-outline btn-sm"
-              style={{ fontSize: '0.75rem' }}
-            >
-              🎓 Mahasiswa
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('admin')}
-              className="btn btn-outline btn-sm"
-              style={{ fontSize: '0.75rem', color: '#6d28d9', borderColor: '#c4b5fd' }}
-            >
-              🛡️ Admin Satpam
-            </button>
-          </div>
-        </div>
 
         {/* Link to Register */}
         <div style={{ marginTop: '1.25rem', textAlign: 'center', fontSize: '0.825rem', color: 'var(--text-secondary)' }}>

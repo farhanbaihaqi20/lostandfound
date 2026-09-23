@@ -6,10 +6,7 @@ import {
   ShieldAlert, 
   Bike, 
   FileCheck, 
-  Share2, 
-  CheckCheck,
-  User,
-  ArrowLeft
+  Share2
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';

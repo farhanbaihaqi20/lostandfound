@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  ShieldCheck, 
   Check, 
   X, 
   Clock, 
-  AlertCircle, 
-  Sparkles, 
   Eye, 
-  MapPin, 
-  Lock,
-  ArrowLeft,
-  Trash2,
+  Lock, 
+  ArrowLeft, 
+  Trash2, 
   CheckCheck
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
-import { useAuth } from '../../contexts/AuthContext';
 import { AdminNavTabs } from '../../components/AdminNavTabs';
 
 export const ModerationPage = () => {

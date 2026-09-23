@@ -6,11 +6,8 @@ import {
   X, 
   AlertCircle, 
   ArrowLeft, 
-  HelpCircle, 
   Lock, 
-  User, 
-  MessageSquare,
-  Sparkles
+  User
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { AdminNavTabs } from '../../components/AdminNavTabs';

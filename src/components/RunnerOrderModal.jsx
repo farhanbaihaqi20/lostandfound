@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Bike, CheckCircle2, ShieldAlert, DollarSign, Lock, ShieldCheck } from 'lucide-react';
+import { X, Bike, Lock } from 'lucide-react';
 import { UNNES_BUILDINGS } from '../data/initialData';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';

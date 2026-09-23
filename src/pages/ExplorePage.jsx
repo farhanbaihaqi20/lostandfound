@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Filter, AlertCircle, Sparkles, Award, RotateCcw } from 'lucide-react';
 import { useData } from '../contexts/DataContext';

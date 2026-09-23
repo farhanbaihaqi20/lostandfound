@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Compass, Mail, Lock, User, CheckCircle2, AlertCircle, GraduationCap, ArrowLeft, Phone } from 'lucide-react';
+import { Mail, User, AlertCircle, GraduationCap, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const RegisterPage = () => {
