@@ -16,7 +16,7 @@ import { useData } from '../../contexts/DataContext';
 import { AdminNavTabs } from '../../components/AdminNavTabs';
 
 export const ClaimModerationPage = () => {
-  const { claims, items, verifyClaim } = useData();
+  const { claims, items, verifyClaim, revokeClaimVerification } = useData();
 
   const [activeFilter, setActiveFilter] = useState('menunggu_admin');
   const [selectedClaim, setSelectedClaim] = useState(null);
@@ -57,6 +57,34 @@ export const ClaimModerationPage = () => {
     }
   };
 
+  const handleRevoke = async (claim) => {
+    const reason = window.prompt(
+      `⚠️ PEMBATALAN VERIFIKASI KLAIM (KLAIM PALSU / SALAH VERIFIKASI):\n\n` +
+      `Apakah Anda yakin ingin MEMBATALKAN status verifikasi untuk "${claim.claimer_name}" pada barang #${claim.item_code}?\n\n` +
+      `Efek Pembatalan:\n` +
+      `• Pengguna "${claim.claimer_name}" AKAN DIBLOKIR PERMANEN dari mengajukan klaim kembali untuk barang ini.\n` +
+      `• Status barang akan dikembalikan menjadi "Terbuka".\n` +
+      `• Publik / mahasiswa lain dapat mengajukan klaim Blind Test kembali.\n` +
+      `• Match/chat serah terima dinonaktifkan.\n\n` +
+      `Tuliskan alasan pembatalan verifikasi (misal: "Terbukti bukan pemilik sah / terdapat sanggahan valid"):`,
+      'Terindikasi klaim palsu / tidak sesuai bukti fisik asli'
+    );
+
+    if (reason === null) return;
+
+    setProcessingId(claim.id);
+    try {
+      await revokeClaimVerification(claim.id, reason.trim());
+      alert('Verifikasi klaim berhasil dibatalkan! Status barang kembali terbuka untuk klaim publik, dan pemohon ini telah diblokir dari mengajukan ulang.');
+      setSelectedClaim(null);
+    } catch (err) {
+      console.error(err);
+      alert('Gagal membatalkan verifikasi klaim.');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   return (
     <div className="container pb-mobile-nav" style={{ paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
@@ -77,7 +105,7 @@ export const ClaimModerationPage = () => {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
           <button
             onClick={() => setActiveFilter('menunggu_admin')}
             className={`btn btn-sm ${activeFilter === 'menunggu_admin' ? 'btn-accent' : 'btn-outline'}`}
@@ -95,6 +123,12 @@ export const ClaimModerationPage = () => {
             className={`btn btn-sm ${activeFilter === 'ditolak' ? 'btn-primary' : 'btn-outline'}`}
           >
             Ditolak ({claims.filter(c => c.status === 'ditolak').length})
+          </button>
+          <button
+            onClick={() => setActiveFilter('dibatalkan')}
+            className={`btn btn-sm ${activeFilter === 'dibatalkan' ? 'btn-danger' : 'btn-outline'}`}
+          >
+            Dibatalkan ({claims.filter(c => c.status === 'dibatalkan').length})
           </button>
         </div>
       </div>
@@ -269,6 +303,42 @@ export const ClaimModerationPage = () => {
                             <Check size={15} /> {processingId === claim.id ? 'Memproses...' : 'ACC Pemilik Sah (Buka Akses Runner & Chat)'}
                           </button>
                         </div>
+                      </div>
+                    )}
+
+                    {claim.status === 'disetujui' && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-light)' }}>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--teal-700)' }}>
+                          ✅ <strong>Klaim Disetujui:</strong> Pemohon terverifikasi sebagai pemilik sah dan dapat memesan runner / obrolan serah terima.
+                        </div>
+                        <button
+                          onClick={() => handleRevoke(claim)}
+                          disabled={processingId === claim.id}
+                          className="btn btn-danger btn-sm"
+                          style={{ gap: '0.35rem' }}
+                          title="Batalkan verifikasi jika klaim ternyata salah atau terindikasi klaim palsu"
+                        >
+                          <AlertCircle size={15} /> {processingId === claim.id ? 'Memproses...' : 'Batalkan Verifikasi (Klaim Palsu / Salah)'}
+                        </button>
+                      </div>
+                    )}
+
+                    {claim.status === 'dibatalkan' && (
+                      <div style={{
+                        padding: '0.75rem 1rem',
+                        background: 'var(--danger-bg)',
+                        border: '1px solid rgba(239, 68, 68, 0.4)',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '0.825rem',
+                        color: 'var(--danger)',
+                        lineHeight: 1.45,
+                        marginTop: '0.5rem'
+                      }}>
+                        <strong>⛔ Verifikasi Klaim Dibatalkan oleh Admin:</strong><br />
+                        Alasan: "{claim.admin_notes || 'Terindikasi klaim palsu'}".<br />
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          Pengguna ini telah diblokir permanen dari klaim ulang barang #{claim.item_code} dan status barang telah dibuka kembali untuk publik.
+                        </span>
                       </div>
                     )}
 

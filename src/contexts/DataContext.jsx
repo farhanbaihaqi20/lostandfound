@@ -569,6 +569,20 @@ export const DataProvider = ({ children }) => {
     );
 
     const existingClaim = existingIndex !== -1 ? claims[existingIndex] : null;
+
+    // 1. PROTEKSI KLAIM PALSU: Jika klaim pengguna ini sebelumnya telah dibatalkan oleh Admin, tolak permanen!
+    if (existingClaim?.status === 'dibatalkan') {
+      alert('Peringatan Keamanan: Akses klaim Anda untuk barang ini telah ditutup permanen oleh Admin karena indikasi ketidaksesuaian/klaim palsu.');
+      return { error: 'Akses klaim Anda telah dibatalkan oleh Admin dan tidak dapat diajukan kembali.' };
+    }
+
+    // 2. KUNCI KLAIM BARU: Jika barang sedang memiliki pemilik sah terverifikasi yang disetujui Admin, tolak pengajuan lain!
+    const activeApproved = claims.find(c => String(c.item_id) === String(itemId) && c.status === 'disetujui');
+    if (targetItem.item_status === 'diproses' || (activeApproved && activeApproved.claimer_id !== user?.id)) {
+      alert('Pemberitahuan: Barang ini telah memiliki pemilik sah yang terverifikasi dan saat ini sedang dalam proses serah terima.');
+      return { error: 'Barang telah memiliki pemilik terverifikasi' };
+    }
+
     const isReapplication = existingClaim?.status === 'ditolak';
 
     let savedClaim = {
@@ -895,6 +909,147 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Admin membatalkan verifikasi klaim yang sebelumnya disetujui (misal: terbukti klaim palsu / ada sanggahan yang benar)
+   * Efek:
+   * 1. Status klaim diubah menjadi 'dibatalkan' (user ini diblokir permanen dari klaim ulang untuk barang ini).
+   * 2. Status barang dikembalikan ke 'terbuka' sehingga orang lain dapat mengajukan klaim kembali.
+   * 3. Match serah terima dinonaktifkan ('dibatalkan').
+   * 4. Notifikasi pencabutan dikirim ke pemohon palsu & penemu diberi tahu pencarian pemilik dibuka kembali.
+   */
+  const revokeClaimVerification = async (claimIdOrData, reason = '') => {
+    const claimId = typeof claimIdOrData === 'string' ? claimIdOrData : claimIdOrData?.claimId;
+    const itemId = typeof claimIdOrData === 'object' ? claimIdOrData?.itemId : null;
+
+    let claim = claims.find(c => c.id === claimId);
+    if (!claim && (itemId || claimId)) {
+      const searchId = itemId || claimId;
+      claim = claims.find(c => String(c.item_id) === String(searchId) && c.status === 'disetujui');
+    }
+
+    const resolvedClaimId = claim?.id || claimId;
+    const resolvedItemId = claim?.item_id || itemId;
+    const targetItem = items.find(i => String(i.id) === String(resolvedItemId));
+
+    // 1. Update status klaim di Supabase & local state
+    if (isSupabaseConfigured() && supabase && isUuid(resolvedClaimId)) {
+      try {
+        await supabase.from('claims').update({
+          status: 'dibatalkan',
+          admin_notes: reason || 'Verifikasi dibatalkan oleh Admin Posko (Klaim tidak sah / palsu).',
+          verified_by: isUuid(user?.id) ? user.id : null,
+          verified_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }).eq('id', resolvedClaimId);
+      } catch (err) {
+        console.warn('Gagal batalkan klaim di Supabase:', err);
+      }
+    } else if (isSupabaseConfigured() && supabase && isUuid(resolvedItemId)) {
+      // Fallback update by item_id if claimId wasn't known
+      try {
+        await supabase.from('claims').update({
+          status: 'dibatalkan',
+          admin_notes: reason || 'Verifikasi dibatalkan oleh Admin Posko (Klaim tidak sah / palsu).',
+          verified_by: isUuid(user?.id) ? user.id : null,
+          verified_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }).eq('item_id', resolvedItemId).eq('status', 'disetujui');
+      } catch (err) {
+        console.warn('Gagal batalkan klaim via item_id di Supabase:', err);
+      }
+    }
+
+    if (resolvedClaimId) {
+      setClaims(prev => prev.map(c => (c.id === resolvedClaimId || (resolvedItemId && String(c.item_id) === String(resolvedItemId) && c.status === 'disetujui')) ? {
+        ...c,
+        status: 'dibatalkan',
+        admin_notes: reason || 'Verifikasi dibatalkan oleh Admin Posko (Klaim tidak sah / palsu).',
+        verified_by: user?.id,
+        verified_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } : c));
+    }
+
+    // 2. Kembalikan status barang menjadi 'terbuka' agar publik/orang lain bisa mengajukan klaim kembali
+    if (targetItem) {
+      setItems(prev => prev.map(i => String(i.id) === String(resolvedItemId) ? {
+        ...i,
+        item_status: 'terbuka',
+        updated_at: new Date().toISOString()
+      } : i));
+
+      if (isSupabaseConfigured() && supabase && isUuid(resolvedItemId)) {
+        try {
+          await supabase.from('items').update({
+            item_status: 'terbuka',
+            updated_at: new Date().toISOString()
+          }).eq('id', resolvedItemId);
+        } catch (err) {
+          console.warn('Gagal reset status item ke terbuka di Supabase:', err);
+        }
+      }
+    }
+
+    // 3. Batalkan match serah terima terkait
+    setMatches(prev => prev.map(m => String(m.item_id) === String(resolvedItemId) && (claim?.claimer_id ? m.owner_id === claim.claimer_id : true) ? {
+      ...m,
+      status: 'dibatalkan'
+    } : m));
+
+    if (isSupabaseConfigured() && supabase && isUuid(resolvedItemId)) {
+      try {
+        await supabase.from('matches').update({
+          status: 'dibatalkan'
+        }).eq('item_id', resolvedItemId);
+      } catch (err) {
+        console.warn('Gagal batalkan match di Supabase:', err);
+      }
+    }
+
+    // 4. Notifikasi ke user yang dibatalkan
+    if (claim?.claimer_id) {
+      addNotification({
+        user_id: claim.claimer_id,
+        type: 'klaim',
+        title: 'Verifikasi Klaim DIBATALKAN ⚠️',
+        body: `Status klaim Anda untuk #${claim.item_code || targetItem?.item_code} telah dibatalkan oleh Admin. Alasan: "${reason || 'Terindikasi ketidaksesuaian/klaim palsu'}". Anda tidak dapat mengajukan klaim kembali untuk barang ini.`,
+        link: `/barang/${resolvedItemId}`
+      });
+    }
+
+    // 5. Notifikasi ke penemu barang
+    if (targetItem?.user_id) {
+      addNotification({
+        user_id: targetItem.user_id,
+        type: 'klaim',
+        title: 'Verifikasi Dibatalkan & Kasus Dibuka Kembali 🔄',
+        body: `Admin telah membatalkan verifikasi klaim sebelumnya untuk #${targetItem.item_code}. Status barang kembali dibuka untuk mencari pemilik yang benar-benar sah.`,
+        link: `/barang/${resolvedItemId}`
+      });
+    }
+
+    return { success: true };
+  };
+
+  /**
+   * Pengguna lain mengajukan sanggahan / melapor ke Admin jika merasa ada kesalahan verifikasi
+   */
+  const submitClaimObjection = async ({ itemId, message, contactInfo }) => {
+    const targetItem = items.find(i => i.id === itemId);
+    if (!targetItem) return { error: 'Barang tidak ditemukan' };
+
+    // Kirim notifikasi prioritas ke Admin
+    addNotification({
+      user_id: 'user-admin-01',
+      type: 'klaim',
+      title: 'Sanggahan Verifikasi Kepemilikan Masuk! ⚠️',
+      body: `${user?.full_name || 'Seorang pengguna'} menyanggah verifikasi #${targetItem.item_code}: "${message}" (Kontak: ${contactInfo || user?.phone || user?.email || '-'}).`,
+      link: `/admin/klaim`
+    });
+
+    return { success: true };
+  };
+
   // --- MESSAGES ACTIONS ---
   const sendMessage = (matchId, content, type = 'text') => {
     const newMsg = {
@@ -1125,6 +1280,8 @@ export const DataProvider = ({ children }) => {
       markItemAsReturned,
       submitClaim,
       verifyClaim,
+      revokeClaimVerification,
+      submitClaimObjection,
       sendMessage,
       createOrder,
       updateOrderStatus,

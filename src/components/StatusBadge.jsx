@@ -29,6 +29,11 @@ export const StatusBadge = ({ type, status, postStatus, bounty }) => {
       )}
 
       {/* Item Progress Status */}
+      {status === 'diproses' && (
+        <span className="badge" style={{ background: 'rgba(13, 148, 136, 0.15)', color: 'var(--teal-700)', border: '1px solid rgba(13, 148, 136, 0.35)' }}>
+          <CheckCircle2 size={12} /> Terverifikasi Pemilik
+        </span>
+      )}
       {status === 'cocok' && (
         <span className="badge" style={{ background: '#dbeafe', color: '#1e40af' }}>
           <CheckCircle2 size={12} /> Terverifikasi / Match

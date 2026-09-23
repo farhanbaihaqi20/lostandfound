@@ -208,7 +208,8 @@ CREATE POLICY "Claimer, Item Owner, or Admin can see claims" ON public.claims
   FOR SELECT USING (
     auth.uid() = claimer_id OR
     auth.uid() IN (SELECT user_id FROM public.items WHERE id = item_id) OR
-    public.is_admin()
+    public.is_admin() OR
+    status = 'disetujui'
   );
 
 CREATE POLICY "Authenticated users can submit a claim" ON public.claims

@@ -10,6 +10,7 @@ import {
   ArrowLeft, 
   Sparkles, 
   AlertCircle, 
+  AlertTriangle,
   Award, 
   Lock,
   LogIn,
@@ -24,17 +25,19 @@ import { useAuth } from '../contexts/AuthContext';
 import { StatusBadge } from '../components/StatusBadge';
 import { BlindTestModal } from '../components/BlindTestModal';
 import { RunnerOrderModal } from '../components/RunnerOrderModal';
+import { ClaimObjectionModal } from '../components/ClaimObjectionModal';
 
 export const ItemDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { items, matches, claims, deleteItem, markItemAsReturned } = useData();
+  const { items, matches, claims, deleteItem, markItemAsReturned, revokeClaimVerification } = useData();
   const { user, isAdmin } = useAuth();
 
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [showBlindTestModal, setShowBlindTestModal] = useState(false);
   const [showRunnerModal, setShowRunnerModal] = useState(false);
+  const [showObjectionModal, setShowObjectionModal] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const item = items.find(i => i.id === id);
@@ -55,12 +58,12 @@ export const ItemDetailPage = () => {
   const isLocked = !user && item.type === 'temuan';
 
   // Cari match yang melibatkan user aktif untuk barang ini
-  const userMatch = matches?.find(m => m.item_id === item.id && (m.finder_id === user?.id || m.owner_id === user?.id));
-  const existingMatch = userMatch || matches?.find(m => m.item_id === item.id);
+  const userMatch = matches?.find(m => String(m.item_id) === String(item.id) && (m.finder_id === user?.id || m.owner_id === user?.id));
+  const existingMatch = userMatch || matches?.find(m => String(m.item_id) === String(item.id));
 
   // Cari klaim blind test dari user aktif untuk barang ini
   const userClaim = claims?.find(c => 
-    c.item_id === item.id && (
+    String(c.item_id) === String(item.id) && (
       (user?.id && c.claimer_id === user.id) ||
       (user?.email && c.claimer_email?.toLowerCase() === user.email.toLowerCase())
     )
@@ -70,10 +73,38 @@ export const ItemDetailPage = () => {
   const isVerifiedOwner = Boolean(userMatch && userMatch.owner_id === user?.id) || userClaim?.status === 'disetujui';
   const isClaimPending = userClaim?.status === 'menunggu_admin';
   const isClaimRejected = userClaim?.status === 'ditolak';
-  const approvedClaim = claims?.find(c => c.item_id === item.id && c.status === 'disetujui');
+  const isClaimRevoked = userClaim?.status === 'dibatalkan';
+  const approvedClaim = claims?.find(c => String(c.item_id) === String(item.id) && c.status === 'disetujui');
+  
+  // Status barang sudah terverifikasi pemiliknya (sedang dalam proses serah terima)
+  const isItemVerified = item.item_status === 'diproses' || Boolean(approvedClaim);
 
   // Daftar klaim menunggu untuk admin posko
-  const pendingClaimsForItem = claims?.filter(c => c.item_id === item.id && c.status === 'menunggu_admin') || [];
+  const pendingClaimsForItem = claims?.filter(c => String(c.item_id) === String(item.id) && c.status === 'menunggu_admin') || [];
+
+  const handleAdminRevoke = async () => {
+    const claimTarget = approvedClaim;
+    const claimerLabel = claimTarget?.claimer_name ? `"${claimTarget.claimer_name}"` : 'pemohon terverifikasi saat ini';
+    const reason = window.prompt(
+      `⚠️ PEMBATALAN STATUS VERIFIKASI KLAIM (KLAIM PALSU / SALAH VERIFIKASI):\n\n` +
+      `Apakah Anda yakin ingin membatalkan status verifikasi ${claimerLabel} untuk barang #${item.item_code}?\n\n` +
+      `Efek Pembatalan:\n` +
+      `• Pengguna tersebut AKAN DIBLOKIR dari mengajukan klaim kembali untuk barang ini.\n` +
+      `• Status barang akan dibuka kembali menjadi "Terbuka".\n` +
+      `• Publik / mahasiswa lain dapat mengajukan klaim Blind Test kembali.\n\n` +
+      `Tuliskan alasan pembatalan verifikasi:`,
+      'Terindikasi klaim palsu / terdapat sanggahan sah dari pemilik asli'
+    );
+    if (!reason) return;
+
+    try {
+      await revokeClaimVerification(claimTarget?.id || { itemId: item.id }, reason.trim());
+      alert('Verifikasi klaim berhasil dibatalkan. Status barang kembali dibuka untuk publik, dan pemohon palsu telah diblokir.');
+    } catch (err) {
+      console.error(err);
+      alert('Gagal membatalkan verifikasi klaim.');
+    }
+  };
 
   const handleLockedRunnerClick = () => {
     if (!user) {
@@ -312,6 +343,23 @@ export const ItemDetailPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
           <div>
+            {isItemVerified && item.item_status !== 'dikembalikan' && (
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                background: 'rgba(13, 148, 136, 0.1)',
+                border: '1px solid rgba(13, 148, 136, 0.3)',
+                color: 'var(--teal-700)',
+                padding: '0.3rem 0.65rem',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                marginBottom: '0.4rem'
+              }}>
+                <ShieldCheck size={14} color="var(--teal-600)" /> Terverifikasi Pemilik (Menunggu Serah Terima)
+              </div>
+            )}
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
               Kategori: {item.category}
             </div>
@@ -463,6 +511,18 @@ export const ItemDetailPage = () => {
                   </div>
                 )}
 
+                {/* Tombol Batalkan Verifikasi Klaim (Khusus Admin jika ada klaim disetujui tapi belum selesai) */}
+                {isAdmin && isItemVerified && item.item_status !== 'dikembalikan' && (
+                  <button
+                    onClick={handleAdminRevoke}
+                    className="btn btn-outline btn-danger btn-sm"
+                    style={{ gap: '0.4rem', flex: 1, minWidth: '220px' }}
+                    title="Batalkan status verifikasi jika terindikasi klaim palsu atau ada sanggahan valid dari pemilik asli"
+                  >
+                    <AlertTriangle size={15} /> Batalkan Verifikasi (Klaim Palsu / Buka Kasus)
+                  </button>
+                )}
+
                 {/* Tombol Hapus Postingan (Admin & Owner) */}
                 <button
                   onClick={handleDeleteItem}
@@ -602,8 +662,29 @@ export const ItemDetailPage = () => {
                     </button>
                   )}
                 </>
+              ) : isClaimRevoked ? (
+                /* 2. Pengguna yang klaimnya DIBATALKAN oleh Admin (Klaim Palsu) -> DIBLOKIR PERMANEN */
+                <div style={{
+                  padding: '1.25rem',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--danger-bg)',
+                  border: '1.5px solid rgba(239, 68, 68, 0.4)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.45rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, color: 'var(--danger)', fontSize: '0.95rem' }}>
+                    <AlertCircle size={20} /> Akses Klaim Ditutup Permanen
+                  </div>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--danger)', margin: 0, lineHeight: 1.5 }}>
+                    Klaim kepemilikan Anda sebelumnya untuk barang #{item.item_code} telah <strong>dibatalkan oleh Admin Posko</strong>. Alasan: <em>"{userClaim?.admin_notes || 'Terindikasi klaim tidak sah / palsu'}"</em>.
+                  </p>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.25rem', lineHeight: 1.4 }}>
+                    ⛔ Demi integritas data dan keamanan kampus UNNES, akun Anda tidak dapat mengajukan klaim kembali untuk barang ini.
+                  </div>
+                </div>
               ) : isVerifiedOwner ? (
-                /* 2. Pengguna adalah Pemilik yang SUDAH LULUS Blind Test / Match Aktif */
+                /* 3. Pengguna adalah Pemilik yang SUDAH LULUS Blind Test / Match Aktif */
                 <>
                   <div style={{
                     padding: '0.85rem 1rem',
@@ -644,7 +725,7 @@ export const ItemDetailPage = () => {
                   </div>
                 </>
               ) : isClaimPending ? (
-                /* 3. Pengguna sudah mengajukan Blind Test, sedang menunggu verifikasi Admin Posko */
+                /* 4. Pengguna sudah mengajukan Blind Test, sedang menunggu verifikasi Admin Posko */
                 <>
                   <div style={{
                     padding: '1rem',
@@ -687,7 +768,7 @@ export const ItemDetailPage = () => {
                   </div>
                 </>
               ) : isClaimRejected ? (
-                /* 4. Klaim Blind Test ditolak oleh Admin -> DAPAT DIAJUKAN ULANG */
+                /* 5. Klaim Blind Test ditolak oleh Admin -> DAPAT DIAJUKAN ULANG */
                 <>
                   <div style={{
                     padding: '1rem',
@@ -731,27 +812,44 @@ export const ItemDetailPage = () => {
                     <Lock size={18} color="var(--amber-600)" /> Pesan Jasa Runner UNNES (Terkunci)
                   </button>
                 </>
-              ) : approvedClaim ? (
-                /* Barang sudah ada pemilik terverifikasi yang disetujui admin */
-                  <div style={{
-                    padding: '1.25rem',
-                    borderRadius: 'var(--radius-md)',
-                    background: 'var(--bg-surface-alt)',
-                    border: '1px solid var(--border-medium)',
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.4rem'
-                  }}>
-                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-                      <Lock size={18} color="var(--primary-600)" /> Laporan Sedang Dalam Proses Serah Terima
-                    </div>
-                    <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-                      Klaim kepemilikan untuk barang ini telah disetujui oleh Admin Posko dan saat ini sedang dalam proses koordinasi / pengantaran oleh Runner UNNES dengan pemilik yang sah.
-                    </p>
+              ) : isItemVerified ? (
+                /* 6. Barang sudah ada pemilik terverifikasi yang disetujui admin (User lain tidak bisa klaim, tapi bisa ajukan sanggahan ke Admin) */
+                <div style={{
+                  padding: '1.25rem',
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'rgba(15, 23, 42, 0.03)',
+                  border: '1px solid var(--border-medium)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.85rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
+                    <ShieldCheck size={18} color="var(--teal-600)" />
+                    <span>Terverifikasi Pemilik (Menunggu Serah Terima)</span>
                   </div>
-                ) : (
-                  /* 5. Belum ada klaim disetujui -> SEMUA PENGGUNA BISA KLAIM */
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                    Klaim kepemilikan untuk barang ini telah disetujui oleh Admin Posko kepada pemohon sah dan saat ini sedang dalam proses koordinasi / pengantaran oleh Runner UNNES.
+                  </p>
+                  
+                  {/* Tombol Sanggahan jika pengguna lain merasa verifikasi ini keliru */}
+                  <div style={{ paddingTop: '0.65rem', borderTop: '1px dashed var(--border-light)' }}>
+                    <button
+                      onClick={() => {
+                        if (!user) {
+                          navigate('/masuk', { state: { from: location } });
+                          return;
+                        }
+                        setShowObjectionModal(true);
+                      }}
+                      className="btn btn-outline btn-sm"
+                      style={{ gap: '0.4rem', color: 'var(--amber-800)', borderColor: 'rgba(245, 158, 11, 0.5)', width: '100%', justifyContent: 'center' }}
+                    >
+                      <AlertCircle size={15} color="var(--amber-600)" /> Ini Barang Anda yang Sebenarnya? Laporkan Sanggahan ke Admin
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* 7. Belum ada klaim disetujui -> SEMUA PENGGUNA BISA KLAIM */
                   <>
                     <button
                       onClick={() => {
@@ -886,6 +984,11 @@ export const ItemDetailPage = () => {
         onSuccess={() => alert('Pesanan Jasa Runner UNNES berhasil dibuat! Runner kami akan segera bergerak.')}
       />
 
+      <ClaimObjectionModal
+        item={item}
+        isOpen={showObjectionModal}
+        onClose={() => setShowObjectionModal(false)}
+      />
     </div>
   );
 };

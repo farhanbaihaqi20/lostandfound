@@ -107,7 +107,7 @@ export const ItemCard = ({ item }) => {
           pointerEvents: 'none',
           zIndex: 5
         }}>
-          <StatusBadge type={item.type} />
+          <StatusBadge type={item.type} status={item.item_status} />
           {item.bounty_amount > 0 && (
             <span className="badge badge-bounty" style={{ pointerEvents: 'auto', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
               <Award size={12} /> Rp {item.bounty_amount.toLocaleString('id-ID')}
