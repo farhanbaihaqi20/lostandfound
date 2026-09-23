@@ -273,7 +273,7 @@ export const MessagesPage = () => {
 
       {/* Modals */}
       <RunnerOrderModal
-        item={activeMatch ? { id: activeMatch.item_id, title: activeMatch.item_title, item_code: activeMatch.item_code } : null}
+        item={activeMatch ? { item_id: activeMatch.item_id, match_id: activeMatch.id, title: activeMatch.item_title, item_code: activeMatch.item_code } : null}
         isOpen={showRunnerModal}
         onClose={() => setShowRunnerModal(false)}
         onSuccess={() => alert('Pesanan Jasa Runner UNNES berhasil diajukan!')}

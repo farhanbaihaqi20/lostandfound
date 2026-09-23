@@ -115,8 +115,13 @@ CREATE TABLE IF NOT EXISTS public.messages (
 -- 8. ORDERS TABLE (Runner / Jasa Antar Kampus)
 CREATE TABLE IF NOT EXISTS public.orders (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    match_id UUID REFERENCES public.matches(id),
+    match_id UUID REFERENCES public.matches(id) ON DELETE SET NULL,
+    item_id UUID REFERENCES public.items(id) ON DELETE SET NULL,
+    item_title TEXT DEFAULT '',
+    item_code TEXT DEFAULT '',
     requester_id UUID REFERENCES public.profiles(id) NOT NULL,
+    requester_name TEXT DEFAULT '',
+    requester_phone TEXT DEFAULT '',
     service_type TEXT NOT NULL,
     status TEXT DEFAULT 'menunggu',
     pickup_location TEXT NOT NULL,
@@ -124,6 +129,8 @@ CREATE TABLE IF NOT EXISTS public.orders (
     fee_amount INTEGER DEFAULT 8000,
     payment_status TEXT DEFAULT 'belum_bayar',
     payment_method TEXT DEFAULT 'tunai',
+    runner_name TEXT DEFAULT '',
+    runner_phone TEXT DEFAULT '',
     runner_notes TEXT DEFAULT '',
     evidence_photos TEXT[] DEFAULT ARRAY[]::TEXT[],
     managed_by UUID REFERENCES public.profiles(id),
@@ -217,6 +224,20 @@ CREATE POLICY "Involved parties can post messages" ON public.messages
       WHERE m.id = match_id AND (m.finder_id = auth.uid() OR m.owner_id = auth.uid())
     )
   );
+
+-- Orders Policies
+CREATE POLICY "Orders can be viewed by requester or admin" ON public.orders
+  FOR SELECT USING (auth.uid() = requester_id OR public.is_admin());
+
+CREATE POLICY "Authenticated users can create orders" ON public.orders
+  FOR INSERT WITH CHECK (auth.uid() = requester_id OR public.is_admin());
+
+CREATE POLICY "Orders can be updated by requester or admin" ON public.orders
+  FOR UPDATE USING (auth.uid() = requester_id OR public.is_admin());
+
+CREATE POLICY "Orders can be deleted by requester or admin" ON public.orders
+  FOR DELETE USING (auth.uid() = requester_id OR public.is_admin());
+
 
 -- Auto create profile on signup trigger
 CREATE OR REPLACE FUNCTION public.handle_new_user()

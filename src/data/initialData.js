@@ -328,3 +328,58 @@ export const INITIAL_NOTIFICATIONS = [
     created_at: '2026-09-20T12:05:00.000Z'
   }
 ];
+
+export const RUNNER_STATUS_CONFIG = {
+  menunggu: {
+    label: 'Menunggu Penugasan',
+    fullLabel: 'Menunggu Penugasan Runner',
+    badgeClass: 'badge-review',
+    color: '#d97706',
+    border: 'var(--amber-500)',
+    description: 'Menunggu konfirmasi shift runner UNNES'
+  },
+  diterima: {
+    label: 'Pesanan Diterima Runner',
+    fullLabel: 'Pesanan Diterima Runner',
+    badgeClass: 'badge-teal',
+    color: '#0d9488',
+    border: 'var(--teal-600)',
+    description: 'Runner telah menerima pesanan & bersiap mengambil barang'
+  },
+  dalam_proses: {
+    label: 'Runner Sedang OTW',
+    fullLabel: 'Runner Sedang OTW Menuju Lokasi',
+    badgeClass: 'badge-found',
+    color: '#15803d',
+    border: 'var(--success)',
+    description: 'Runner sedang menuju titik temu pengantaran'
+  },
+  selesai: {
+    label: 'Selesai (Sudah Diterima)',
+    fullLabel: 'Selesai (Sudah Diterima Pemilik)',
+    badgeClass: 'badge-found',
+    color: '#15803d',
+    border: 'var(--success)',
+    description: 'Barang telah berhasil diserahterimakan ke pemilik'
+  },
+  dibatalkan: {
+    label: 'Dibatalkan',
+    fullLabel: 'Pesanan Dibatalkan',
+    badgeClass: 'badge-lost',
+    color: '#b91c1c',
+    border: 'var(--danger)',
+    description: 'Pesanan jasa runner dibatalkan'
+  }
+};
+
+export const getRunnerStatusInfo = (status) => {
+  return RUNNER_STATUS_CONFIG[status] || {
+    label: (status || 'menunggu').replace(/_/g, ' '),
+    fullLabel: (status || 'menunggu').replace(/_/g, ' '),
+    badgeClass: 'badge-review',
+    color: '#6b7280',
+    border: 'var(--border-light)',
+    description: 'Status pesanan runner kampus'
+  };
+};
+

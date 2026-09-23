@@ -465,6 +465,11 @@ img {
   color: #6d28d9;
 }
 
+.badge-teal {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
 [data-theme='dark'] .badge-lost {
   background: rgba(239, 68, 68, 0.2);
   color: #fca5a5;
@@ -489,6 +494,11 @@ img {
 [data-theme='dark'] .badge-admin {
   background: rgba(139, 92, 246, 0.2);
   color: #c4b5fd;
+}
+
+[data-theme='dark'] .badge-teal {
+  background: rgba(20, 184, 166, 0.2);
+  color: #5eead4;
 }
 
 /* Animations */

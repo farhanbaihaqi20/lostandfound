@@ -24,7 +24,7 @@ export const RunnerOrderModal = ({ item, isOpen, onClose, onSuccess }) => {
     return null;
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!deliveryLocation.trim()) {
       alert('Mohon isi lokasi pengantaran / titik temu Anda di kampus UNNES.');
@@ -32,20 +32,27 @@ export const RunnerOrderModal = ({ item, isOpen, onClose, onSuccess }) => {
     }
 
     setSubmitting(true);
-    createOrder({
-      match_id: item?.id || null,
-      item_title: item?.title || 'Pengambilan Barang Kampus',
-      item_code: item?.item_code || 'LF-RUNNER',
-      service_type: serviceType,
-      pickup_location: pickupLocation,
-      delivery_location: deliveryLocation,
-      requester_phone: phone,
-      runner_notes: notes
-    });
+    try {
+      await createOrder({
+        item_id: item?.item_id || (item?.id && !item?.match_id ? item.id : null),
+        match_id: item?.match_id || null,
+        item_title: item?.title || 'Pengambilan Barang Kampus',
+        item_code: item?.item_code || 'LF-RUNNER',
+        service_type: serviceType,
+        pickup_location: pickupLocation,
+        delivery_location: deliveryLocation,
+        requester_phone: phone,
+        runner_notes: notes
+      });
 
-    setSubmitting(false);
-    onSuccess();
-    onClose();
+      setSubmitting(false);
+      onSuccess();
+      onClose();
+    } catch (err) {
+      console.error('Error saat membuat pesanan runner:', err);
+      setSubmitting(false);
+      alert('Terjadi kesalahan saat mengirim pesanan runner. Silakan coba lagi.');
+    }
   };
 
   return (

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
-import { UNNES_BUILDINGS, CATEGORIES } from '../data/initialData';
+import { UNNES_BUILDINGS, CATEGORIES, getRunnerStatusInfo } from '../data/initialData';
 import { ItemCard } from '../components/ItemCard';
 import { RunnerOrderModal } from '../components/RunnerOrderModal';
 
@@ -163,36 +163,39 @@ export const DashboardPage = () => {
       )}
 
       {/* Active Runner Tracker Widget if any */}
-      {activeOrder && (
-        <div className="glass-panel" style={{
-          borderRadius: 'var(--radius-lg)',
-          padding: '1rem 1.25rem',
-          borderLeft: '4px solid var(--teal-600)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '0.75rem'
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-              <span className="badge badge-found" style={{ fontSize: '0.7rem' }}>
-                RUNNER SEDANG JALAN
-              </span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>#{activeOrder.item_code}</span>
+      {activeOrder && (() => {
+        const statusInfo = getRunnerStatusInfo(activeOrder.status);
+        return (
+          <div className="glass-panel" style={{
+            borderRadius: 'var(--radius-lg)',
+            padding: '1rem 1.25rem',
+            borderLeft: `4px solid ${statusInfo.border || 'var(--teal-600)'}`,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '0.75rem'
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                <span className={`badge ${statusInfo.badgeClass}`} style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                  {statusInfo.label}
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>#{activeOrder.item_code}</span>
+              </div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>
+                Antar ke: {activeOrder.delivery_location}
+              </div>
+              <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>
+                Runner: {activeOrder.runner_name || 'Menunggu penugasan tim'} • {activeOrder.runner_notes || statusInfo.description}
+              </div>
             </div>
-            <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>
-              Antar ke: {activeOrder.delivery_location}
-            </div>
-            <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>
-              Runner: {activeOrder.runner_name || 'Menunggu penugasan tim'} • {activeOrder.runner_notes || 'Sedang menuju titik barang'}
-            </div>
+            <Link to="/profil" className="btn btn-outline btn-sm">
+              Cek Detail
+            </Link>
           </div>
-          <Link to="/profil" className="btn btn-outline btn-sm">
-            Cek Detail
-          </Link>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 3. Search Bar with Glassmorphic Input */}
       <div style={{ position: 'relative' }}>

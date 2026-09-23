@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { AdminNavTabs } from '../../components/AdminNavTabs';
+import { getRunnerStatusInfo } from '../../data/initialData';
 
 export const OrdersPage = () => {
   const { orders, updateOrderStatus, deleteOrder } = useData();
@@ -187,11 +188,19 @@ export const OrdersPage = () => {
             const waNumber = rawPhone.startsWith('0') ? '62' + rawPhone.slice(1) : rawPhone;
             const waUrl = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(`Halo ${order.requester_name}, saya Tim Posko UNNES Lost & Found terkait pesanan jasa runner barang "${order.item_title}" (Kode #${order.item_code}).`)}` : null;
 
+            const statusInfo = getRunnerStatusInfo(order.status);
             return (
               <div 
                 key={order.id} 
                 className="glass-card" 
-                style={{ padding: '1.25rem', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
+                style={{ 
+                  padding: '1.25rem', 
+                  border: '1px solid var(--border-light)', 
+                  borderLeft: `4px solid ${statusInfo.border || 'var(--teal-600)'}`,
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '0.85rem' 
+                }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div>
@@ -199,8 +208,8 @@ export const OrdersPage = () => {
                       <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary-700)' }}>
                         #{order.item_code}
                       </span>
-                      <span className="badge badge-review" style={{ textTransform: 'capitalize', fontSize: '0.65rem' }}>
-                        {order.status.replace('_', ' ')}
+                      <span className={`badge ${statusInfo.badgeClass}`} style={{ fontSize: '0.68rem', fontWeight: 700 }}>
+                        {statusInfo.label}
                       </span>
                       <span className={`badge ${order.payment_status === 'lunas' ? 'badge-found' : 'badge-lost'}`} style={{ fontSize: '0.65rem' }}>
                         {order.payment_status === 'lunas' ? 'Lunas' : 'Belum Bayar'}

@@ -16,6 +16,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { uploadImageFile } from '../lib/storageService';
 import { ItemCard } from '../components/ItemCard';
+import { getRunnerStatusInfo } from '../data/initialData';
 
 export const ProfilePage = () => {
   const { user, isAdmin, updateProfile, switchDemoAccount } = useAuth();
@@ -343,15 +344,28 @@ export const ProfilePage = () => {
               )}
             </div>
           ) : (
-            myOrders.map(o => (
-              <div key={o.id} className="glass-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', border: '1px solid var(--border-light)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>{o.item_title}</span>
-                    <span className="badge badge-review" style={{ textTransform: 'capitalize' }}>
-                      {o.status.replace('_', ' ')}
-                    </span>
-                  </div>
+            myOrders.map(o => {
+              const statusInfo = getRunnerStatusInfo(o.status);
+              return (
+                <div 
+                  key={o.id} 
+                  className="glass-card" 
+                  style={{ 
+                    padding: '1.25rem', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '0.5rem', 
+                    border: '1px solid var(--border-light)',
+                    borderLeft: `4px solid ${statusInfo.border || 'var(--teal-600)'}`
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>{o.item_title}</span>
+                      <span className={`badge ${statusInfo.badgeClass}`} style={{ fontSize: '0.7rem', fontWeight: 700 }}>
+                        {statusInfo.fullLabel || statusInfo.label}
+                      </span>
+                    </div>
                   {isAdmin && (
                     <Link
                       to="/admin/pesanan"
@@ -368,13 +382,14 @@ export const ProfilePage = () => {
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                   Biaya: <strong>Rp {o.fee_amount.toLocaleString('id-ID')}</strong> ({o.payment_method.replace('_', ' ')}) • Runner: {o.runner_name || 'Menunggu penugasan'}
                 </div>
-                {o.runner_notes && (
-                  <div style={{ fontSize: '0.78rem', background: 'var(--bg-surface-alt)', padding: '0.4rem 0.65rem', borderRadius: 'var(--radius-sm)' }}>
-                    Catatan Runner: {o.runner_notes}
-                  </div>
-                )}
-              </div>
-            ))
+                  {o.runner_notes && (
+                    <div style={{ fontSize: '0.78rem', background: 'var(--bg-surface-alt)', padding: '0.4rem 0.65rem', borderRadius: 'var(--radius-sm)' }}>
+                      Catatan Runner: {o.runner_notes}
+                    </div>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
       )}

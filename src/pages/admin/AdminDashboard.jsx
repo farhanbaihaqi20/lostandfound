@@ -14,6 +14,7 @@ import {
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminNavTabs } from '../../components/AdminNavTabs';
+import { getRunnerStatusInfo } from '../../data/initialData';
 
 export const AdminDashboard = () => {
   const { items, claims, orders, stats } = useData();
@@ -221,23 +222,26 @@ export const AdminDashboard = () => {
               Tidak ada pesanan runner yang aktif.
             </div>
           ) : (
-            activeOrders.slice(0, 3).map(o => (
-              <div key={o.id} style={{ padding: '0.75rem', background: 'var(--bg-surface-alt)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--teal-700)' }}>#{o.item_code}</span>
-                    <span className="badge badge-review" style={{ fontSize: '0.6rem', padding: '0.1rem 0.35rem', textTransform: 'capitalize' }}>
-                      {o.status.replace('_', ' ')}
-                    </span>
+            activeOrders.slice(0, 3).map(o => {
+              const statusInfo = getRunnerStatusInfo(o.status);
+              return (
+                <div key={o.id} style={{ padding: '0.75rem', background: 'var(--bg-surface-alt)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', borderLeft: `3px solid ${statusInfo.border || 'var(--teal-600)'}` }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--teal-700)' }}>#{o.item_code}</span>
+                      <span className={`badge ${statusInfo.badgeClass}`} style={{ fontSize: '0.62rem', padding: '0.1rem 0.35rem', fontWeight: 700 }}>
+                        {statusInfo.label}
+                      </span>
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '2px' }}>{o.item_title}</div>
+                    <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>Pemesan: {o.requester_name} • Antar ke: {o.delivery_location}</div>
                   </div>
-                  <div style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '2px' }}>{o.item_title}</div>
-                  <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>Pemesan: {o.requester_name} • Antar ke: {o.delivery_location}</div>
+                  <Link to="/admin/pesanan" className="btn btn-teal btn-sm" style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}>
+                    Atur
+                  </Link>
                 </div>
-                <Link to="/admin/pesanan" className="btn btn-teal btn-sm" style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}>
-                  Atur
-                </Link>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 

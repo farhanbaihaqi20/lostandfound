@@ -5,7 +5,8 @@ import {
   INITIAL_CLAIMS, 
   INITIAL_MATCHES, 
   INITIAL_ORDERS, 
-  INITIAL_NOTIFICATIONS 
+  INITIAL_NOTIFICATIONS,
+  getRunnerStatusInfo
 } from '../data/initialData';
 import { useAuth } from './AuthContext';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -51,23 +52,63 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  // Fetch runner orders dari Supabase & sinkronisasi otomatis
+  const fetchSupabaseOrders = async () => {
+    if (!isSupabaseConfigured() || !supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*, requester:requester_id(full_name, avatar_url, email, phone)')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        const formatted = data.map(order => ({
+          ...order,
+          requester_name: order.requester_name || order.requester?.full_name || 'Mahasiswa UNNES',
+          requester_phone: order.requester_phone || order.requester?.phone || ''
+        }));
+
+        setOrders(prev => {
+          // Tetap pertahankan mock orders demo bila belum ada di Supabase
+          const baseOrders = INITIAL_ORDERS.filter(b => !formatted.some(f => f.item_code === b.item_code || f.id === b.id));
+          const localOnly = prev.filter(o => !isUuid(o.id) && !baseOrders.some(b => b.id === o.id));
+          return [...formatted, ...localOnly, ...baseOrders];
+        });
+      } else if (error) {
+        console.warn('Gagal memuat orders dari Supabase:', error);
+      }
+    } catch (err) {
+      console.warn('Gagal memuat orders dari Supabase:', err);
+    }
+  };
+
   useEffect(() => {
     fetchSupabaseItems();
+    fetchSupabaseOrders();
 
     if (!isSupabaseConfigured() || !supabase) return;
 
     // Supabase Realtime: dengarkan perubahan data dari semua pengguna/browser
-    const channel = supabase
+    const itemsChannel = supabase
       .channel('public:items_sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, () => {
         fetchSupabaseItems();
       })
       .subscribe();
 
+    const ordersChannel = supabase
+      .channel('public:orders_sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        fetchSupabaseOrders();
+      })
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(itemsChannel);
+      supabase.removeChannel(ordersChannel);
     };
   }, [user?.id]);
+
 
   // 2. Claims state
   const [claims, setClaims] = useState(() => {
@@ -590,14 +631,83 @@ export const DataProvider = ({ children }) => {
   };
 
   // --- RUNNER SERVICE ORDERS ---
-  const createOrder = (orderData) => {
+  const createOrder = async (orderData) => {
+    const isRealUser = isUuid(user?.id);
+    const isValidItemId = isUuid(orderData.item_id);
+    const isValidMatchId = isUuid(orderData.match_id);
+
+    // 1. Simpan ke Supabase jika login resmi
+    if (isSupabaseConfigured() && supabase && isRealUser) {
+      try {
+        const orderPayload = {
+          requester_id: user.id,
+          requester_name: user.full_name || 'Mahasiswa UNNES',
+          requester_phone: orderData.requester_phone || user.phone || '',
+          item_id: isValidItemId ? orderData.item_id : null,
+          match_id: isValidMatchId ? orderData.match_id : null,
+          item_title: orderData.item_title || 'Pengambilan Barang Kampus',
+          item_code: orderData.item_code || 'LF-RUNNER',
+          service_type: orderData.service_type || 'pickup_delivery',
+          status: 'menunggu',
+          pickup_location: orderData.pickup_location,
+          delivery_location: orderData.delivery_location,
+          fee_amount: orderData.service_type === 'active_hunting' ? 15000 : (Number(orderData.fee_amount) || 8000),
+          payment_status: 'belum_bayar',
+          payment_method: orderData.payment_method || 'tunai_saat_antar',
+          runner_name: '',
+          runner_phone: '',
+          runner_notes: orderData.runner_notes || '',
+          evidence_photos: []
+        };
+
+        const { data, error } = await supabase
+          .from('orders')
+          .insert(orderPayload)
+          .select('*, requester:requester_id(full_name, avatar_url, email, phone)')
+          .single();
+
+        if (!error && data) {
+          const newOrder = {
+            ...data,
+            requester_name: data.requester_name || data.requester?.full_name || user.full_name || 'Mahasiswa UNNES',
+            requester_phone: data.requester_phone || data.requester?.phone || user.phone || ''
+          };
+
+          setOrders(prev => [newOrder, ...prev.filter(o => o.id !== newOrder.id)]);
+
+          addNotification({
+            user_id: 'user-admin-01',
+            type: 'pesanan',
+            title: 'Pesanan Jasa Runner Baru 🚗',
+            body: `${user.full_name} memesan layanan ${orderData.service_type === 'active_hunting' ? 'Active Hunting' : 'Pick-up & Delivery'} ke ${orderData.delivery_location}.`,
+            link: '/admin/pesanan'
+          });
+
+          addNotification({
+            user_id: user.id,
+            type: 'pesanan',
+            title: 'Pesanan Runner Dibuat 📦',
+            body: `Pesanan jasa runner Anda sedang menunggu konfirmasi shift runner UNNES.`,
+            link: '/profil'
+          });
+
+          return { success: true, order: newOrder };
+        } else if (error) {
+          console.warn('Gagal insert order ke Supabase, fallback lokal:', error);
+        }
+      } catch (err) {
+        console.warn('Gagal insert order ke Supabase, fallback lokal:', err);
+      }
+    }
+
+    // 2. Fallback: Simpan ke local state / demo user
     const newOrder = {
       id: `ord-${Date.now()}`,
-      requester_id: user?.id,
-      requester_name: user?.full_name,
-      requester_phone: user?.phone || '',
+      requester_id: user?.id || 'user-mahasiswa-01',
+      requester_name: user?.full_name || 'Mahasiswa UNNES',
+      requester_phone: orderData.requester_phone || user?.phone || '',
       status: 'menunggu',
-      fee_amount: orderData.service_type === 'active_hunting' ? 15000 : 8000,
+      fee_amount: orderData.service_type === 'active_hunting' ? 15000 : (Number(orderData.fee_amount) || 8000),
       payment_status: 'belum_bayar',
       payment_method: 'tunai_saat_antar',
       evidence_photos: [],
@@ -611,7 +721,7 @@ export const DataProvider = ({ children }) => {
       user_id: 'user-admin-01',
       type: 'pesanan',
       title: 'Pesanan Jasa Runner Baru 🚗',
-      body: `${user?.full_name} memesan layanan ${orderData.service_type === 'active_hunting' ? 'Active Hunting' : 'Pick-up & Delivery'} ke ${orderData.delivery_location}.`,
+      body: `${user?.full_name || 'Mahasiswa'} memesan layanan ${orderData.service_type === 'active_hunting' ? 'Active Hunting' : 'Pick-up & Delivery'} ke ${orderData.delivery_location}.`,
       link: '/admin/pesanan'
     });
 
@@ -623,19 +733,40 @@ export const DataProvider = ({ children }) => {
       link: '/profil'
     });
 
-    return newOrder;
+    return { success: true, order: newOrder };
   };
 
-  const updateOrderStatus = (orderId, updates) => {
+  const updateOrderStatus = async (orderId, updates) => {
+    if (isSupabaseConfigured() && supabase && isUuid(orderId)) {
+      try {
+        const dbUpdates = { ...updates };
+        if (updates.status === 'selesai' && !updates.completed_at) {
+          dbUpdates.completed_at = new Date().toISOString();
+        }
+
+        const { error } = await supabase
+          .from('orders')
+          .update(dbUpdates)
+          .eq('id', orderId);
+
+        if (error) {
+          console.warn('Gagal update status order di Supabase:', error);
+        }
+      } catch (err) {
+        console.warn('Gagal update status order di Supabase:', err);
+      }
+    }
+
     setOrders(prev => prev.map(o => {
       if (o.id === orderId) {
         const updated = { ...o, ...updates };
         if (updates.status) {
+          const statusInfo = getRunnerStatusInfo(updates.status);
           addNotification({
             user_id: o.requester_id,
             type: 'pesanan',
-            title: `Update Pesanan Runner: ${updates.status.toUpperCase()}`,
-            body: updates.runner_notes || `Status pesanan Anda telah diperbarui menjadi ${updates.status}.`,
+            title: `Update Pesanan Runner: ${statusInfo.label}`,
+            body: updates.runner_notes || `Status pesanan Anda telah diperbarui menjadi "${statusInfo.label}".`,
             link: '/profil'
           });
         }
@@ -645,7 +776,17 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
-  const deleteOrder = (orderId) => {
+  const deleteOrder = async (orderId) => {
+    if (isSupabaseConfigured() && supabase && isUuid(orderId)) {
+      try {
+        const { error } = await supabase.from('orders').delete().eq('id', orderId);
+        if (error) {
+          console.warn('Gagal menghapus order di Supabase:', error);
+        }
+      } catch (err) {
+        console.warn('Gagal menghapus order di Supabase:', err);
+      }
+    }
     setOrders(prev => prev.filter(o => o.id !== orderId));
   };
 
