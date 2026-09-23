@@ -36,7 +36,7 @@ export const StatusBadge = ({ type, status, postStatus, bounty }) => {
       )}
       {status === 'dikembalikan' && (
         <span className="badge" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #10b981' }}>
-          <CheckCircle2 size={12} /> Sudah Kembali
+          <CheckCircle2 size={12} /> Barang Berhasil Dikembalikan
         </span>
       )}
 

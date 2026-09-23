@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Bike, CheckCircle2, ShieldAlert, DollarSign } from 'lucide-react';
+import { X, Bike, CheckCircle2, ShieldAlert, DollarSign, Lock, ShieldCheck } from 'lucide-react';
 import { UNNES_BUILDINGS } from '../data/initialData';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 
 export const RunnerOrderModal = ({ item, isOpen, onClose, onSuccess }) => {
   const navigate = useNavigate();
-  const { createOrder } = useData();
+  const { createOrder, matches, claims } = useData();
   const { user } = useAuth();
+
+  const isFoundItem = item?.type === 'temuan';
+  const isItemOwner = Boolean(user && item?.user_id && user.id === item.user_id);
+  const isVerifiedForThisItem = !isFoundItem || isItemOwner || 
+    matches?.some(m => m.item_id === item?.id && (m.owner_id === user?.id || m.finder_id === user?.id)) ||
+    claims?.some(c => c.item_id === item?.id && (c.claimer_id === user?.id || (user?.email && c.claimer_email?.toLowerCase() === user.email.toLowerCase())) && c.status === 'disetujui');
 
   const [serviceType, setServiceType] = useState('pickup_delivery');
   const [pickupLocation, setPickupLocation] = useState(item?.location_building || UNNES_BUILDINGS[0].name);
@@ -26,6 +32,11 @@ export const RunnerOrderModal = ({ item, isOpen, onClose, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isFoundItem && !isVerifiedForThisItem) {
+      alert('Pemesanan dibatalkan: Anda wajib melakukan verifikasi kepemilikan via Blind Test terlebih dahulu untuk barang temuan ini.');
+      return;
+    }
+
     if (!deliveryLocation.trim()) {
       alert('Mohon isi lokasi pengantaran / titik temu Anda di kampus UNNES.');
       return;
@@ -94,6 +105,30 @@ export const RunnerOrderModal = ({ item, isOpen, onClose, onSuccess }) => {
         }}>
           💡 <strong>Garansi "No Find, No Fee":</strong> Jika barang tidak ditemukan di lokasi, Anda bebas biaya! Pembayaran dilakukan langsung saat serah terima barang (Cash / QRIS).
         </div>
+
+        {/* Peringatan jika barang temuan belum lolos blind test */}
+        {isFoundItem && !isVerifiedForThisItem && (
+          <div style={{ 
+            background: 'var(--danger-bg)', 
+            border: '1.5px solid rgba(239, 68, 68, 0.4)', 
+            borderRadius: 'var(--radius-md)', 
+            padding: '0.85rem 1rem', 
+            fontSize: '0.825rem', 
+            color: 'var(--danger)',
+            marginBottom: '1rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.35rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.9rem' }}>
+              <Lock size={18} />
+              <span>Verifikasi Blind Test Diperlukan</span>
+            </div>
+            <p style={{ margin: 0, lineHeight: 1.45 }}>
+              Untuk keamanan barang temuan (#{item?.item_code}), pemesanan Runner hanya dapat diproses setelah Anda menyelesaikan dan disetujui melalui verifikasi <strong>Blind Test</strong> untuk membuktikan kepemilikan Anda.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {/* Layanan Option */}
@@ -206,9 +241,21 @@ export const RunnerOrderModal = ({ item, isOpen, onClose, onSuccess }) => {
             <button type="button" onClick={onClose} className="btn btn-outline btn-sm">
               Batal
             </button>
-            <button type="submit" disabled={submitting} className="btn btn-accent btn-sm">
-              {submitting ? 'Memproses...' : 'Pesan Runner Sekarang'}
-            </button>
+            {isFoundItem && !isVerifiedForThisItem ? (
+              <button 
+                type="button" 
+                disabled 
+                className="btn btn-outline btn-sm"
+                style={{ opacity: 0.65, cursor: 'not-allowed', gap: '0.4rem' }}
+                title="Wajib lulus verifikasi Blind Test terlebih dahulu"
+              >
+                <Lock size={14} color="var(--amber-600)" /> Wajib Verifikasi Blind Test Dahulu
+              </button>
+            ) : (
+              <button type="submit" disabled={submitting} className="btn btn-accent btn-sm">
+                {submitting ? 'Memproses...' : 'Pesan Runner Sekarang'}
+              </button>
+            )}
           </div>
         </form>
       </div>

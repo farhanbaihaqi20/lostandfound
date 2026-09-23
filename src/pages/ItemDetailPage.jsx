@@ -29,7 +29,7 @@ export const ItemDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { items, matches, deleteItem, markItemAsReturned } = useData();
+  const { items, matches, claims, deleteItem, markItemAsReturned } = useData();
   const { user, isAdmin } = useAuth();
 
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
@@ -51,9 +51,41 @@ export const ItemDetailPage = () => {
     );
   }
 
-  const isOwner = user?.id === item.user_id;
+  const isOwner = Boolean(user && user.id === item.user_id);
   const isLocked = !user && item.type === 'temuan';
-  const existingMatch = matches.find(m => m.item_id === item.id);
+
+  // Cari match yang melibatkan user aktif untuk barang ini
+  const userMatch = matches?.find(m => m.item_id === item.id && (m.finder_id === user?.id || m.owner_id === user?.id));
+  const existingMatch = userMatch || matches?.find(m => m.item_id === item.id);
+
+  // Cari klaim blind test dari user aktif untuk barang ini
+  const userClaim = claims?.find(c => 
+    c.item_id === item.id && (
+      (user?.id && c.claimer_id === user.id) ||
+      (user?.email && c.claimer_email?.toLowerCase() === user.email.toLowerCase())
+    )
+  );
+
+  // Status verifikasi kepemilikan via blind test
+  const isVerifiedOwner = Boolean(userMatch && userMatch.owner_id === user?.id) || userClaim?.status === 'disetujui';
+  const isClaimPending = userClaim?.status === 'menunggu_admin';
+  const isClaimRejected = userClaim?.status === 'ditolak';
+
+  // Daftar klaim menunggu untuk admin posko
+  const pendingClaimsForItem = claims?.filter(c => c.item_id === item.id && c.status === 'menunggu_admin') || [];
+
+  const handleLockedRunnerClick = () => {
+    if (!user) {
+      navigate('/masuk', { state: { from: location } });
+      return;
+    }
+    alert(
+      '🔒 Verifikasi Kepemilikan Diperlukan:\n\n' +
+      'Untuk barang temuan, Anda harus melakukan klaim dan mengisi verifikasi Blind Test terlebih dahulu untuk membuktikan bahwa barang ini benar milik Anda.\n\n' +
+      'Setelah klaim disetujui Admin, opsi Pesan Jasa Runner UNNES akan terbuka secara otomatis.'
+    );
+    setShowBlindTestModal(true);
+  };
 
   const photos = item.photo_urls && item.photo_urls.length > 0
     ? item.photo_urls
@@ -440,6 +472,29 @@ export const ItemDetailPage = () => {
                   <Trash2 size={16} /> Hapus Postingan
                 </button>
               </div>
+
+              {/* Notifikasi Cepat untuk Admin jika ada Klaim Menunggu */}
+              {isAdmin && pendingClaimsForItem.length > 0 && (
+                <div style={{
+                  padding: '0.65rem 0.85rem',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'var(--warning-bg)',
+                  border: '1px solid rgba(245, 158, 11, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '0.5rem',
+                  flexWrap: 'wrap',
+                  fontSize: '0.8rem'
+                }}>
+                  <span style={{ color: 'var(--amber-800)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Clock size={15} /> Terdapat {pendingClaimsForItem.length} klaim Blind Test menunggu verifikasi Anda!
+                  </span>
+                  <Link to="/admin/klaim" className="btn btn-primary btn-sm" style={{ fontSize: '0.75rem', padding: '0.25rem 0.65rem' }}>
+                    Verifikasi di Panel Klaim &rarr;
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 
@@ -475,64 +530,320 @@ export const ItemDetailPage = () => {
           {/* Primary Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
             
-            {/* If Match already exists */}
-            {existingMatch ? (
-              <button 
-                onClick={() => {
-                  if (!user) {
-                    navigate('/masuk', { state: { from: { pathname: `/pesan/${existingMatch.id}` } } });
-                    return;
-                  }
-                  navigate(`/pesan/${existingMatch.id}`);
-                }}
-                className="btn btn-teal btn-lg"
-                style={{ gap: '0.5rem', width: '100%' }}
-              >
-                <MessageSquare size={18} /> Buka Ruang Obrolan & Serah Terima
-              </button>
-            ) : item.type === 'temuan' && !isOwner ? (
-              /* If it's a found item and user is not reporter -> Can Claim via Blind Test */
-              <button
-                onClick={() => {
-                  if (!user) {
-                    navigate('/masuk', { state: { from: location } });
-                    return;
-                  }
-                  setShowBlindTestModal(true);
-                }}
-                className="btn btn-primary btn-lg"
-                style={{ gap: '0.5rem', width: '100%' }}
-              >
-                <ShieldCheck size={20} /> Ini Barang Saya! (Klaim via Blind Test)
-              </button>
-            ) : isOwner ? (
+            {item.item_status === 'dikembalikan' ? (
+              /* ==================== KASUS SELESAI: BARANG BERHASIL DIKEMBALIKAN ==================== */
               <div style={{
+                padding: '1.5rem 1.25rem',
+                borderRadius: 'var(--radius-lg)',
+                background: 'rgba(16, 185, 129, 0.08)',
+                border: '1.5px solid rgba(16, 185, 129, 0.35)',
                 textAlign: 'center',
-                padding: '0.75rem',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--primary-50)',
-                color: 'var(--primary-800)',
-                fontSize: '0.85rem',
-                fontWeight: 600
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.65rem'
               }}>
-                📌 Anda adalah pemilik postingan laporan ini
-              </div>
-            ) : null}
+                <div style={{
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--success)'
+                }}>
+                  <CheckCircle2 size={28} />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--success)', marginBottom: '0.35rem' }}>
+                    Barang Berhasil Dikembalikan! 🎉
+                  </div>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '460px', margin: '0 auto', lineHeight: 1.5 }}>
+                    Laporan ini telah selesai dan ditutup. Barang telah diverifikasi melalui Blind Test dan diserahkan kepada pemilik yang sah. <strong>Barang tidak dapat diklaim lagi.</strong>
+                  </p>
+                </div>
 
-            {/* Order Campus Runner Button */}
-            <button
-              onClick={() => {
-                if (!user) {
-                  navigate('/masuk', { state: { from: location } });
-                  return;
-                }
-                setShowRunnerModal(true);
-              }}
-              className="btn btn-accent"
-              style={{ gap: '0.5rem', width: '100%' }}
-            >
-              <Bike size={18} /> Pesan Jasa Runner UNNES (Antar ke Kelas/Gedung Anda)
-            </button>
+                {existingMatch && (isVerifiedOwner || isOwner) && (
+                  <button 
+                    onClick={() => navigate(`/pesan/${existingMatch.id}`)}
+                    className="btn btn-teal btn-sm"
+                    style={{ marginTop: '0.5rem', gap: '0.4rem' }}
+                  >
+                    <MessageSquare size={16} /> Buka Riwayat Obrolan & Serah Terima
+                  </button>
+                )}
+              </div>
+            ) : item.type === 'temuan' ? (
+              /* ==================== ALUR BARANG DITEMUKAN ==================== */
+              isOwner ? (
+                /* 1. Pengguna adalah Penemu / Pembuat Laporan */
+                <>
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '0.85rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--primary-50)',
+                    border: '1px solid var(--primary-200)',
+                    color: 'var(--primary-900)',
+                    fontSize: '0.85rem',
+                    fontWeight: 600
+                  }}>
+                    📌 Anda adalah penemu yang melaporkan barang ini. Menunggu pemilik asli mengajukan klaim via Blind Test.
+                  </div>
+                  {existingMatch && (
+                    <button 
+                      onClick={() => navigate(`/pesan/${existingMatch.id}`)}
+                      className="btn btn-teal btn-lg"
+                      style={{ gap: '0.5rem', width: '100%' }}
+                    >
+                      <MessageSquare size={18} /> Buka Ruang Obrolan & Serah Terima
+                    </button>
+                  )}
+                </>
+              ) : isVerifiedOwner ? (
+                /* 2. Pengguna adalah Pemilik yang SUDAH LULUS Blind Test / Match Aktif */
+                <>
+                  <div style={{
+                    padding: '0.85rem 1rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    color: 'var(--success)',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <CheckCircle2 size={18} />
+                    <span>Klaim Terverifikasi! Anda dinyatakan sebagai pemilik sah melalui verifikasi Blind Test.</span>
+                  </div>
+
+                  {existingMatch && (
+                    <button 
+                      onClick={() => navigate(`/pesan/${existingMatch.id}`)}
+                      className="btn btn-teal btn-lg"
+                      style={{ gap: '0.5rem', width: '100%' }}
+                    >
+                      <MessageSquare size={18} /> Buka Ruang Obrolan & Serah Terima
+                    </button>
+                  )}
+
+                  {/* Tombol Runner TERBUKA karena sudah lulus Blind Test */}
+                  <button
+                    onClick={() => setShowRunnerModal(true)}
+                    className="btn btn-accent btn-lg"
+                    style={{ gap: '0.5rem', width: '100%' }}
+                  >
+                    <Bike size={18} /> Pesan Jasa Runner UNNES (Antar ke Kelas/Gedung Anda)
+                  </button>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                    💡 Runner resmi UNNES siap mengambil barang dari penemu/posko dan mengantarkan ke lokasi Anda.
+                  </div>
+                </>
+              ) : isClaimPending ? (
+                /* 3. Pengguna sudah mengajukan Blind Test, sedang menunggu verifikasi Admin Posko */
+                <>
+                  <div style={{
+                    padding: '1rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--warning-bg)',
+                    border: '1px solid rgba(245, 158, 11, 0.4)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.4rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, color: 'var(--amber-800)', fontSize: '0.9rem' }}>
+                      <Clock size={18} /> Verifikasi Blind Test Sedang Ditinjau Admin
+                    </div>
+                    <p style={{ fontSize: '0.825rem', color: 'var(--amber-900)', margin: 0, lineHeight: 1.5 }}>
+                      Jawaban Blind Test Anda telah dikirim (Indikator Kecocokan: <strong>{userClaim.blind_test_score}%</strong>). 
+                      Admin Posko UNNES sedang membandingkan seluruh pengajuan dengan catatan rahasia penemu untuk memilih yang paling sesuai. 
+                      Opsi <strong>Pesan Jasa Runner UNNES</strong> akan otomatis aktif begitu klaim disetujui!
+                    </p>
+                  </div>
+
+                  {/* Tombol Runner TERKUNCI selama menunggu verifikasi */}
+                  <button
+                    disabled
+                    className="btn btn-outline"
+                    style={{
+                      gap: '0.5rem',
+                      width: '100%',
+                      opacity: 0.65,
+                      cursor: 'not-allowed',
+                      background: 'var(--bg-surface-alt)',
+                      borderColor: 'var(--border-medium)',
+                      color: 'var(--text-muted)'
+                    }}
+                    title="Menunggu persetujuan Admin Posko atas jawaban Blind Test Anda"
+                  >
+                    <Lock size={18} color="var(--amber-600)" /> Pesan Jasa Runner UNNES (Menunggu Verifikasi Blind Test Selesai)
+                  </button>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                    ⏳ Runner hanya dapat dipesan setelah verifikasi Blind Test disetujui oleh Admin.
+                  </div>
+                </>
+              ) : isClaimRejected ? (
+                /* 4. Klaim Blind Test ditolak oleh Admin -> DAPAT DIAJUKAN ULANG */
+                <>
+                  <div style={{
+                    padding: '1rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--danger-bg)',
+                    border: '1px solid rgba(239, 68, 68, 0.35)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.45rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, color: 'var(--danger)', fontSize: '0.9rem' }}>
+                      <AlertCircle size={18} /> Klaim Blind Test Belum Sesuai
+                    </div>
+                    <p style={{ fontSize: '0.825rem', color: 'var(--danger)', margin: 0, lineHeight: 1.5 }}>
+                      Catatan Admin: <strong>{userClaim.admin_notes || 'Jawaban ciri khusus belum cocok dengan data penemu.'}</strong>
+                    </p>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.2rem', lineHeight: 1.45 }}>
+                      💡 Takut ada ciri tersembunyi yang belum sempat Anda jelaskan? Anda dapat <strong>mengajukan klaim ulang</strong> dengan memberikan rincian ciri fisik barang yang lebih detail agar Admin dapat mencocokkannya kembali.
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setShowBlindTestModal(true)}
+                    className="btn btn-primary btn-lg"
+                    style={{ gap: '0.5rem', width: '100%' }}
+                  >
+                    <ShieldCheck size={20} /> Ajukan Ulang Klaim Blind Test (Perjelas Rincian Ciri)
+                  </button>
+
+                  <button
+                    onClick={handleLockedRunnerClick}
+                    className="btn btn-outline"
+                    style={{
+                      gap: '0.5rem',
+                      width: '100%',
+                      background: 'var(--bg-surface-alt)',
+                      borderColor: 'var(--border-medium)',
+                      color: 'var(--text-muted)'
+                    }}
+                  >
+                    <Lock size={18} color="var(--amber-600)" /> Pesan Jasa Runner UNNES (Terkunci)
+                  </button>
+                </>
+              ) : (
+                /* 5. Belum pernah Blind Test sama sekali -> SEMUA PENGGUNA BISA KLAIM */
+                <>
+                  <button
+                    onClick={() => {
+                      if (!user) {
+                        navigate('/masuk', { state: { from: location } });
+                        return;
+                      }
+                      setShowBlindTestModal(true);
+                    }}
+                    className="btn btn-primary btn-lg"
+                    style={{ gap: '0.5rem', width: '100%' }}
+                  >
+                    <ShieldCheck size={20} /> Ini Barang Saya! (Klaim via Blind Test)
+                  </button>
+
+                  {/* Tombol Runner Terkunci dengan Interaksi Edukatif */}
+                  <button
+                    onClick={handleLockedRunnerClick}
+                    className="btn btn-outline"
+                    style={{
+                      gap: '0.5rem',
+                      width: '100%',
+                      background: 'var(--bg-surface-alt)',
+                      borderColor: 'var(--border-medium)',
+                      color: 'var(--text-secondary)'
+                    }}
+                    title="Klik untuk membuka verifikasi Blind Test terlebih dahulu"
+                  >
+                    <Lock size={18} color="var(--amber-600)" /> Pesan Jasa Runner UNNES (Wajib Verifikasi Blind Test Dahulu)
+                  </button>
+
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.4 }}>
+                    🛡️ <strong>SOP Keamanan UNNES:</strong> Siapa pun yang merasa kehilangan barang ini dapat mengajukan klaim. Admin akan mencocokkan seluruh jawaban pemohon dengan data rahasia penemu untuk memilih pemilik yang paling sah.
+                  </div>
+                </>
+              )
+            ) : (
+              /* ==================== ALUR BARANG HILANG ==================== */
+              isOwner ? (
+                /* Pelapor barang hilang */
+                <>
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '0.75rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--primary-50)',
+                    color: 'var(--primary-800)',
+                    fontSize: '0.85rem',
+                    fontWeight: 600
+                  }}>
+                    📌 Anda adalah pelapor postingan barang hilang ini
+                  </div>
+
+                  {existingMatch && (
+                    <button 
+                      onClick={() => navigate(`/pesan/${existingMatch.id}`)}
+                      className="btn btn-teal btn-lg"
+                      style={{ gap: '0.5rem', width: '100%' }}
+                    >
+                      <MessageSquare size={18} /> Buka Ruang Obrolan & Serah Terima
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      if (!user) {
+                        navigate('/masuk', { state: { from: location } });
+                        return;
+                      }
+                      setShowRunnerModal(true);
+                    }}
+                    className="btn btn-accent btn-lg"
+                    style={{ gap: '0.5rem', width: '100%' }}
+                  >
+                    <Bike size={18} /> Pesan Jasa Runner UNNES (Bantu Cari / Active Hunting)
+                  </button>
+                </>
+              ) : existingMatch ? (
+                <button 
+                  onClick={() => navigate(`/pesan/${existingMatch.id}`)}
+                  className="btn btn-teal btn-lg"
+                  style={{ gap: '0.5rem', width: '100%' }}
+                >
+                  <MessageSquare size={18} /> Buka Ruang Obrolan & Serah Terima
+                </button>
+              ) : (
+                <>
+                  <div style={{
+                    padding: '0.85rem 1rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--info-bg)',
+                    border: '1px solid rgba(2, 132, 199, 0.25)',
+                    fontSize: '0.825rem',
+                    color: 'var(--info)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.6rem'
+                  }}>
+                    <Sparkles size={18} style={{ flexShrink: 0 }} />
+                    <span>Melihat atau menemukan barang ini di kampus? Silakan laporkan temuan atau serahkan ke Pos Satpam terdekat.</span>
+                  </div>
+
+                  <Link
+                    to={`/lapor/temuan?ref=${item.id}&title=${encodeURIComponent(item.title)}`}
+                    className="btn btn-teal btn-lg"
+                    style={{ gap: '0.5rem', width: '100%', justifyContent: 'center' }}
+                  >
+                    <CheckCircle2 size={18} /> Saya Menemukan Barang Ini! (Laporkan Temuan)
+                  </Link>
+                </>
+              )
+            )}
 
           </div>
 
@@ -549,7 +860,7 @@ export const ItemDetailPage = () => {
       />
 
       <RunnerOrderModal
-        item={item}
+        item={{ ...item, match_id: userMatch?.id || existingMatch?.id }}
         isOpen={showRunnerModal}
         onClose={() => setShowRunnerModal(false)}
         onSuccess={() => alert('Pesanan Jasa Runner UNNES berhasil dibuat! Runner kami akan segera bergerak.')}

@@ -6,8 +6,17 @@ import { useAuth } from '../contexts/AuthContext';
 
 export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
   const navigate = useNavigate();
-  const { submitClaim } = useData();
+  const { submitClaim, claims } = useData();
   const { user } = useAuth();
+
+  const existingClaim = claims?.find(c => 
+    c.item_id === item?.id && (
+      (user?.id && c.claimer_id === user.id) || 
+      (user?.email && c.claimer_email?.toLowerCase() === user.email?.toLowerCase())
+    )
+  );
+  const isReapplication = existingClaim?.status === 'ditolak';
+  const isItemReturned = item?.item_status === 'dikembalikan';
 
   const questions = item?.blind_test_questions?.length > 0
     ? item.blind_test_questions
@@ -97,11 +106,44 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
           padding: '0.75rem', 
           fontSize: '0.8rem', 
           color: 'var(--info)',
-          marginBottom: '1.25rem',
+          marginBottom: '1rem',
           lineHeight: 1.4
         }}>
           <strong>🛡️ SOP Keamanan UNNES:</strong> Untuk mencegah klaim palsu, Anda wajib menjawab pertanyaan di bawah ini. Jawaban Anda akan langsung dicocokkan oleh <strong>Admin Posko UNNES</strong> dengan data rahasia penemu.
         </div>
+
+        {/* Notifikasi Pengajuan Ulang */}
+        {isReapplication && (
+          <div style={{
+            background: 'var(--amber-50)',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            borderRadius: 'var(--radius-md)',
+            padding: '0.75rem 1rem',
+            fontSize: '0.8rem',
+            color: 'var(--amber-800)',
+            marginBottom: '1rem',
+            lineHeight: 1.45
+          }}>
+            <strong>🔄 Pengajuan Ulang Klaim Blind Test:</strong><br/>
+            Klaim Anda sebelumnya belum disetujui {existingClaim?.admin_notes ? `(Catatan Admin: "${existingClaim.admin_notes}")` : ''}. Silakan lengkapi jawaban di bawah ini dengan ciri fisik tersembunyi sedetail mungkin agar Admin Posko dapat mencocokkannya dengan akurat.
+          </div>
+        )}
+
+        {/* Notifikasi Jika Barang Sudah Dikembalikan */}
+        {isItemReturned && (
+          <div style={{
+            background: 'var(--danger-bg)',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            borderRadius: 'var(--radius-md)',
+            padding: '0.75rem 1rem',
+            fontSize: '0.8rem',
+            color: 'var(--danger)',
+            marginBottom: '1rem',
+            lineHeight: 1.45
+          }}>
+            ⚠️ <strong>Laporan Kasus Ditutup:</strong> Barang ini telah berhasil dikembalikan kepada pemilik sah yang terverifikasi dan tidak dapat diklaim lagi.
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {questions.map((q, idx) => (
@@ -112,6 +154,7 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
               <textarea
                 rows={2}
                 required={idx === 0}
+                disabled={isItemReturned}
                 placeholder="Tuliskan jawaban sedetail mungkin..."
                 value={answers[idx]}
                 onChange={(e) => handleAnswerChange(idx, e.target.value)}
@@ -126,6 +169,7 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
             </label>
             <input
               type="text"
+              disabled={isItemReturned}
               placeholder="Contoh: Saya bisa temui di pos satpam jam 1 siang..."
               value={additionalMessage}
               onChange={(e) => setAdditionalMessage(e.target.value)}
@@ -146,11 +190,11 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
             </button>
             <button 
               type="submit" 
-              disabled={submitting}
+              disabled={submitting || isItemReturned}
               className="btn btn-primary btn-sm"
               style={{ gap: '0.4rem' }}
             >
-              <Send size={14} /> {submitting ? 'Mengirim...' : 'Kirim Klaim ke Admin'}
+              <Send size={14} /> {submitting ? 'Mengirim...' : isReapplication ? 'Kirim Pembaruan Klaim ke Admin' : 'Kirim Klaim ke Admin'}
             </button>
           </div>
         </form>

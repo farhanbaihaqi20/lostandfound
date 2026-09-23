@@ -27,11 +27,22 @@ export const ClaimModerationPage = () => {
     return c.status === activeFilter;
   });
 
-  const handleVerify = (claimId, isApproved) => {
-    verifyClaim(claimId, isApproved, adminNotes);
+  const handleVerify = (claim, isApproved) => {
+    if (isApproved) {
+      const confirmAcc = window.confirm(
+        `ACC & VALIDASI KEPEMILIKAN:\n\n` +
+        `Apakah Anda yakin menyetujui klaim dari "${claim.claimer_name}" sebagai pemilik sah barang #${claim.item_code}?\n\n` +
+        `• Status barang akan berubah menjadi "Barang Berhasil Dikembalikan".\n` +
+        `• Kasus resmi selesai & barang TIDAK DAPAT DIKLAIM LAGI oleh pihak lain.\n` +
+        `• Ruang obrolan serah terima dibuka untuk kedua pihak.`
+      );
+      if (!confirmAcc) return;
+    }
+
+    verifyClaim(claim.id, isApproved, adminNotes);
     alert(isApproved 
-      ? 'Klaim berhasil DIVERIFIKASI VALID! Ruang obrolan telah dibuka untuk kedua belah pihak.' 
-      : 'Klaim DITOLAK karena jawaban tidak cocok.'
+      ? 'Klaim berhasil di-ACC! Status barang kini resmi "Barang Berhasil Dikembalikan" dan kasus ditutup.' 
+      : 'Klaim DITOLAK. Pemohon diberikan kesempatan mengajukan klaim ulang jika terdapat detail yang belum sempat dijelaskan.'
     );
     setSelectedClaim(null);
     setAdminNotes('');
@@ -98,7 +109,7 @@ export const ClaimModerationPage = () => {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary-700)' }}>
                         #{claim.item_code}
                       </span>
@@ -108,6 +119,16 @@ export const ClaimModerationPage = () => {
                       <span className="badge badge-found" style={{ fontSize: '0.65rem' }}>
                         Skor Otomatis: {claim.blind_test_score}%
                       </span>
+                      {claims.filter(c => c.item_id === claim.item_id).length > 1 && (
+                        <span className="badge" style={{ fontSize: '0.65rem', background: 'var(--primary-100)', color: 'var(--primary-800)' }}>
+                          👥 Total {claims.filter(c => c.item_id === claim.item_id).length} Pengajuan untuk Barang Ini
+                        </span>
+                      )}
+                      {claim.is_reapplication && (
+                        <span className="badge" style={{ fontSize: '0.65rem', background: '#fef3c7', color: '#b45309', border: '1px solid #f59e0b' }}>
+                          🔄 Pengajuan Ulang (Penjelasan Baru)
+                        </span>
+                      )}
                     </div>
 
                     <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '0.25rem' }}>
@@ -221,18 +242,20 @@ export const ClaimModerationPage = () => {
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                           <button
-                            onClick={() => handleVerify(claim.id, false)}
+                            onClick={() => handleVerify(claim, false)}
                             className="btn btn-danger btn-sm"
                             style={{ gap: '0.35rem' }}
+                            title="Tolak klaim (pemohon dapat mengajukan klaim ulang jika memiliki rincian tambahan)"
                           >
                             <X size={15} /> Tolak Klaim
                           </button>
                           <button
-                            onClick={() => handleVerify(claim.id, true)}
+                            onClick={() => handleVerify(claim, true)}
                             className="btn btn-teal btn-sm"
                             style={{ gap: '0.35rem' }}
+                            title="ACC klaim ini sebagai pemilik sah paling cocok & selesaikan laporan"
                           >
-                            <Check size={15} /> Validasi Cocok (Buka Obrolan)
+                            <Check size={15} /> ACC Pemilik Sah (Barang Berhasil Dikembalikan)
                           </button>
                         </div>
                       </div>
