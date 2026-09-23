@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   Clock, 
   ShieldCheck, 
+  Search,
   Bike, 
   Users 
 } from 'lucide-react';
@@ -11,10 +12,11 @@ import { useData } from '../contexts/DataContext';
 
 export const AdminNavTabs = () => {
   const location = useLocation();
-  const { items, claims, orders } = useData();
+  const { items, claims, orders, foundReports } = useData();
 
   const pendingItemsCount = items.filter(i => i.post_status === 'menunggu_review').length;
   const pendingClaimsCount = claims.filter(c => c.status === 'menunggu_admin').length;
+  const pendingFoundReportsCount = (foundReports || []).filter(r => r.status === 'menunggu_review').length;
   const activeOrdersCount = orders.filter(o => o.status !== 'selesai' && o.status !== 'dibatalkan').length;
 
   const tabs = [
@@ -37,6 +39,13 @@ export const AdminNavTabs = () => {
       icon: ShieldCheck,
       badge: pendingClaimsCount > 0 ? pendingClaimsCount : null,
       badgeColor: 'var(--primary-600)'
+    },
+    {
+      to: '/admin/laporan-temuan',
+      label: 'Laporan Temuan',
+      icon: Search,
+      badge: pendingFoundReportsCount > 0 ? pendingFoundReportsCount : null,
+      badgeColor: 'var(--teal-600)'
     },
     {
       to: '/admin/pesanan',

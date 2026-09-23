@@ -24,18 +24,20 @@ import { StatusBadge } from '../components/StatusBadge';
 import { BlindTestModal } from '../components/BlindTestModal';
 import { RunnerOrderModal } from '../components/RunnerOrderModal';
 import { ClaimObjectionModal } from '../components/ClaimObjectionModal';
+import { FoundReportModal } from '../components/FoundReportModal';
 
 export const ItemDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { items, matches, claims, deleteItem, markItemAsReturned, revokeClaimVerification } = useData();
+  const { items, matches, claims, foundReports, deleteItem, markItemAsReturned, revokeClaimVerification } = useData();
   const { user, isAdmin } = useAuth();
 
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [showBlindTestModal, setShowBlindTestModal] = useState(false);
   const [showRunnerModal, setShowRunnerModal] = useState(false);
   const [showObjectionModal, setShowObjectionModal] = useState(false);
+  const [showFoundReportModal, setShowFoundReportModal] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const item = items.find(i => i.id === id);
@@ -64,6 +66,14 @@ export const ItemDetailPage = () => {
     String(c.item_id) === String(item.id) && (
       (user?.id && c.claimer_id === user.id) ||
       (user?.email && c.claimer_email?.toLowerCase() === user.email.toLowerCase())
+    )
+  );
+
+  // Cari laporan penemuan (found_report) dari user aktif untuk barang hilang ini
+  const userFoundReport = foundReports?.find(r => 
+    String(r.item_id) === String(item.id) && (
+      (user?.id && r.reporter_id === user.id) ||
+      (user?.email && r.reporter_email?.toLowerCase() === user.email?.toLowerCase())
     )
   );
 
@@ -933,7 +943,72 @@ export const ItemDetailPage = () => {
                 >
                   <MessageSquare size={18} /> Buka Ruang Obrolan & Serah Terima
                 </button>
+              ) : userFoundReport ? (
+                /* Status laporan penemuan dari user yang sedang login */
+                userFoundReport.status === 'menunggu_review' ? (
+                  <div style={{
+                    padding: '1rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--warning-50, #fffbeb)',
+                    border: '1px solid var(--warning-200, #fde68a)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--warning-800, #92400e)', fontWeight: 700, fontSize: '0.9rem' }}>
+                      <Clock size={18} /> Laporan Penemuan Sedang Diverifikasi Admin
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--warning-700, #b45309)', lineHeight: 1.5 }}>
+                      Anda telah melaporkan menemukan barang ini. Bukti & ciri yang Anda cantumkan sedang ditinjau oleh Admin Posko UNNES. Ruang obrolan langsung dengan pemilik akan otomatis terbuka setelah laporan disetujui.
+                    </p>
+                  </div>
+                ) : userFoundReport.status === 'disetujui' ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{
+                      padding: '0.85rem',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                      color: 'var(--teal-800, #065f46)',
+                      fontSize: '0.85rem'
+                    }}>
+                      ✅ <strong>Laporan Penemuan Disetujui!</strong> Anda telah terverifikasi sebagai penemu barang ini.
+                    </div>
+                    {existingMatch && (
+                      <button 
+                        onClick={() => navigate(`/pesan/${existingMatch.id}`)}
+                        className="btn btn-teal btn-lg"
+                        style={{ gap: '0.5rem', width: '100%' }}
+                      >
+                        <MessageSquare size={18} /> Buka Ruang Obrolan & Serah Terima
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  /* Ditolak */
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{
+                      padding: '0.85rem',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'var(--danger-50, #fef2f2)',
+                      border: '1px solid var(--danger-200, #fecaca)',
+                      color: 'var(--danger-700, #b91c1c)',
+                      fontSize: '0.82rem',
+                      lineHeight: 1.4
+                    }}>
+                      <strong>Laporan Penemuan Belum Sesuai:</strong> {userFoundReport.admin_notes || 'Informasi ciri atau lokasi yang dilaporkan belum cocok.'}
+                    </div>
+                    <button
+                      onClick={() => setShowFoundReportModal(true)}
+                      className="btn btn-teal btn-lg"
+                      style={{ gap: '0.5rem', width: '100%', justifyContent: 'center' }}
+                    >
+                      <CheckCircle2 size={18} /> Ajukan Ulang Laporan Penemuan
+                    </button>
+                  </div>
+                )
               ) : (
+                /* Belum ada laporan temuan dari user ini */
                 <>
                   <div style={{
                     padding: '0.85rem 1rem',
@@ -947,16 +1022,22 @@ export const ItemDetailPage = () => {
                     gap: '0.6rem'
                   }}>
                     <Sparkles size={18} style={{ flexShrink: 0 }} />
-                    <span>Melihat atau menemukan barang ini di kampus? Silakan laporkan temuan atau serahkan ke Pos Satpam terdekat.</span>
+                    <span>Melihat atau menemukan barang ini di kampus? Laporkan ciri & lokasinya agar Admin dapat menghubungkan Anda ke pemilik.</span>
                   </div>
 
-                  <Link
-                    to={`/lapor/temuan?ref=${item.id}&title=${encodeURIComponent(item.title)}`}
+                  <button
+                    onClick={() => {
+                      if (!user) {
+                        navigate('/masuk', { state: { from: location } });
+                        return;
+                      }
+                      setShowFoundReportModal(true);
+                    }}
                     className="btn btn-teal btn-lg"
                     style={{ gap: '0.5rem', width: '100%', justifyContent: 'center' }}
                   >
-                    <CheckCircle2 size={18} /> Saya Menemukan Barang Ini! (Laporkan Temuan)
-                  </Link>
+                    <CheckCircle2 size={18} /> Saya Menemukan Barang Ini!
+                  </button>
                 </>
               )
             )}
@@ -986,6 +1067,13 @@ export const ItemDetailPage = () => {
         item={item}
         isOpen={showObjectionModal}
         onClose={() => setShowObjectionModal(false)}
+      />
+
+      <FoundReportModal
+        item={item}
+        isOpen={showFoundReportModal}
+        onClose={() => setShowFoundReportModal(false)}
+        onSuccess={() => alert('Laporan penemuan berhasil dikirim ke Admin Posko! Ruang obrolan akan terbuka setelah disetujui.')}
       />
     </div>
   );

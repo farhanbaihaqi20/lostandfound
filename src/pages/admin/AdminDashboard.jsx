@@ -6,7 +6,8 @@ import {
   CheckCircle2, 
   Bike, 
   ArrowRight, 
-  Users
+  Users,
+  Search
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -14,11 +15,12 @@ import { AdminNavTabs } from '../../components/AdminNavTabs';
 import { getRunnerStatusInfo } from '../../data/initialData';
 
 export const AdminDashboard = () => {
-  const { items, claims, orders, stats } = useData();
+  const { items, claims, orders, foundReports, stats } = useData();
   const { user } = useAuth();
 
   const pendingItems = items.filter(i => i.post_status === 'menunggu_review');
   const pendingClaims = claims.filter(c => c.status === 'menunggu_admin');
+  const pendingFoundReports = (foundReports || []).filter(r => r.status === 'menunggu_review');
   const activeOrders = orders.filter(o => o.status !== 'selesai' && o.status !== 'dibatalkan');
 
   return (
@@ -56,6 +58,9 @@ export const AdminDashboard = () => {
           </Link>
           <Link to="/admin/klaim" className="btn btn-outline btn-sm" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', borderColor: 'rgba(255,255,255,0.3)', gap: '0.35rem' }}>
             <ShieldCheck size={15} /> Verifikasi Klaim ({pendingClaims.length})
+          </Link>
+          <Link to="/admin/laporan-temuan" className="btn btn-teal btn-sm" style={{ gap: '0.35rem' }}>
+            <Search size={15} /> Laporan Temuan ({pendingFoundReports.length})
           </Link>
           <Link to="/admin/pesanan" className="btn btn-teal btn-sm" style={{ gap: '0.35rem' }}>
             <Bike size={15} /> Jasa Runner ({activeOrders.length})

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   MessageSquare, 
@@ -6,7 +6,10 @@ import {
   ShieldAlert, 
   Bike, 
   FileCheck, 
-  Share2
+  Share2,
+  Sparkles,
+  MapPin,
+  CheckCircle2
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -15,7 +18,7 @@ import { BASTModal } from '../components/BASTModal';
 
 export const MessagesPage = () => {
   const { matchId } = useParams();
-  const { matches, messages, sendMessage } = useData();
+  const { matches, messages, sendMessage, markMessagesAsRead } = useData();
   const { user } = useAuth();
 
   const [activeMatchId, setActiveMatchId] = useState(matchId || (matches.length > 0 ? matches[0].id : null));
@@ -23,15 +26,37 @@ export const MessagesPage = () => {
   const [showRunnerModal, setShowRunnerModal] = useState(false);
   const [showBASTModal, setShowBASTModal] = useState(false);
   const [copiedScript, setCopiedScript] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (matchId) {
+      setActiveMatchId(matchId);
+    } else if (!activeMatchId && matches.length > 0) {
+      setActiveMatchId(matches[0].id);
+    }
+  }, [matchId, matches]);
 
   const activeMatch = matches.find(m => m.id === activeMatchId);
   const matchMessages = messages.filter(m => m.match_id === activeMatchId);
 
-  const handleSend = (e) => {
+  // Auto-scroll ke pesan terbaru
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [matchMessages.length, activeMatchId]);
+
+  // Tandai pesan sudah dibaca
+  useEffect(() => {
+    if (activeMatchId && markMessagesAsRead) {
+      markMessagesAsRead(activeMatchId);
+    }
+  }, [activeMatchId, matchMessages.length]);
+
+  const handleSend = async (e) => {
     e.preventDefault();
     if (!inputText.trim() || !activeMatchId) return;
-    sendMessage(activeMatchId, inputText.trim());
+    const text = inputText.trim();
     setInputText('');
+    await sendMessage(activeMatchId, text);
   };
 
   // WhatsApp script from blueprint 7.B
@@ -49,7 +74,7 @@ export const MessagesPage = () => {
       <div style={{ marginBottom: '0.75rem' }}>
         <h1 style={{ fontSize: '1.35rem', fontWeight: 800 }}>Ruang Obrolan & Serah Terima</h1>
         <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-          Komunikasi langsung antara penemu dan pemilik setelah verifikasi Admin.
+          Komunikasi langsung dan real-time antara penemu dan pemilik setelah verifikasi Admin.
         </p>
       </div>
 
@@ -58,16 +83,18 @@ export const MessagesPage = () => {
           <MessageSquare size={48} color="var(--text-muted)" style={{ margin: '0 auto 0.75rem' }} />
           <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Belum Ada Obrolan Aktif</h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.35rem', lineHeight: 1.5 }}>
-            Obrolan akan terbuka secara otomatis setelah Anda mengklaim barang temuan dan lolos verifikasi <strong>Blind Test oleh Admin</strong>.
+            Obrolan akan terbuka secara otomatis setelah klaim barang atau laporan penemuan Anda disetujui oleh <strong>Admin Posko UNNES</strong>.
           </p>
-          <Link to="/jelajahi" className="btn btn-primary btn-sm" style={{ marginTop: '1rem' }}>
-            Jelajahi Barang Temuan
-          </Link>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '1rem' }}>
+            <Link to="/jelajahi" className="btn btn-primary btn-sm">
+              Jelajahi Barang Temuan
+            </Link>
+          </div>
         </div>
       ) : (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(240px, 300px) 1fr',
+          gridTemplateColumns: 'minmax(240px, 320px) 1fr',
           flex: 1,
           gap: '1rem',
           height: '100%',
@@ -76,8 +103,8 @@ export const MessagesPage = () => {
           
           {/* Matches List (Sidebar) */}
           <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '0.5rem', border: '1px solid var(--border-light)' }}>
-            <div style={{ padding: '0.5rem', fontWeight: 700, fontSize: '0.85rem', borderBottom: '1px solid var(--border-light)' }}>
-              Percakapan Terverifikasi ({matches.length})
+            <div style={{ padding: '0.5rem', fontWeight: 700, fontSize: '0.85rem', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>Percakapan Aktif ({matches.length})</span>
             </div>
             {matches.map(m => (
               <div
@@ -91,23 +118,35 @@ export const MessagesPage = () => {
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '0.2rem',
-                  marginTop: '0.35rem'
+                  gap: '0.25rem',
+                  marginTop: '0.35rem',
+                  transition: 'background 0.15s ease'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-700)' }}>
                     #{m.item_code}
                   </span>
-                  <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                    {m.status === 'selesai' ? '✅ Selesai' : '🟢 Aktif'}
-                  </span>
+                  <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
+                    {m.match_type === 'found_report' ? (
+                      <span className="badge" style={{ fontSize: '0.62rem', padding: '0.1rem 0.4rem', background: 'var(--teal-100, #ccfbf1)', color: 'var(--teal-800, #115e59)' }}>
+                        📍 Temuan
+                      </span>
+                    ) : (
+                      <span className="badge" style={{ fontSize: '0.62rem', padding: '0.1rem 0.4rem', background: 'var(--primary-100, #dbeafe)', color: 'var(--primary-800, #1e40af)' }}>
+                        🛡️ Klaim
+                      </span>
+                    )}
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                      {m.status === 'selesai' ? '✅' : '🟢'}
+                    </span>
+                  </div>
                 </div>
                 <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {m.item_title}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                  Dengan: {user?.id === m.owner_id ? m.finder_name : m.owner_name}
+                  Dengan: <strong>{user?.id === m.owner_id ? m.finder_name : m.owner_name}</strong>
                 </div>
               </div>
             ))}
@@ -129,11 +168,25 @@ export const MessagesPage = () => {
                 background: 'var(--bg-surface)'
               }}>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>
-                    {activeMatch.item_title} (#{activeMatch.item_code})
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                      {activeMatch.item_title}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-700)' }}>
+                      (#{activeMatch.item_code})
+                    </span>
+                    {activeMatch.match_type === 'found_report' ? (
+                      <span className="badge" style={{ fontSize: '0.65rem', background: 'var(--teal-100, #ccfbf1)', color: 'var(--teal-800, #115e59)' }}>
+                        📍 Laporan Temuan
+                      </span>
+                    ) : (
+                      <span className="badge" style={{ fontSize: '0.65rem', background: 'var(--primary-100, #dbeafe)', color: 'var(--primary-800, #1e40af)' }}>
+                        🛡️ Klaim Sah
+                      </span>
+                    )}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--teal-600)', fontWeight: 600 }}>
-                    Status: {activeMatch.status === 'selesai' ? 'Barang Sudah Dikembalikan' : 'Terverifikasi Admin'}
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.15rem' }}>
+                    Lawan Bicara: <strong>{user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name}</strong>
                   </div>
                 </div>
 
@@ -171,6 +224,27 @@ export const MessagesPage = () => {
               {/* Chat Message Stream */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 
+                {/* Context Announcement Banner */}
+                {activeMatch.match_type === 'found_report' ? (
+                  <div style={{
+                    background: 'rgba(20, 184, 166, 0.08)',
+                    border: '1px solid rgba(20, 184, 166, 0.3)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '0.75rem 0.9rem',
+                    fontSize: '0.78rem',
+                    color: 'var(--teal-900, #134e4a)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    lineHeight: 1.4
+                  }}>
+                    <Sparkles size={16} style={{ flexShrink: 0, color: 'var(--teal-600, #0d9488)' }} />
+                    <span>
+                      <strong>Koneksi Laporan Temuan:</strong> Percakapan ini dibuka karena <strong>{activeMatch.finder_name}</strong> melaporkan telah menemukan barang hilang milik <strong>{activeMatch.owner_name}</strong> dan telah disetujui Admin Posko.
+                    </span>
+                  </div>
+                ) : null}
+
                 {/* Safety SOP Notice Banner from Blueprint */}
                 <div style={{
                   background: 'var(--warning-bg)',
@@ -223,6 +297,11 @@ export const MessagesPage = () => {
                         gap: '0.2rem'
                       }}
                     >
+                      {!isMe && (
+                        <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', marginLeft: '0.3rem' }}>
+                          {msg.sender_name || (user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name)}
+                        </span>
+                      )}
                       <div style={{
                         padding: '0.65rem 0.9rem',
                         borderRadius: 'var(--radius-lg)',
@@ -240,6 +319,7 @@ export const MessagesPage = () => {
                     </div>
                   );
                 })}
+                <div ref={messagesEndRef} />
               </div>
 
               {/* Chat Input Bar */}
@@ -293,3 +373,5 @@ export const MessagesPage = () => {
     </div>
   );
 };
+
+export default MessagesPage;

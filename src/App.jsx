@@ -22,6 +22,7 @@ import { RegisterPage } from './pages/auth/RegisterPage';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { ModerationPage } from './pages/admin/ModerationPage';
 import { ClaimModerationPage } from './pages/admin/ClaimModerationPage';
+import { FoundReportsModerationPage } from './pages/admin/FoundReportsModerationPage';
 import { OrdersPage } from './pages/admin/OrdersPage';
 import { AdminUsersPage } from './pages/admin/AdminUsersPage';
 
@@ -107,6 +108,14 @@ function App() {
             element={
               <AdminRoute>
                 <ClaimModerationPage />
+              </AdminRoute>
+            } 
+          />
+          <Route 
+            path="/admin/laporan-temuan" 
+            element={
+              <AdminRoute>
+                <FoundReportsModerationPage />
               </AdminRoute>
             } 
           />

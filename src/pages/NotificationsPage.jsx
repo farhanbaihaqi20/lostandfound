@@ -6,7 +6,8 @@ import {
   Bike, 
   Sparkles, 
   CheckCheck, 
-  AlertCircle
+  AlertCircle,
+  Search
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -29,6 +30,8 @@ export const NotificationsPage = () => {
         return <AlertCircle size={20} color="var(--amber-500)" />;
       case 'cocok':
         return <Sparkles size={20} color="var(--teal-600)" />;
+      case 'laporan_temuan':
+        return <Search size={20} color="var(--teal-600)" />;
       case 'pesanan':
         return <Bike size={20} color="var(--amber-600)" />;
       default:

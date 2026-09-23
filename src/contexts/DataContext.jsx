@@ -88,6 +88,20 @@ export const DataProvider = ({ children }) => {
     return INITIAL_NOTIFICATIONS;
   });
 
+  // 7. Found Reports state (Laporan penemuan barang hilang)
+  const [foundReports, setFoundReports] = useState(() => {
+    const saved = localStorage.getItem('unnes_lf_found_reports');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.filter(r => !isLegacyDummyId(r.id));
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  });
+
   // Fetch items dari Supabase & sinkronisasi otomatis
   const fetchSupabaseItems = async () => {
     if (!isSupabaseConfigured() || !supabase) return;
@@ -185,11 +199,95 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  // Fetch messages dari Supabase & sinkronisasi otomatis
+  const fetchSupabaseMessages = async () => {
+    if (!isSupabaseConfigured() || !supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*, sender:sender_id(full_name, avatar_url)')
+        .order('created_at', { ascending: true });
+
+      if (!error && data) {
+        const formatted = data.map(msg => ({
+          ...msg,
+          sender_name: msg.sender?.full_name || (msg.sender_id === 'system' ? 'Sistem' : 'Pengguna')
+        }));
+        setMessages(prev => {
+          const localOnly = prev.filter(m => !isUuid(m.id) && !formatted.some(f => f.id === m.id));
+          return [...formatted, ...localOnly];
+        });
+      } else if (error) {
+        console.warn('Gagal memuat messages dari Supabase:', error);
+      }
+    } catch (err) {
+      console.warn('Gagal memuat messages dari Supabase:', err);
+    }
+  };
+
+  // Fetch notifications dari Supabase & sinkronisasi otomatis
+  const fetchSupabaseNotifications = async () => {
+    if (!isSupabaseConfigured() || !supabase || !user?.id) return;
+    try {
+      let query = supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (user.role !== 'admin' && isUuid(user.id)) {
+        query = query.eq('user_id', user.id);
+      }
+
+      const { data, error } = await query;
+      if (!error && data) {
+        setNotifications(prev => {
+          const localOnly = prev.filter(n => !isUuid(n.id) && !data.some(d => d.id === n.id));
+          return [...data, ...localOnly];
+        });
+      } else if (error) {
+        console.warn('Gagal memuat notifications dari Supabase:', error);
+      }
+    } catch (err) {
+      console.warn('Gagal memuat notifications dari Supabase:', err);
+    }
+  };
+
+  // Fetch found_reports dari Supabase & sinkronisasi otomatis
+  const fetchSupabaseFoundReports = async () => {
+    if (!isSupabaseConfigured() || !supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('found_reports')
+        .select('*, reporter:reporter_id(full_name, avatar_url, email, phone)')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        const formatted = data.map(report => ({
+          ...report,
+          reporter_name: report.reporter_name || report.reporter?.full_name || 'Mahasiswa UNNES',
+          reporter_phone: report.reporter_phone || report.reporter?.phone || ''
+        }));
+
+        setFoundReports(prev => {
+          const localOnly = prev.filter(r => !isUuid(r.id) && !isLegacyDummyId(r.id) && !formatted.some(f => f.id === r.id));
+          return [...formatted, ...localOnly];
+        });
+      } else if (error) {
+        console.warn('Gagal memuat found_reports dari Supabase:', error);
+      }
+    } catch (err) {
+      console.warn('Gagal memuat found_reports dari Supabase:', err);
+    }
+  };
+
   useEffect(() => {
     fetchSupabaseItems();
     fetchSupabaseOrders();
     fetchSupabaseClaims();
     fetchSupabaseMatches();
+    fetchSupabaseMessages();
+    fetchSupabaseNotifications();
+    fetchSupabaseFoundReports();
 
     if (!isSupabaseConfigured() || !supabase) return;
 
@@ -222,11 +320,42 @@ export const DataProvider = ({ children }) => {
       })
       .subscribe();
 
+    const messagesChannel = supabase
+      .channel('public:messages_sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
+        if (payload.eventType === 'INSERT' && payload.new) {
+          setMessages(prev => {
+            if (prev.some(m => m.id === payload.new.id)) return prev;
+            return [...prev, payload.new];
+          });
+        } else {
+          fetchSupabaseMessages();
+        }
+      })
+      .subscribe();
+
+    const notificationsChannel = supabase
+      .channel('public:notifications_sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => {
+        fetchSupabaseNotifications();
+      })
+      .subscribe();
+
+    const foundReportsChannel = supabase
+      .channel('public:found_reports_sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'found_reports' }, () => {
+        fetchSupabaseFoundReports();
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(itemsChannel);
       supabase.removeChannel(ordersChannel);
       supabase.removeChannel(claimsChannel);
       supabase.removeChannel(matchesChannel);
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(notificationsChannel);
+      supabase.removeChannel(foundReportsChannel);
     };
   }, [user?.id]);
 
@@ -255,8 +384,12 @@ export const DataProvider = ({ children }) => {
     localStorage.setItem('unnes_lf_notifications', JSON.stringify(notifications));
   }, [notifications]);
 
-  // Notification helper
-  const addNotification = (notif) => {
+  useEffect(() => {
+    localStorage.setItem('unnes_lf_found_reports', JSON.stringify(foundReports));
+  }, [foundReports]);
+
+  // Notification helper with Supabase sync
+  const addNotification = async (notif) => {
     const newNotif = {
       id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
       created_at: new Date().toISOString(),
@@ -264,6 +397,43 @@ export const DataProvider = ({ children }) => {
       ...notif
     };
     setNotifications(prev => [newNotif, ...prev]);
+
+    if (!isSupabaseConfigured() || !supabase) return;
+
+    try {
+      if (isUuid(notif.user_id)) {
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: notif.user_id,
+            type: notif.type || 'info',
+            title: notif.title || '',
+            body: notif.body || '',
+            link: notif.link || '',
+            is_read: false
+          });
+      } else if (notif.user_id === 'user-admin-01') {
+        // Broadcast notifikasi ke semua akun admin terdaftar di Supabase
+        const { data: admins } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'admin');
+
+        if (admins && admins.length > 0) {
+          const adminNotifs = admins.map(adm => ({
+            user_id: adm.id,
+            type: notif.type || 'info',
+            title: notif.title || '',
+            body: notif.body || '',
+            link: notif.link || '',
+            is_read: false
+          }));
+          await supabase.from('notifications').insert(adminNotifs);
+        }
+      }
+    } catch (err) {
+      console.warn('Gagal sinkronisasi notifikasi ke Supabase:', err);
+    }
   };
 
   // --- ITEM ACTIONS ---
@@ -1077,18 +1247,341 @@ export const DataProvider = ({ children }) => {
   };
 
   // --- MESSAGES ACTIONS ---
-  const sendMessage = (matchId, content, type = 'text') => {
+  const sendMessage = async (matchId, content, type = 'text') => {
+    const isRealUser = isUuid(user?.id);
+    const isValidMatchId = isUuid(matchId);
+    const localId = `msg-${Date.now()}`;
+
     const newMsg = {
-      id: `msg-${Date.now()}`,
+      id: localId,
       match_id: matchId,
-      sender_id: user?.id,
-      sender_name: user?.full_name,
+      sender_id: user?.id || (type === 'system' ? 'system' : 'user-unknown'),
+      sender_name: user?.full_name || (type === 'system' ? 'Sistem' : 'Pengguna'),
       content,
       type,
+      is_read: false,
       created_at: new Date().toISOString()
     };
     setMessages(prev => [...prev, newMsg]);
+
+    if (isSupabaseConfigured() && supabase && isValidMatchId && isRealUser) {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .insert({
+            match_id: matchId,
+            sender_id: user.id,
+            content,
+            type,
+            is_read: false
+          })
+          .select('*, sender:sender_id(full_name, avatar_url)')
+          .single();
+
+        if (!error && data) {
+          const formatted = {
+            ...data,
+            sender_name: data.sender?.full_name || user?.full_name || 'Pengguna'
+          };
+          setMessages(prev => prev.map(m => m.id === localId ? formatted : m));
+          return formatted;
+        } else if (error) {
+          console.warn('Gagal menyimpan pesan ke Supabase:', error);
+        }
+      } catch (err) {
+        console.warn('Gagal menyimpan pesan ke Supabase:', err);
+      }
+    }
     return newMsg;
+  };
+
+  const markMessagesAsRead = async (matchId) => {
+    if (!matchId || !user?.id) return;
+    setMessages(prev => prev.map(m => m.match_id === matchId && m.sender_id !== user.id ? { ...m, is_read: true } : m));
+
+    if (isSupabaseConfigured() && supabase && isUuid(matchId) && isUuid(user.id)) {
+      try {
+        await supabase
+          .from('messages')
+          .update({ is_read: true })
+          .eq('match_id', matchId)
+          .neq('sender_id', user.id);
+      } catch (err) {
+        console.warn('Gagal update is_read pesan di Supabase:', err);
+      }
+    }
+  };
+
+  // --- FOUND REPORTS ACTIONS (Laporan Penemuan Barang Hilang) ---
+
+  /**
+   * User yang menemukan barang hilang dari postingan orang lain mengirimkan laporan temuan
+   */
+  const submitFoundReport = async ({ itemId, description, foundLocation, photoUrls, reporterPhone }) => {
+    const targetItem = items.find(i => i.id === itemId);
+    if (!targetItem) return { error: 'Barang tidak ditemukan' };
+
+    // Cek apakah user sudah punya laporan penemuan yang masih menunggu review
+    const existing = foundReports.find(
+      r => r.item_id === itemId && 
+      (r.reporter_id === user?.id || (user?.email && r.reporter_email === user.email)) && 
+      r.status === 'menunggu_review'
+    );
+    if (existing) {
+      return { error: 'Anda sudah mengirimkan laporan penemuan untuk barang ini yang sedang menunggu review Admin.' };
+    }
+
+    let createdId = `fr-${Date.now()}`;
+    const isRealUser = isUuid(user?.id);
+    const isRealItem = isUuid(itemId);
+
+    if (isSupabaseConfigured() && supabase && isRealUser && isRealItem) {
+      try {
+        const { data, error } = await supabase
+          .from('found_reports')
+          .insert({
+            item_id: itemId,
+            reporter_id: user.id,
+            reporter_name: user.full_name || 'Mahasiswa UNNES',
+            reporter_phone: reporterPhone || user.phone || '',
+            description,
+            found_location: foundLocation,
+            photo_urls: photoUrls || [],
+            status: 'menunggu_review'
+          })
+          .select('*, reporter:reporter_id(full_name, avatar_url, email, phone)')
+          .single();
+
+        if (!error && data) {
+          createdId = data.id;
+        } else if (error) {
+          console.error('Error submit found_report ke Supabase:', error);
+          return { error: error.message || 'Gagal mengirim laporan ke database' };
+        }
+      } catch (err) {
+        console.error('Exception submit found_report:', err);
+        return { error: 'Terjadi kendala jaringan saat mengirim laporan' };
+      }
+    }
+
+    const newReport = {
+      id: createdId,
+      item_id: itemId,
+      reporter_id: user?.id,
+      reporter_name: user?.full_name || 'Mahasiswa UNNES',
+      reporter_phone: reporterPhone || user?.phone || '',
+      description,
+      found_location: foundLocation,
+      photo_urls: photoUrls || [],
+      status: 'menunggu_review',
+      created_at: new Date().toISOString()
+    };
+
+    setFoundReports(prev => [newReport, ...prev.filter(r => r.id !== newReport.id)]);
+
+    // 1. Notifikasi ke Admin
+    addNotification({
+      user_id: 'user-admin-01',
+      type: 'laporan_temuan',
+      title: 'Laporan Penemuan Baru Masuk! 🔍',
+      body: `${user?.full_name || 'Seorang pengguna'} melaporkan menemukan barang hilang #${targetItem.item_code} (${targetItem.title}). Menunggu review Admin.`,
+      link: '/admin/laporan-temuan'
+    });
+
+    // 2. Notifikasi ke Pemilik Barang Hilang
+    if (targetItem.user_id && targetItem.user_id !== user?.id) {
+      addNotification({
+        user_id: targetItem.user_id,
+        type: 'laporan_temuan',
+        title: 'Kabar Baik! Ada yang Menemukan Barang Anda 🎉',
+        body: `Seorang mahasiswa melaporkan telah menemukan barang hilang #${targetItem.item_code}. Laporan sedang diverifikasi oleh Admin.`,
+        link: `/barang/${targetItem.id}`
+      });
+    }
+
+    return { success: true, report: newReport };
+  };
+
+  /**
+   * Admin menyetujui laporan penemuan barang hilang
+   */
+  const approveFoundReport = async (reportId, adminNotes = '') => {
+    const report = foundReports.find(r => r.id === reportId);
+    if (!report) return { error: 'Laporan tidak ditemukan' };
+
+    const targetItem = items.find(i => i.id === report.item_id);
+    if (!targetItem) return { error: 'Data barang tidak ditemukan' };
+
+    // 1. Update found_report status di Supabase & local state
+    if (isSupabaseConfigured() && supabase && isUuid(reportId)) {
+      try {
+        await supabase
+          .from('found_reports')
+          .update({
+            status: 'disetujui',
+            admin_notes: adminNotes || 'Laporan penemuan diverifikasi dan disetujui Admin Posko.',
+            reviewed_by: isUuid(user?.id) ? user.id : null,
+            reviewed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', reportId);
+      } catch (err) {
+        console.warn('Gagal update found_report di Supabase:', err);
+      }
+    }
+
+    setFoundReports(prev => prev.map(r => r.id === reportId ? {
+      ...r,
+      status: 'disetujui',
+      admin_notes: adminNotes || 'Laporan penemuan diverifikasi dan disetujui Admin Posko.',
+      reviewed_by: user?.id,
+      reviewed_at: new Date().toISOString()
+    } : r));
+
+    // 2. Update status barang menjadi 'cocok'
+    setItems(prev => prev.map(i => i.id === targetItem.id ? { ...i, item_status: 'cocok' } : i));
+    if (isSupabaseConfigured() && supabase && isUuid(targetItem.id)) {
+      try {
+        await supabase
+          .from('items')
+          .update({ item_status: 'cocok', updated_at: new Date().toISOString() })
+          .eq('id', targetItem.id);
+      } catch (err) {
+        console.warn('Gagal update status item di Supabase:', err);
+      }
+    }
+
+    // 3. Buat match baru
+    let createdMatchId = `match-${Date.now()}`;
+    const isValidReportId = isUuid(report.id);
+    const isValidItemId = isUuid(report.item_id);
+    const isValidReporterId = isUuid(report.reporter_id);
+    const isValidOwnerId = isUuid(targetItem.user_id);
+
+    if (isSupabaseConfigured() && supabase && isValidItemId && isValidReporterId && isValidOwnerId) {
+      try {
+        const matchPayload = {
+          item_id: report.item_id,
+          item_title: targetItem.title || 'Barang Hilang',
+          item_code: targetItem.item_code || 'LF-UNNES',
+          finder_id: report.reporter_id,
+          finder_name: report.reporter_name || 'Penemu',
+          owner_id: targetItem.user_id,
+          owner_name: targetItem.user_name || 'Pemilik Barang',
+          match_type: 'found_report',
+          found_report_id: isValidReportId ? report.id : null,
+          status: 'aktif',
+          created_at: new Date().toISOString()
+        };
+
+        const { data: dbMatch, error: matchErr } = await supabase
+          .from('matches')
+          .insert(matchPayload)
+          .select()
+          .single();
+
+        if (!matchErr && dbMatch) {
+          createdMatchId = dbMatch.id;
+        } else if (matchErr) {
+          console.warn('Gagal membuat match di Supabase:', matchErr);
+        }
+      } catch (err) {
+        console.warn('Gagal membuat match di Supabase:', err);
+      }
+    }
+
+    const newMatch = {
+      id: createdMatchId,
+      item_id: report.item_id,
+      item_title: targetItem.title,
+      item_code: targetItem.item_code,
+      finder_id: report.reporter_id,
+      finder_name: report.reporter_name,
+      owner_id: targetItem.user_id,
+      owner_name: targetItem.user_name,
+      match_type: 'found_report',
+      found_report_id: report.id,
+      status: 'aktif',
+      created_at: new Date().toISOString()
+    };
+
+    setMatches(prev => [newMatch, ...prev.filter(m => m.id !== newMatch.id)]);
+
+    // 4. Kirim pesan selamat datang dari sistem di ruang chat
+    await sendMessage(
+      newMatch.id,
+      `🎉 Laporan penemuan barang #${targetItem.item_code} telah diverifikasi & disetujui oleh Admin Posko! Ruang obrolan langsung antara penemu (${report.reporter_name}) dan pemilik (${targetItem.user_name || 'Pemilik'}) resmi dibuka. Silakan berkoordinasi untuk menentukan waktu dan lokasi titik temu di area kampus UNNES.`,
+      'system'
+    );
+
+    // 5. Notifikasi ke kedua belah pihak
+    addNotification({
+      user_id: report.reporter_id,
+      type: 'laporan_temuan',
+      title: 'Laporan Penemuan Kamu DISETUJUI! 💬',
+      body: `Laporan penemuan Anda untuk #${targetItem.item_code} telah disetujui Admin. Ruang obrolan langsung dengan pemilik barang kini telah dibuka!`,
+      link: `/pesan/${newMatch.id}`
+    });
+
+    if (targetItem.user_id) {
+      addNotification({
+        user_id: targetItem.user_id,
+        type: 'laporan_temuan',
+        title: 'Penemu Barang Terverifikasi! 💬',
+        body: `Admin telah memverifikasi laporan penemu (${report.reporter_name}) untuk barang #${targetItem.item_code}. Ruang obrolan telah dibuka. Silakan koordinasi penyerahan.`,
+        link: `/pesan/${newMatch.id}`
+      });
+    }
+
+    try {
+      confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+    } catch (e) {}
+
+    return { success: true, match: newMatch };
+  };
+
+  /**
+   * Admin menolak laporan penemuan barang hilang
+   */
+  const rejectFoundReport = async (reportId, reason = '') => {
+    const report = foundReports.find(r => r.id === reportId);
+    if (!report) return { error: 'Laporan tidak ditemukan' };
+    const targetItem = items.find(i => i.id === report.item_id);
+
+    if (isSupabaseConfigured() && supabase && isUuid(reportId)) {
+      try {
+        await supabase
+          .from('found_reports')
+          .update({
+            status: 'ditolak',
+            admin_notes: reason || 'Ciri barang atau lokasi yang dilaporkan belum sesuai dengan data barang hilang.',
+            reviewed_by: isUuid(user?.id) ? user.id : null,
+            reviewed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', reportId);
+      } catch (err) {
+        console.warn('Gagal tolak found_report di Supabase:', err);
+      }
+    }
+
+    setFoundReports(prev => prev.map(r => r.id === reportId ? {
+      ...r,
+      status: 'ditolak',
+      admin_notes: reason || 'Ciri barang atau lokasi yang dilaporkan belum sesuai dengan data barang hilang.',
+      reviewed_by: user?.id,
+      reviewed_at: new Date().toISOString()
+    } : r));
+
+    addNotification({
+      user_id: report.reporter_id,
+      type: 'laporan_temuan',
+      title: 'Laporan Penemuan Belum Sesuai ⚠️',
+      body: `Laporan penemuan Anda untuk #${targetItem?.item_code || 'barang hilang'} belum disetujui Admin. Catatan: "${reason || 'Informasi kurang cocok'}".`,
+      link: targetItem ? `/barang/${targetItem.id}` : '/jelajahi'
+    });
+
+    return { success: true };
   };
 
   // --- RUNNER SERVICE ORDERS ---
@@ -1283,6 +1776,7 @@ export const DataProvider = ({ children }) => {
     totalReturned: items.filter(i => i.item_status === 'dikembalikan').length,
     pendingReviews: items.filter(i => i.post_status === 'menunggu_review').length,
     pendingClaims: claims.filter(c => c.status === 'menunggu_admin').length,
+    pendingFoundReports: foundReports.filter(r => r.status === 'menunggu_review').length,
     activeOrders: orders.filter(o => o.status !== 'selesai' && o.status !== 'dibatalkan').length,
     totalBounties: items
       .filter(i => i.post_status === 'disetujui' && i.bounty_amount > 0)
@@ -1298,6 +1792,7 @@ export const DataProvider = ({ children }) => {
       messages,
       orders,
       notifications,
+      foundReports,
       stats,
       submitItem,
       approveItem,
@@ -1308,17 +1803,38 @@ export const DataProvider = ({ children }) => {
       verifyClaim,
       revokeClaimVerification,
       submitClaimObjection,
+      submitFoundReport,
+      approveFoundReport,
+      rejectFoundReport,
       sendMessage,
+      markMessagesAsRead,
+      fetchSupabaseFoundReports,
+      fetchSupabaseMessages,
+      fetchSupabaseNotifications,
       createOrder,
       updateOrderStatus,
       deleteOrder,
       completeHandover,
       addNotification,
-      markNotificationAsRead: (id) => {
+      markNotificationAsRead: async (id) => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+        if (isSupabaseConfigured() && supabase && isUuid(id)) {
+          try {
+            await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+          } catch (e) {
+            console.warn('Gagal update notifikasi di Supabase:', e);
+          }
+        }
       },
-      markAllNotificationsAsRead: () => {
+      markAllNotificationsAsRead: async () => {
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+        if (isSupabaseConfigured() && supabase && user?.id && isUuid(user.id)) {
+          try {
+            await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id);
+          } catch (e) {
+            console.warn('Gagal update semua notifikasi di Supabase:', e);
+          }
+        }
       }
     }}>
       {children}
