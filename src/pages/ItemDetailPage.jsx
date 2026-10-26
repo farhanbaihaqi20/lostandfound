@@ -182,35 +182,47 @@ export const ItemDetailPage = () => {
   };
 
   return (
-    <div className="container pb-mobile-nav" style={{ paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="container pb-mobile-nav" style={{ paddingTop: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
-      {/* Back Button */}
+      {/* Back Button (Archival Monospace Link) */}
       <div>
         <button 
           onClick={() => navigate(-1)} 
-          className="btn btn-ghost btn-sm"
-          style={{ gap: '0.35rem', color: 'var(--text-secondary)' }}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            letterSpacing: '0.04em',
+            color: 'var(--ink-700)',
+            cursor: 'pointer',
+            padding: '4px 0'
+          }}
         >
-          <ArrowLeft size={16} /> Kembali
+          <ArrowLeft size={15} /> &larr; KEMBALI KE JELAJAHI ARSIP
         </button>
       </div>
 
-      {/* Main Grid: Gallery & Info */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+      {/* Main Grid: Gallery & Archival Information (03 Detail Barang — Desktop) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem', alignItems: 'start' }}>
         
-        {/* Left Column: Photo Gallery */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        {/* Left Column: Photo Gallery & Archival Guidelines */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
           {/* Main Photo Container */}
           <div 
-            className="glass-card"
             style={{ 
               position: 'relative', 
               aspectRatio: '4/3', 
-              borderRadius: 'var(--radius-xl)', 
+              borderRadius: '6px', 
               overflow: 'hidden',
-              backgroundColor: 'var(--bg-surface-alt)',
-              border: '1px solid var(--border-light)'
+              backgroundColor: 'var(--ink-100)',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
             }}
           >
             <img 
@@ -235,41 +247,40 @@ export const ItemDetailPage = () => {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'rgba(15, 23, 42, 0.55)',
-                backdropFilter: 'blur(3px)',
-                color: '#fff',
+                background: 'rgba(15, 23, 42, 0.65)',
+                backdropFilter: 'blur(4px)',
+                color: '#FAF8F5',
                 padding: '1.5rem',
                 textAlign: 'center',
                 zIndex: 4,
                 gap: '0.65rem'
               }}>
                 <div style={{
-                  width: '46px',
-                  height: '46px',
-                  borderRadius: '50%',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  border: '1.5px solid rgba(255, 255, 255, 0.4)',
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '4px',
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
+                  justifyContent: 'center'
                 }}>
-                  <Lock size={22} color="#f59e0b" />
+                  <Lock size={20} color="#FAF8F5" />
                 </div>
                 <div>
-                  <div style={{ fontSize: '1.05rem', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                    Foto Barang Temuan Dikunci
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', fontWeight: 700, letterSpacing: '0.08em' }}>
+                    [FOTO DOKUMEN DISENSOR]
                   </div>
-                  <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', maxWidth: '300px', margin: '0.35rem auto 0', lineHeight: 1.4 }}>
-                    Demi mencegah klaim palsu dan verifikasi yang sah, silakan masuk dengan akun Anda untuk melihat foto asli.
+                  <p style={{ fontSize: '0.8rem', color: '#D6D3D1', maxWidth: '320px', margin: '0.35rem auto 0', lineHeight: 1.5 }}>
+                    Sesuai SOP Arsip UNNES, foto barang temuan disensor untuk mencegah klaim fiktif. Masuk untuk melihat foto asli atau ajukan blind test.
                   </p>
                 </div>
                 <button
                   onClick={() => navigate('/masuk', { state: { from: location } })}
-                  className="btn btn-accent btn-sm"
-                  style={{ fontWeight: 700, gap: '0.4rem', marginTop: '0.25rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+                  className="btn btn-primary btn-sm"
+                  style={{ gap: '0.4rem', marginTop: '0.4rem' }}
                 >
-                  <LogIn size={15} /> Masuk untuk Buka Foto
+                  <LogIn size={14} /> Masuk Akun UNNES
                 </button>
               </div>
             )}
@@ -282,25 +293,33 @@ export const ItemDetailPage = () => {
             {item.bounty_amount > 0 && (
               <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 6 }}>
                 <span className="badge badge-bounty">
-                  <Award size={13} /> Hadiah Rp {item.bounty_amount.toLocaleString('id-ID')}
+                  <Award size={12} /> HADIAH RP {item.bounty_amount.toLocaleString('id-ID')}
                 </span>
               </div>
             )}
 
+            {/* Bottom Bar inside Photo */}
             <div style={{
               position: 'absolute',
-              bottom: '12px',
-              left: '12px',
-              background: 'rgba(15, 23, 42, 0.75)',
-              backdropFilter: 'blur(4px)',
-              color: '#fff',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              padding: '3px 10px',
-              borderRadius: 'var(--radius-sm)',
+              bottom: '0',
+              left: '0',
+              right: '0',
+              background: 'linear-gradient(to top, rgba(15, 23, 42, 0.85) 0%, transparent 100%)',
+              padding: '8px 12px',
+              color: '#FAF8F5',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.72rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               zIndex: 6
             }}>
-              Kode Laporan: #{item.item_code}
+              <span style={{ fontWeight: 700, color: '#93C5FD' }}>
+                #{item.item_code}
+              </span>
+              <span style={{ color: '#D6D3D1' }}>
+                {new Date(item.date_lost_found || item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
             </div>
           </div>
 
@@ -314,11 +333,13 @@ export const ItemDetailPage = () => {
                   style={{
                     width: '64px',
                     height: '64px',
-                    borderRadius: 'var(--radius-md)',
+                    borderRadius: '4px',
                     overflow: 'hidden',
-                    border: selectedPhotoIndex === idx ? '2px solid var(--primary-600)' : '1px solid var(--border-light)',
+                    border: selectedPhotoIndex === idx ? '2px solid var(--ink-900)' : '1px solid var(--border-subtle)',
                     cursor: 'pointer',
-                    opacity: selectedPhotoIndex === idx ? 1 : 0.6
+                    opacity: selectedPhotoIndex === idx ? 1 : 0.6,
+                    padding: 0,
+                    background: 'transparent'
                   }}
                 >
                   <img src={url} alt="thumbnail" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -327,146 +348,206 @@ export const ItemDetailPage = () => {
             </div>
           )}
 
-          {/* Privacy Note from Blueprint */}
+          {/* SOP Archival Guidelines Box (From Figma Detail Screen) */}
           <div style={{
-            background: 'var(--bg-surface-alt)',
-            border: '1px solid var(--border-light)',
-            borderRadius: 'var(--radius-md)',
-            padding: '0.75rem 1rem',
-            fontSize: '0.78rem',
-            color: 'var(--text-secondary)',
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderLeft: '3px solid var(--ink-900)',
+            borderRadius: '4px',
+            padding: '1.25rem',
             display: 'flex',
-            alignItems: 'flex-start',
-            gap: '0.5rem'
+            flexDirection: 'column',
+            gap: '0.65rem'
           }}>
-            <Lock size={16} color="var(--primary-600)" style={{ flexShrink: 0, marginTop: '2px' }} />
-            <span>
-              <strong>SOP Sensor Gambar:</strong> Untuk mencegah klaim palsu dan melindungi identitas mahasiswa, nomor identitas (NIM/NIK/No Rekening) dan tanda tersembunyi telah disensor oleh sistem.
-            </span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              color: 'var(--ink-900)',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase'
+            }}>
+              <ShieldCheck size={16} /> PETUNJUK KESELAMATAN &amp; KLAIM
+            </div>
+            <ul style={{ 
+              margin: 0, 
+              paddingLeft: '1.15rem', 
+              fontSize: '0.8rem', 
+              color: 'var(--ink-700)', 
+              lineHeight: 1.6,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.35rem'
+            }}>
+              <li>Verifikasi kepemilikan dilakukan secara tertutup melalui pertanyaan blind-test.</li>
+              <li>Pengambilan fisik barang disarankan di Posko Resmi UNNES (Gedung Rektorat atau Pos Satpam Fakultas).</li>
+              <li>Pelapor dan penemu wajib menandatangani Berita Acara Serah Terima digital setelah barang diterima.</li>
+            </ul>
           </div>
 
         </div>
 
-        {/* Right Column: Item Information & Actions */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        {/* Right Column: Archival Metadata Table & Actions */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
+          {/* Header Metadata Tag & Title */}
           <div>
-            {isItemVerified && item.item_status !== 'dikembalikan' && (
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                background: 'rgba(13, 148, 136, 0.1)',
-                border: '1px solid rgba(13, 148, 136, 0.3)',
-                color: 'var(--teal-700)',
-                padding: '0.3rem 0.65rem',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                marginBottom: '0.4rem'
-              }}>
-                <ShieldCheck size={14} color="var(--teal-600)" /> Terverifikasi Pemilik (Menunggu Serah Terima)
-              </div>
-            )}
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-              Kategori: {item.category}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.65rem', 
+              fontFamily: 'var(--font-mono)', 
+              fontSize: '0.75rem', 
+              marginBottom: '0.4rem',
+              color: 'var(--ink-500)' 
+            }}>
+              <span style={{ fontWeight: 700, color: '#2563EB' }}>#{item.item_code}</span>
+              <span>&bull;</span>
+              <span>{item.type === 'hilang' ? 'BARANG HILANG' : 'BARANG TEMUAN'}</span>
+              <span>&bull;</span>
+              <span>DILAPORKAN {new Date(item.date_lost_found || item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase()}</span>
             </div>
-            <h1 style={{ fontSize: 'clamp(1.35rem, 3vw, 1.85rem)', fontWeight: 800, lineHeight: 1.2, color: 'var(--text-primary)' }}>
+
+            <h1 style={{ 
+              fontFamily: 'var(--font-serif)', 
+              fontSize: 'clamp(1.75rem, 3.5vw, 2.35rem)', 
+              fontWeight: 700, 
+              lineHeight: 1.2, 
+              color: 'var(--ink-900)',
+              margin: '0.25rem 0 0'
+            }}>
               {item.title}
             </h1>
           </div>
 
-          {/* Status Review Callout */}
-          {item.post_status === 'menunggu_review' && (
-            <div style={{
-              background: 'var(--warning-bg)',
-              border: '1px solid rgba(245, 158, 11, 0.4)',
-              borderRadius: 'var(--radius-md)',
-              padding: '0.75rem 1rem',
-              fontSize: '0.825rem',
-              color: 'var(--amber-700)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
+          {/* Archival Dotted Leader Table */}
+          <div style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '6px',
+            padding: '1.25rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.65rem'
+          }}>
+            <div style={{ 
+              fontFamily: 'var(--font-mono)', 
+              fontSize: '0.72rem', 
+              fontWeight: 700, 
+              letterSpacing: '0.08em', 
+              color: 'var(--ink-500)', 
+              textTransform: 'uppercase',
+              borderBottom: '1px solid var(--border-subtle)',
+              paddingBottom: '0.4rem',
+              marginBottom: '0.2rem'
             }}>
-              <Clock size={18} />
-              <span>Laporan ini masih <strong>Menunggu Persetujuan Admin</strong> sebelum tampil di feed publik.</span>
-            </div>
-          )}
-
-          {/* Location Details Box */}
-          <div className="glass-card" style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.95rem' }}>
-              <Building2 size={18} color="var(--teal-600)" />
-              <span>Lokasi di Kampus UNNES</span>
+              DATA ARSIP SPESIFIKASI BARANG
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.65rem', fontSize: '0.825rem' }}>
-              <div>
-                <div style={{ color: 'var(--text-muted)' }}>Gedung / Zona:</div>
-                <div style={{ fontWeight: 600 }}>{item.location_building}</div>
+            <div className="dotted-row">
+              <span className="dotted-label">KATEGORI</span>
+              <span className="dotted-line"></span>
+              <span className="dotted-value">{item.category}</span>
+            </div>
+
+            <div className="dotted-row">
+              <span className="dotted-label">FAKULTAS / LOKASI</span>
+              <span className="dotted-line"></span>
+              <span className="dotted-value">{item.location_building}</span>
+            </div>
+
+            {(item.location_floor || item.location_room) && (
+              <div className="dotted-row">
+                <span className="dotted-label">LANTAI / RUANG</span>
+                <span className="dotted-line"></span>
+                <span className="dotted-value">{[item.location_floor, item.location_room].filter(Boolean).join(' - ')}</span>
               </div>
-              {item.location_floor && (
-                <div>
-                  <div style={{ color: 'var(--text-muted)' }}>Lantai:</div>
-                  <div style={{ fontWeight: 600 }}>{item.location_floor}</div>
-                </div>
-              )}
-              {item.location_room && (
-                <div>
-                  <div style={{ color: 'var(--text-muted)' }}>Ruangan:</div>
-                  <div style={{ fontWeight: 600 }}>{item.location_room}</div>
-                </div>
-              )}
-            </div>
+            )}
 
             {item.location_detail && (
-              <div style={{ 
-                marginTop: '0.35rem', 
-                padding: '0.5rem 0.75rem', 
-                background: 'var(--bg-surface-alt)', 
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.8rem'
-              }}>
-                <span style={{ color: 'var(--text-muted)' }}>Posisi Presisi: </span>
-                <strong>{item.location_detail}</strong>
+              <div className="dotted-row">
+                <span className="dotted-label">POSISI DETAIL</span>
+                <span className="dotted-line"></span>
+                <span className="dotted-value">{item.location_detail}</span>
+              </div>
+            )}
+
+            <div className="dotted-row">
+              <span className="dotted-label">STATUS ARSIP</span>
+              <span className="dotted-line"></span>
+              <span className="dotted-value" style={{ fontWeight: 700, color: item.item_status === 'dikembalikan' ? '#059669' : 'var(--ink-900)' }}>
+                {item.item_status === 'dikembalikan' ? 'SELESAI (SUDAH KEMBALI)' : isItemVerified ? 'TERVERIFIKASI PEMILIK' : 'TERBUKA / MENUNGGU KLAIM'}
+              </span>
+            </div>
+
+            <div className="dotted-row">
+              <span className="dotted-label">PELAPOR RESMI</span>
+              <span className="dotted-line"></span>
+              <span className="dotted-value">{item.user_name || 'Civitas UNNES'}</span>
+            </div>
+
+            {item.bounty_amount > 0 && (
+              <div className="dotted-row">
+                <span className="dotted-label" style={{ color: '#CA8A04' }}>PROGRAM HADIAH</span>
+                <span className="dotted-line"></span>
+                <span className="dotted-value" style={{ color: '#CA8A04', fontWeight: 700 }}>Rp {item.bounty_amount.toLocaleString('id-ID')}</span>
               </div>
             )}
           </div>
 
-          {/* Description */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Deskripsi & Ciri Fisik:</h3>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+          {/* Description Box */}
+          <div style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '6px',
+            padding: '1.25rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.45rem'
+          }}>
+            <h3 style={{ 
+              fontFamily: 'var(--font-mono)', 
+              fontSize: '0.72rem', 
+              fontWeight: 700, 
+              letterSpacing: '0.08em', 
+              color: 'var(--ink-500)', 
+              textTransform: 'uppercase',
+              margin: 0
+            }}>
+              CATATAN &amp; CIRI FISIK BARANG:
+            </h3>
+            <p style={{ fontSize: '0.88rem', color: 'var(--ink-900)', lineHeight: 1.65, whiteSpace: 'pre-line', margin: 0 }}>
               {item.description}
             </p>
           </div>
 
-          {/* Reporter info */}
+          {/* Reporter & Share Actions */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'space-between',
             padding: '0.75rem 1rem',
-            background: 'var(--bg-surface-alt)',
-            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--bg-card-alt)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '6px',
             fontSize: '0.8rem',
-            color: 'var(--text-secondary)'
+            color: 'var(--ink-700)'
           }}>
-            <div>
-              Dilaporkan oleh: <strong>{item.user_name}</strong>
-              <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
-                Waktu: {new Date(item.date_lost_found || item.created_at).toLocaleString('id-ID')}
-              </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
+              ID PELAPOR: <strong>{item.user_name}</strong>
             </div>
             <button 
               onClick={handleShare}
-              className="btn btn-outline btn-sm"
-              style={{ gap: '0.35rem' }}
+              className="btn btn-secondary btn-sm"
+              style={{ gap: '0.35rem', fontFamily: 'var(--font-mono)', fontSize: '0.72rem' }}
             >
-              <Share2 size={14} /> {copied ? 'Tersalin!' : 'Bagikan'}
+              <Share2 size={13} /> {copied ? 'LINK TERSALIN!' : 'BAGIKAN ARSIP'}
             </button>
           </div>
+
 
           {/* Panel Pengelolaan (Admin & Pemilik) */}
           {(isAdmin || isOwner) && (

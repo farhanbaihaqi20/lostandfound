@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  PlusCircle, 
+  Plus, 
   Bell, 
   Sun, 
   Moon, 
@@ -9,7 +9,10 @@ import {
   ShieldCheck, 
   LogOut, 
   Settings, 
-  Bike
+  Bike,
+  MessageSquare,
+  Compass,
+  Home
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
@@ -25,13 +28,11 @@ export const Navbar = () => {
   const notifRef = useRef(null);
   const userRef = useRef(null);
 
-  // Filter notifications for current user or admin
   const userNotifs = notifications.filter(n => 
     isAdmin ? true : n.user_id === user?.id
   );
   const unreadCount = userNotifs.filter(n => !n.is_read).length;
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notifRef.current && !notifRef.current.contains(event.target)) {
@@ -48,61 +49,71 @@ export const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className="glass-panel" style={{
+    <header style={{
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      borderBottom: '1px solid var(--border-glass)',
-      padding: '0.65rem 0'
+      backgroundColor: 'var(--bg-canvas)',
+      borderBottom: '1px solid var(--border-subtle)',
+      padding: '0.75rem 0',
+      backdropFilter: 'blur(8px)'
     }}>
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.25rem' }}>
         
-        {/* Brand Logo & UNNES Identity */}
+        {/* Brand Logo & Archival Identity */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
           <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '50%',
-            overflow: 'hidden',
+            width: '36px',
+            height: '36px',
+            backgroundColor: 'var(--ink-900)',
+            color: '#FAF8F5',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(30, 58, 95, 0.2)',
-            border: '2px solid var(--amber-400)',
-            background: '#FAF6EB',
+            fontFamily: 'var(--font-mono)',
+            fontWeight: 800,
+            fontSize: '0.95rem',
+            borderRadius: '4px',
             flexShrink: 0
           }}>
-            <img 
-              src="/logo.png" 
-              alt="Logo UNNES Lost & Found" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
+            LF
           </div>
           <div>
             <div style={{ 
-              fontFamily: 'var(--font-heading)', 
-              fontWeight: 800, 
-              fontSize: '1.1rem', 
+              fontFamily: 'var(--font-serif)', 
+              fontWeight: 700, 
+              fontSize: '1.15rem', 
               letterSpacing: '-0.02em',
-              color: 'var(--text-primary)',
-              lineHeight: 1.1
+              color: 'var(--ink-900)',
+              lineHeight: 1.15
             }}>
-              UNNES <span style={{ color: 'var(--amber-500)' }}>Lost & Found</span>
+              UNNES Lost &amp; Found
             </div>
-            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-              Universitas Negeri Semarang
+            <div style={{ 
+              fontFamily: 'var(--font-mono)', 
+              fontSize: '0.625rem', 
+              color: 'var(--ink-500)', 
+              letterSpacing: '0.06em', 
+              textTransform: 'uppercase' 
+            }}>
+              UNIVERSITAS NEGERI SEMARANG
             </div>
           </div>
         </Link>
 
-        {/* Desktop Navigation Links */}
-        <nav style={{ display: 'none', alignItems: 'center', gap: '1.5rem' }} className="desktop-nav">
+        {/* Center Navigation Links (Desktop) */}
+        <nav style={{ display: 'none', alignItems: 'center', gap: '1.75rem' }} className="desktop-nav">
           <Link 
-            to="/beranda" 
+            to="/" 
             style={{ 
-              fontWeight: 600, 
+              fontFamily: 'var(--font-sans)',
+              fontWeight: isActive('/') ? 700 : 500, 
               fontSize: '0.9rem',
-              color: isActive('/beranda') ? 'var(--primary-600)' : 'var(--text-secondary)'
+              color: isActive('/') ? 'var(--ink-900)' : 'var(--ink-500)',
+              textDecoration: 'none',
+              borderBottom: isActive('/') ? '2px solid var(--ink-900)' : '2px solid transparent',
+              paddingBottom: '2px',
+              transition: 'color 0.15s ease'
             }}
           >
             Beranda
@@ -110,101 +121,140 @@ export const Navbar = () => {
           <Link 
             to="/jelajahi" 
             style={{ 
-              fontWeight: 600, 
+              fontFamily: 'var(--font-sans)',
+              fontWeight: isActive('/jelajahi') ? 700 : 500, 
               fontSize: '0.9rem',
-              color: isActive('/jelajahi') ? 'var(--primary-600)' : 'var(--text-secondary)'
+              color: isActive('/jelajahi') ? 'var(--ink-900)' : 'var(--ink-500)',
+              textDecoration: 'none',
+              borderBottom: isActive('/jelajahi') ? '2px solid var(--ink-900)' : '2px solid transparent',
+              paddingBottom: '2px',
+              transition: 'color 0.15s ease'
             }}
           >
-            Jelajahi Barang
+            Jelajahi Arsip
+          </Link>
+          <Link 
+            to="/lapor/pilih" 
+            style={{ 
+              fontFamily: 'var(--font-sans)',
+              fontWeight: location.pathname.startsWith('/lapor') ? 700 : 500, 
+              fontSize: '0.9rem',
+              color: location.pathname.startsWith('/lapor') ? 'var(--ink-900)' : 'var(--ink-500)',
+              textDecoration: 'none',
+              borderBottom: location.pathname.startsWith('/lapor') ? '2px solid var(--ink-900)' : '2px solid transparent',
+              paddingBottom: '2px',
+              transition: 'color 0.15s ease'
+            }}
+          >
+            Lapor
           </Link>
           <Link 
             to="/pesan" 
             style={{ 
-              fontWeight: 600, 
+              fontFamily: 'var(--font-sans)',
+              fontWeight: isActive('/pesan') ? 700 : 500, 
               fontSize: '0.9rem',
-              color: isActive('/pesan') ? 'var(--primary-600)' : 'var(--text-secondary)'
+              color: isActive('/pesan') ? 'var(--ink-900)' : 'var(--ink-500)',
+              textDecoration: 'none',
+              borderBottom: isActive('/pesan') ? '2px solid var(--ink-900)' : '2px solid transparent',
+              paddingBottom: '2px',
+              transition: 'color 0.15s ease'
             }}
           >
-            Obrolan
+            Pesan &amp; Klaim
           </Link>
+
           {isAdmin && (
             <Link 
               to="/admin" 
               style={{ 
-                fontWeight: 700, 
-                fontSize: '0.9rem',
-                color: '#6d28d9',
-                display: 'flex',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#6D28D9',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.3rem',
-                background: 'rgba(109, 40, 217, 0.1)',
-                padding: '0.3rem 0.75rem',
-                borderRadius: 'var(--radius-full)'
+                gap: '0.35rem',
+                backgroundColor: '#EDE9FE',
+                padding: '0.25rem 0.65rem',
+                borderRadius: '4px',
+                border: '1px solid #DDD6FE',
+                textDecoration: 'none'
               }}
             >
-              <ShieldCheck size={16} /> Panel Admin
+              <ShieldCheck size={14} /> PANEL ADMIN
             </Link>
           )}
         </nav>
 
-        {/* Right Tools & User Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        {/* Right Tools & Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           
-          {/* Desktop Report (+) Button */}
+          {/* Buat Laporan Primary Button */}
           <Link 
-            to={user ? "/lapor/pilih" : "/masuk"} 
-            className="btn btn-accent btn-sm"
-            style={{ display: 'none' }}
+            to="/lapor/pilih" 
+            className="btn btn-dark btn-sm"
+            style={{ display: 'none', gap: '0.35rem', textTransform: 'uppercase' }}
             id="desktop-report-btn"
           >
-            <PlusCircle size={16} /> Buat Laporan
+            <Plus size={15} strokeWidth={2.5} /> Buat Laporan
           </Link>
 
           {/* Theme Toggle Button */}
           <button 
             onClick={toggleTheme} 
-            className="btn-ghost"
             style={{ 
-              padding: '0.45rem', 
-              borderRadius: 'var(--radius-md)', 
-              color: 'var(--text-secondary)' 
+              background: 'transparent',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '4px',
+              padding: '0.4rem', 
+              color: 'var(--ink-700)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
             title={theme === 'dark' ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap'}
           >
-            {theme === 'dark' ? <Sun size={19} color="#f59e0b" /> : <Moon size={19} />}
+            {theme === 'dark' ? <Sun size={17} color="#F59E0B" /> : <Moon size={17} />}
           </button>
 
-          {/* Notifications Dropdown (Hanya jika user login) */}
+          {/* Notifications Dropdown */}
           {user && (
             <div ref={notifRef} style={{ position: 'relative' }}>
               <button 
                 onClick={() => setShowNotifDropdown(!showNotifDropdown)}
-                className="btn-ghost"
                 style={{ 
-                  padding: '0.45rem', 
-                  borderRadius: 'var(--radius-md)', 
-                  color: 'var(--text-secondary)',
+                  background: 'transparent',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '4px',
+                  padding: '0.4rem', 
+                  color: 'var(--ink-700)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   position: 'relative'
                 }}
                 title="Notifikasi"
               >
-                <Bell size={19} />
+                <Bell size={17} />
                 {unreadCount > 0 && (
                   <span style={{
                     position: 'absolute',
-                    top: '2px',
-                    right: '2px',
-                    background: 'var(--danger)',
+                    top: '-3px',
+                    right: '-3px',
+                    background: 'var(--tag-lost-text)',
                     color: '#fff',
-                    fontSize: '0.65rem',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.62rem',
                     fontWeight: 700,
                     width: '16px',
                     height: '16px',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '2px solid var(--bg-surface)'
+                    justifyContent: 'center'
                   }}>
                     {unreadCount}
                   </span>
@@ -212,27 +262,29 @@ export const Navbar = () => {
               </button>
 
               {showNotifDropdown && (
-                <div className="glass-panel" style={{
+                <div style={{
                   position: 'absolute',
                   top: 'calc(100% + 8px)',
                   right: 0,
                   width: '320px',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '0.75rem',
-                  boxShadow: 'var(--shadow-xl)',
+                  backgroundColor: 'var(--bg-card)',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-subtle)',
+                  padding: '0.85rem',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
                   zIndex: 60
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-light)' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>Notifikasi ({unreadCount})</span>
-                    <Link to="/notifikasi" onClick={() => setShowNotifDropdown(false)} style={{ fontSize: '0.75rem', color: 'var(--primary-600)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.78rem', color: 'var(--ink-900)' }}>NOTIFIKASI ({unreadCount})</span>
+                    <Link to="/notifikasi" onClick={() => setShowNotifDropdown(false)} style={{ fontSize: '0.72rem', color: 'var(--ink-500)', textDecoration: 'underline' }}>
                       Lihat Semua
                     </Link>
                   </div>
 
                   <div style={{ maxHeight: '280px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
                     {userNotifs.length === 0 ? (
-                      <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                        Belum ada notifikasi
+                      <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--ink-500)', fontSize: '0.8rem' }}>
+                        Belum ada notifikasi baru
                       </div>
                     ) : (
                       userNotifs.slice(0, 5).map(n => (
@@ -245,8 +297,9 @@ export const Navbar = () => {
                           }}
                           style={{
                             padding: '0.5rem',
-                            borderRadius: 'var(--radius-sm)',
-                            background: n.is_read ? 'transparent' : 'var(--bg-surface-alt)',
+                            borderRadius: '4px',
+                            background: n.is_read ? 'transparent' : 'var(--bg-card-alt)',
+                            border: '1px solid var(--border-subtle)',
                             cursor: 'pointer',
                             display: 'flex',
                             flexDirection: 'column',
@@ -254,8 +307,8 @@ export const Navbar = () => {
                             fontSize: '0.775rem'
                           }}
                         >
-                          <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{n.title}</div>
-                          <div style={{ color: 'var(--text-secondary)' }}>{n.body}</div>
+                          <div style={{ fontWeight: 600, color: 'var(--ink-900)' }}>{n.title}</div>
+                          <div style={{ color: 'var(--ink-700)', fontSize: '0.725rem' }}>{n.body}</div>
                         </div>
                       ))
                     )}
@@ -265,7 +318,7 @@ export const Navbar = () => {
             </div>
           )}
 
-          {/* User Profile Dropdown atau Tombol Masuk/Daftar */}
+          {/* User Profile / Auth Button */}
           {user ? (
             <div ref={userRef} style={{ position: 'relative' }}>
               <button 
@@ -273,12 +326,13 @@ export const Navbar = () => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.4rem',
-                  padding: '2px',
-                  borderRadius: 'var(--radius-full)',
-                  border: '1.5px solid var(--border-light)',
+                  gap: '0.5rem',
+                  padding: '3px 8px 3px 4px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--border-subtle)',
                   cursor: 'pointer',
-                  background: 'transparent'
+                  background: 'var(--bg-card)',
+                  color: 'var(--ink-900)'
                 }}
                 title={user?.full_name || 'Profil Pengguna'}
               >
@@ -286,60 +340,66 @@ export const Navbar = () => {
                   <img 
                     src={user.avatar_url} 
                     alt={user.full_name || 'User'} 
-                    style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
+                    style={{ width: '26px', height: '26px', borderRadius: '4px', objectFit: 'cover' }}
                   />
                 ) : (
                   <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--teal-600) 100%)',
-                    color: '#fff',
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '4px',
+                    background: 'var(--ink-900)',
+                    color: '#FAF8F5',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '0.85rem',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.75rem',
                     fontWeight: 700
                   }}>
                     {(user.full_name || user.email || 'U')[0].toUpperCase()}
                   </div>
                 )}
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 600 }}>
+                  {user.full_name?.split(' ')[0] || 'AKUN'}
+                </span>
               </button>
 
               {showUserDropdown && (
-                <div className="glass-panel" style={{
+                <div style={{
                   position: 'absolute',
                   top: 'calc(100% + 8px)',
                   right: 0,
                   width: '240px',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '0.75rem',
-                  boxShadow: 'var(--shadow-xl)',
+                  backgroundColor: 'var(--bg-card)',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-subtle)',
+                  padding: '0.85rem',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
                   zIndex: 60,
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '0.4rem'
                 }}>
-                  <div style={{ padding: '0.4rem', borderBottom: '1px solid var(--border-light)' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)', wordBreak: 'break-word' }}>
+                  <div style={{ paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--ink-900)' }}>
                       {user.full_name}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', wordBreak: 'break-word' }}>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)' }}>
                       {user.email}
                     </div>
-                    <div style={{ marginTop: '4px' }}>
-                      <span className={`badge ${isAdmin ? 'badge-admin' : 'badge-found'}`} style={{ fontSize: '0.65rem' }}>
-                        {isAdmin ? '🛡️ Administrator' : '🎓 Mahasiswa UNNES'}
+                    <div style={{ marginTop: '6px' }}>
+                      <span className={`badge ${isAdmin ? 'badge-verified' : 'badge-found'}`} style={{ fontSize: '0.62rem' }}>
+                        {isAdmin ? 'PETUGAS ARSIP' : 'MAHASISWA UNNES'}
                       </span>
                     </div>
                   </div>
 
                   <Link 
-                    to="/profil" 
+                    to="/beranda" 
                     onClick={() => setShowUserDropdown(false)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', borderRadius: 'var(--radius-sm)' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem', fontSize: '0.825rem', color: 'var(--ink-700)', textDecoration: 'none' }}
                   >
-                    <User size={16} /> Profil Saya
+                    <User size={15} /> Laporan Saya
                   </Link>
 
                   {isAdmin && (
@@ -347,16 +407,16 @@ export const Navbar = () => {
                       <Link 
                         to="/admin" 
                         onClick={() => setShowUserDropdown(false)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', fontSize: '0.85rem', color: '#6d28d9', borderRadius: 'var(--radius-sm)' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem', fontSize: '0.825rem', color: '#6D28D9', textDecoration: 'none' }}
                       >
-                        <ShieldCheck size={16} /> Dashboard Admin
+                        <ShieldCheck size={15} /> Moderasi Posko
                       </Link>
                       <Link 
                         to="/admin/pesanan" 
                         onClick={() => setShowUserDropdown(false)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', fontSize: '0.85rem', color: 'var(--teal-700)', borderRadius: 'var(--radius-sm)' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem', fontSize: '0.825rem', color: 'var(--ink-700)', textDecoration: 'none' }}
                       >
-                        <Bike size={16} /> Jasa Runner Posko
+                        <Bike size={15} /> Layanan Runner
                       </Link>
                     </>
                   )}
@@ -364,9 +424,9 @@ export const Navbar = () => {
                   <Link 
                     to="/pengaturan" 
                     onClick={() => setShowUserDropdown(false)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', borderRadius: 'var(--radius-sm)' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem', fontSize: '0.825rem', color: 'var(--ink-700)', textDecoration: 'none' }}
                   >
-                    <Settings size={16} /> Pengaturan
+                    <Settings size={15} /> Pengaturan
                   </Link>
 
                   <button 
@@ -379,34 +439,36 @@ export const Navbar = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.5rem',
-                      padding: '0.5rem',
-                      fontSize: '0.85rem',
-                      color: 'var(--danger)',
-                      borderTop: '1px solid var(--border-light)',
+                      padding: '0.5rem 0.45rem 0.2rem',
+                      fontSize: '0.825rem',
+                      color: 'var(--tag-lost-text)',
+                      border: 'none',
+                      borderTop: '1px solid var(--border-subtle)',
+                      background: 'transparent',
                       marginTop: '0.25rem',
                       width: '100%',
+                      cursor: 'pointer',
                       textAlign: 'left'
                     }}
                   >
-                    <LogOut size={16} /> Keluar
+                    <LogOut size={15} /> Keluar Akun
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            /* Professional Login / Register Buttons */
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Link 
                 to="/masuk" 
-                className="btn btn-ghost btn-sm"
-                style={{ fontWeight: 600, fontSize: '0.85rem', padding: '0.4rem 0.75rem' }}
+                className="btn btn-secondary btn-sm"
+                style={{ fontWeight: 600, fontSize: '0.825rem' }}
               >
                 Masuk
               </Link>
               <Link 
                 to="/daftar" 
                 className="btn btn-primary btn-sm"
-                style={{ fontWeight: 600, fontSize: '0.85rem', padding: '0.4rem 0.85rem' }}
+                style={{ fontWeight: 600, fontSize: '0.825rem' }}
               >
                 Daftar
               </Link>
@@ -425,3 +487,4 @@ export const Navbar = () => {
     </header>
   );
 };
+

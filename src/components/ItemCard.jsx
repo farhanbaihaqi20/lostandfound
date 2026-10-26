@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Calendar, Award, ChevronRight, Lock } from 'lucide-react';
+import { Lock, ArrowRight } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { useAuth } from '../contexts/AuthContext';
 import { CATEGORIES } from '../data/initialData';
@@ -23,18 +23,13 @@ export const ItemCard = ({ item }) => {
     year: 'numeric'
   });
 
+  const categoryObj = CATEGORIES.find(c => c.id === item.category);
+  const categoryName = categoryObj ? categoryObj.name : (item.category || 'Lain-lain');
+
   return (
-    <div className="glass-card" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-      height: '100%',
-      position: 'relative',
-      border: '1px solid var(--border-light)',
-      transition: 'all var(--trans-normal)'
-    }}>
-      {/* Thumbnail Container */}
-      <div style={{ position: 'relative', width: '100%', height: '180px', overflow: 'hidden', backgroundColor: 'var(--bg-surface-alt)' }}>
+    <div className="archive-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Photo Header */}
+      <div style={{ position: 'relative', width: '100%', height: '190px', overflow: 'hidden', backgroundColor: 'var(--ink-100)', borderBottom: '1px solid var(--border-subtle)' }}>
         <img 
           src={displayImage} 
           alt={item.title} 
@@ -43,19 +38,13 @@ export const ItemCard = ({ item }) => {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            filter: isLocked ? 'blur(10px) brightness(0.68)' : 'none',
+            filter: isLocked ? 'blur(12px) brightness(0.65)' : 'none',
             transform: isLocked ? 'scale(1.08)' : 'none',
-            transition: 'filter 0.3s ease, transform var(--trans-slow)'
-          }}
-          onMouseEnter={(e) => {
-            if (!isLocked) e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            if (!isLocked) e.currentTarget.style.transform = 'scale(1)';
+            transition: 'transform 0.3s ease'
           }}
         />
 
-        {/* Lock Overlay for Guests on Found Items */}
+        {/* Censor Overlay for Guests on Found Items */}
         {isLocked && (
           <div style={{
             position: 'absolute',
@@ -64,38 +53,42 @@ export const ItemCard = ({ item }) => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(15, 23, 42, 0.45)',
-            backdropFilter: 'blur(2px)',
-            color: '#fff',
-            padding: '0.5rem',
+            background: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(3px)',
+            color: '#FAF8F5',
+            padding: '1rem',
             textAlign: 'center',
-            zIndex: 4,
-            pointerEvents: 'none'
+            zIndex: 4
           }}>
             <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.2)',
-              border: '1px solid rgba(255, 255, 255, 0.4)',
+              width: '32px',
+              height: '32px',
+              borderRadius: '4px',
+              background: 'rgba(255, 255, 255, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '0.35rem',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.25)'
+              marginBottom: '0.4rem'
             }}>
-              <Lock size={18} color="#f59e0b" />
+              <Lock size={16} color="#FAF8F5" />
             </div>
-            <span style={{ fontSize: '0.78rem', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-              Foto Disensor
+            <span style={{ 
+              fontFamily: 'var(--font-mono)', 
+              fontSize: '0.72rem', 
+              fontWeight: 700, 
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase'
+            }}>
+              [FOTO DISENSOR]
             </span>
-            <span style={{ fontSize: '0.675rem', color: 'rgba(255,255,255,0.9)', textShadow: '0 1px 2px rgba(0,0,0,0.7)' }}>
+            <span style={{ fontSize: '0.675rem', color: '#D6D3D1', marginTop: '2px' }}>
               Masuk untuk melihat foto asli
             </span>
           </div>
         )}
 
-        {/* Top Badges */}
+        {/* Badges on Top */}
         <div style={{
           position: 'absolute',
           top: '10px',
@@ -103,68 +96,49 @@ export const ItemCard = ({ item }) => {
           right: '10px',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           pointerEvents: 'none',
           zIndex: 5
         }}>
-          <StatusBadge type={item.type} status={item.item_status} />
-          {item.bounty_amount > 0 && (
-            <span className="badge badge-bounty" style={{ pointerEvents: 'auto', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-              <Award size={12} /> Rp {item.bounty_amount.toLocaleString('id-ID')}
-            </span>
-          )}
+          <StatusBadge type={item.type} status={item.item_status} bounty={item.bounty_amount} />
         </div>
 
-        {/* Item Code Watermark */}
+        {/* Item Code & Date Watermark Bar */}
         <div style={{
           position: 'absolute',
-          bottom: '8px',
-          left: '10px',
-          background: 'rgba(15, 23, 42, 0.75)',
-          backdropFilter: 'blur(4px)',
-          color: '#ffffff',
+          bottom: '0',
+          left: '0',
+          right: '0',
+          background: 'linear-gradient(to top, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.3) 70%, transparent 100%)',
+          padding: '6px 12px 6px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          color: '#FAF8F5',
+          fontFamily: 'var(--font-mono)',
           fontSize: '0.7rem',
-          fontWeight: 700,
-          padding: '2px 8px',
-          borderRadius: 'var(--radius-sm)',
-          letterSpacing: '0.05em',
+          letterSpacing: '0.04em',
           zIndex: 5
         }}>
-          #{item.item_code}
+          <span style={{ fontWeight: 600, color: '#93C5FD' }}>
+            #{item.item_code || `LF-${item.id?.substring(0, 6)?.toUpperCase()}`}
+          </span>
+          <span style={{ color: '#D6D3D1' }}>
+            {formattedDate}
+          </span>
         </div>
       </div>
 
-      {/* Content Container */}
-      <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', flex: 1, gap: '0.65rem' }}>
-        {(() => {
-          const cat = CATEGORIES.find(c => c.id === item.category);
-          if (!cat) return null;
-          return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '-0.25rem' }}>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                color: 'var(--primary-700)',
-                background: 'var(--primary-50)',
-                padding: '0.15rem 0.5rem',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--primary-100)'
-              }}>
-                <img src={cat.image} alt="" style={{ width: '14px', height: '14px', borderRadius: '50%', objectFit: 'cover' }} />
-                {cat.name}
-              </span>
-            </div>
-          );
-        })()}
-
+      {/* Card Content */}
+      <div style={{ padding: '1.15rem 1.15rem 1rem', display: 'flex', flexDirection: 'column', flex: 1, gap: '0.85rem' }}>
+        {/* Title */}
         <h3 style={{ 
-          fontSize: '1.05rem', 
-          fontWeight: 700, 
-          lineHeight: 1.3,
-          color: 'var(--text-primary)',
+          fontFamily: 'var(--font-serif)',
+          fontSize: '1.15rem', 
+          fontWeight: 600, 
+          lineHeight: 1.35,
+          color: 'var(--ink-900)',
+          margin: 0,
           display: '-webkit-box',
           WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical',
@@ -174,60 +148,69 @@ export const ItemCard = ({ item }) => {
           {item.title}
         </h3>
 
-        {/* Location Building */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', fontSize: '0.825rem' }}>
-          <MapPin size={14} color="var(--teal-600)" style={{ flexShrink: 0 }} />
-          <span style={{ 
-            whiteSpace: 'nowrap', 
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis',
-            fontWeight: 500
-          }}>
-            {item.location_building}
-          </span>
+        {/* Archival Dotted Leader Lines */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.2rem' }}>
+          <div className="dotted-row">
+            <span className="dotted-label">KATEGORI</span>
+            <span className="dotted-line"></span>
+            <span className="dotted-value">{categoryName}</span>
+          </div>
+
+          <div className="dotted-row">
+            <span className="dotted-label">LOKASI</span>
+            <span className="dotted-line"></span>
+            <span className="dotted-value" title={item.location_building}>
+              {item.location_building}
+            </span>
+          </div>
+
+          <div className="dotted-row">
+            <span className="dotted-label">PELAPOR</span>
+            <span className="dotted-line"></span>
+            <span className="dotted-value">
+              {item.user_name ? item.user_name.split(' ')[0] : 'Civitas UNNES'}
+            </span>
+          </div>
         </div>
 
-        {/* Date */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.775rem' }}>
-          <Calendar size={13} style={{ flexShrink: 0 }} />
-          <span>{formattedDate}</span>
-        </div>
-
-        {/* Short Description */}
-        <p style={{
-          fontSize: '0.825rem',
-          color: 'var(--text-secondary)',
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-          margin: '0.2rem 0'
-        }}>
-          {item.description}
-        </p>
-
-        {/* Footer Actions */}
+        {/* Footer Action */}
         <div style={{ 
           marginTop: 'auto', 
-          paddingTop: '0.75rem', 
-          borderTop: '1px solid var(--border-light)',
+          paddingTop: '0.85rem', 
+          borderTop: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            Oleh: <strong>{item.user_name?.split(' ')[0]}</strong>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.675rem', color: 'var(--ink-500)', textTransform: 'uppercase' }}>
+            UNNES ARSIP
           </span>
 
           <Link 
             to={`/barang/${item.id}`} 
-            className="btn btn-outline btn-sm"
-            style={{ fontWeight: 600, gap: '0.25rem' }}
+            style={{ 
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              color: 'var(--ink-900)',
+              textDecoration: 'none',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              border: '1px solid var(--border-subtle)',
+              background: 'var(--bg-card-alt)',
+              transition: 'all 0.15s ease'
+            }}
+            className="hover-card-btn"
           >
-            Detail <ChevronRight size={14} />
+            LIHAT ARSIP <ArrowRight size={13} />
           </Link>
         </div>
       </div>
     </div>
   );
 };
+

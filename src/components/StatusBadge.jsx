@@ -1,56 +1,87 @@
 import React from 'react';
-import { Clock, CheckCircle2, XCircle, AlertCircle, Sparkles, Award } from 'lucide-react';
+import { AlertCircle, Sparkles, CheckCircle2, Clock, XCircle, Award } from 'lucide-react';
 
 export const StatusBadge = ({ type, status, postStatus, bounty }) => {
   return (
-    <div style={{ display: 'inline-flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+    <div style={{ display: 'inline-flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
       {/* Tipe Barang: Hilang / Temuan */}
       {type === 'hilang' && (
         <span className="badge badge-lost">
-          <AlertCircle size={12} /> Barang Hilang
+          <AlertCircle size={11} strokeWidth={2.5} /> BARANG HILANG
         </span>
       )}
       {type === 'temuan' && (
         <span className="badge badge-found">
-          <Sparkles size={12} /> Ditemukan
+          <Sparkles size={11} strokeWidth={2.5} /> DITEMUKAN
         </span>
       )}
 
       {/* Post Status Review */}
       {postStatus === 'menunggu_review' && (
-        <span className="badge badge-review">
-          <Clock size={12} /> Menunggu Review Admin
+        <span className="badge" style={{
+          background: '#FFFBEB',
+          color: '#B45309',
+          border: '1px solid #FDE68A',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '0.7rem',
+          letterSpacing: '0.04em',
+          fontWeight: 600,
+          padding: '2px 8px',
+          borderRadius: '4px'
+        }}>
+          <Clock size={11} /> MENUNGGU REVIEW
         </span>
       )}
       {postStatus === 'ditolak' && (
-        <span className="badge" style={{ background: '#fee2e2', color: '#b91c1c' }}>
-          <XCircle size={12} /> Ditolak Admin
+        <span className="badge" style={{
+          background: '#FEF2F2',
+          color: '#DC2626',
+          border: '1px solid #FCA5A5',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '0.7rem',
+          letterSpacing: '0.04em',
+          fontWeight: 600,
+          padding: '2px 8px',
+          borderRadius: '4px'
+        }}>
+          <XCircle size={11} /> DITOLAK
         </span>
       )}
 
       {/* Item Progress Status */}
       {status === 'diproses' && (
-        <span className="badge" style={{ background: 'rgba(13, 148, 136, 0.15)', color: 'var(--teal-700)', border: '1px solid rgba(13, 148, 136, 0.35)' }}>
-          <CheckCircle2 size={12} /> Terverifikasi Pemilik
+        <span className="badge badge-verified">
+          <CheckCircle2 size={11} strokeWidth={2.5} /> PROSES VERIFIKASI
         </span>
       )}
       {status === 'cocok' && (
-        <span className="badge" style={{ background: '#dbeafe', color: '#1e40af' }}>
-          <CheckCircle2 size={12} /> Terverifikasi / Match
+        <span className="badge badge-verified">
+          <CheckCircle2 size={11} strokeWidth={2.5} /> TERVERIFIKASI
         </span>
       )}
       {status === 'dikembalikan' && (
-        <span className="badge" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #10b981' }}>
-          <CheckCircle2 size={12} /> Barang Berhasil Dikembalikan
+        <span className="badge" style={{
+          background: '#ECFDF5',
+          color: '#059669',
+          border: '1px solid #6EE7B7',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '0.7rem',
+          letterSpacing: '0.04em',
+          fontWeight: 600,
+          padding: '2px 8px',
+          borderRadius: '4px'
+        }}>
+          <CheckCircle2 size={11} strokeWidth={2.5} /> SELESAI / KEMBALI
         </span>
       )}
 
       {/* Bounty Badge */}
       {bounty > 0 && (
         <span className="badge badge-bounty" title="Pemilik menyediakan imbalan bagi yang menemukan">
-          <Award size={12} /> Hadiah Rp {bounty.toLocaleString('id-ID')}
+          <Award size={11} strokeWidth={2.5} /> HADIAH RP {bounty.toLocaleString('id-ID')}
         </span>
       )}
     </div>
   );
 };
+

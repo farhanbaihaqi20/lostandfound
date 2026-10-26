@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
+  ArrowRight,
   CheckCircle2, 
   AlertCircle, 
   Sparkles, 
   Lock, 
   Award, 
-  Send
+  Send,
+  Building2,
+  FileText
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,7 +23,8 @@ export const ReportPage = () => {
   const { submitItem } = useData();
   const { user } = useAuth();
 
-  // If URL is /lapor/pilih or invalid, default to 'hilang'
+  const isPickScreen = urlType === 'pilih';
+
   const [reportType, setReportType] = useState(
     urlType === 'temuan' ? 'temuan' : 'hilang'
   );
@@ -110,378 +114,679 @@ export const ReportPage = () => {
     }
   };
 
-  return (
-    <div className="container pb-mobile-nav" style={{ paddingTop: '1.5rem', maxWidth: '720px' }}>
-      
-      {/* Top Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-        <button 
-          type="button" 
-          onClick={() => navigate(-1)} 
-          className="btn btn-ghost btn-sm"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <div>
-          <h1 style={{ fontSize: '1.35rem', fontWeight: 800 }}>Buat Laporan Baru</h1>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            Laporan Anda akan ditinjau Admin Posko UNNES sebelum ditampilkan di feed.
+  // -------------------------------------------------------------
+  // VIEW 1: 04 Lapor — Pilih Jenis (Desktop)
+  // -------------------------------------------------------------
+  if (isPickScreen) {
+    return (
+      <div className="container pb-mobile-nav" style={{ paddingTop: '3rem', maxWidth: '860px', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+        
+        {/* Header */}
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: 'var(--ink-500)'
+          }}>
+            PENGAJUAN LAPORAN &bull; REPOSITORI ARSIP UNNES
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 700, color: 'var(--ink-900)', margin: 0 }}>
+            Pilih Jenis Laporan Anda
+          </h1>
+          <p style={{ fontSize: '0.95rem', color: 'var(--ink-700)', maxWidth: '580px', margin: 0 }}>
+            Tentukan apakah Anda sedang mencari barang milik Anda yang hilang, atau ingin mengamankan barang tercecer yang Anda temukan di kampus.
           </p>
+        </div>
+
+        {/* Two Big Choice Cards */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '1.75rem'
+        }}>
+          {/* Option 1: Hilang */}
+          <div 
+            onClick={() => navigate('/lapor/hilang')}
+            style={{
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              borderTop: '4px solid #DC2626',
+              borderRadius: '6px',
+              padding: '2.25rem 2rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.25rem',
+              cursor: 'pointer',
+              transition: 'transform 0.2s, box-shadow 0.2s'
+            }}
+            className="hover-card-btn"
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="badge badge-lost">
+                <AlertCircle size={12} strokeWidth={2.5} /> KATEGORI 01
+              </span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--ink-500)' }}>
+                #KEHILANGAN
+              </span>
+            </div>
+
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.65rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0 0 0.5rem' }}>
+                Saya Kehilangan Barang
+              </h2>
+              <p style={{ fontSize: '0.88rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
+                Laporkan barang milik Anda yang tertinggal atau tercecer di area UNNES agar seluruh civitas kampus dan posko keamanan dapat mengenali dan membantu menemukan.
+              </p>
+            </div>
+
+            <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: '#DC2626'
+              }}>
+                MULAI ISI FORM KEHILANGAN <ArrowRight size={15} />
+              </div>
+            </div>
+          </div>
+
+          {/* Option 2: Temuan */}
+          <div 
+            onClick={() => navigate('/lapor/temuan')}
+            style={{
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              borderTop: '4px solid #2563EB',
+              borderRadius: '6px',
+              padding: '2.25rem 2rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.25rem',
+              cursor: 'pointer',
+              transition: 'transform 0.2s, box-shadow 0.2s'
+            }}
+            className="hover-card-btn"
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="badge badge-found">
+                <Sparkles size={12} strokeWidth={2.5} /> KATEGORI 02
+              </span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--ink-500)' }}>
+                #PENEMUAN
+              </span>
+            </div>
+
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.65rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0 0 0.5rem' }}>
+                Saya Menemukan Barang
+              </h2>
+              <p style={{ fontSize: '0.88rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
+                Anda memegang barang milik orang lain? Laporkan ciri umumnya ke arsip kampus tanpa membocorkan ciri rahasia untuk diverifikasi via blind-test kepemilikan.
+              </p>
+            </div>
+
+            <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: '#2563EB'
+              }}>
+                MULAI ISI FORM TEMUAN <ArrowRight size={15} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Archival Security Box */}
+        <div style={{
+          backgroundColor: 'var(--bg-card-alt)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: '6px',
+          padding: '1.25rem 1.5rem',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '1rem'
+        }}>
+          <Lock size={20} color="var(--ink-900)" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <div style={{ fontSize: '0.825rem', color: 'var(--ink-700)', lineHeight: 1.6 }}>
+            <strong style={{ color: 'var(--ink-900)' }}>Aturan Publikasi &amp; Sensor Otomatis Kampus:</strong> Foto dokumen berharga (seperti KTM, SIM, Kartu ATM, atau STNK) akan disensor otomatis oleh sistem untuk publik demi melindungi kerahasiaan identitas pemilik sah.
+          </div>
+        </div>
+
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------
+  // VIEW 2: 05 Lapor — Form Hilang / Temuan (Desktop)
+  // -------------------------------------------------------------
+  return (
+    <div className="container pb-mobile-nav" style={{ paddingTop: '2.5rem', maxWidth: '1080px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      
+      {/* Top Header Bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button 
+            type="button" 
+            onClick={() => navigate('/lapor/pilih')} 
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '4px',
+              padding: '6px 10px',
+              cursor: 'pointer',
+              color: 'var(--ink-700)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem'
+            }}
+          >
+            <ArrowLeft size={14} /> GANTI JENIS
+          </button>
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.65rem', fontWeight: 700, color: 'var(--ink-900)', margin: 0 }}>
+              {reportType === 'hilang' ? 'Formulir Laporan Barang Hilang' : 'Formulir Laporan Barang Temuan'}
+            </h1>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.04em' }}>
+              ARSIP RESMI KAMPUS &bull; UNIVERSITAS NEGERI SEMARANG
+            </div>
+          </div>
+        </div>
+
+        {/* Type indicator badge */}
+        <div>
+          {reportType === 'hilang' ? (
+            <span className="badge badge-lost">
+              <AlertCircle size={12} strokeWidth={2.5} /> SAYA KEHILANGAN
+            </span>
+          ) : (
+            <span className="badge badge-found">
+              <Sparkles size={12} strokeWidth={2.5} /> SAYA MENEMUKAN
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Tipe Selector: Hilang vs Temuan */}
+      {/* Progress Steps Header */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '0.75rem',
-        marginBottom: '1.5rem',
-        background: 'var(--bg-surface-alt)',
-        padding: '0.35rem',
-        borderRadius: 'var(--radius-lg)'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: 'var(--bg-card)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: '6px',
+        padding: '0.85rem 1.5rem',
+        fontFamily: 'var(--font-mono)',
+        fontSize: '0.75rem'
       }}>
-        <button
-          type="button"
-          onClick={() => setReportType('hilang')}
-          style={{
-            padding: '0.65rem 1rem',
-            borderRadius: 'var(--radius-md)',
-            fontWeight: 700,
-            fontSize: '0.875rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.4rem',
-            background: reportType === 'hilang' ? 'var(--danger-bg)' : 'transparent',
-            color: reportType === 'hilang' ? 'var(--danger)' : 'var(--text-secondary)',
-            border: reportType === 'hilang' ? '1.5px solid rgba(239, 68, 68, 0.3)' : 'none'
-          }}
-        >
-          <AlertCircle size={16} /> Barang Hilang
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setReportType('temuan')}
-          style={{
-            padding: '0.65rem 1rem',
-            borderRadius: 'var(--radius-md)',
-            fontWeight: 700,
-            fontSize: '0.875rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.4rem',
-            background: reportType === 'temuan' ? 'var(--success-bg)' : 'transparent',
-            color: reportType === 'temuan' ? 'var(--success)' : 'var(--text-secondary)',
-            border: reportType === 'temuan' ? '1.5px solid rgba(16, 185, 129, 0.3)' : 'none'
-          }}
-        >
-          <Sparkles size={16} /> Barang Temuan
-        </button>
-      </div>
-
-      {/* Progress Steps Indicator */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
         {[
-          { num: 1, label: 'Info' },
-          { num: 2, label: 'Lokasi' },
-          { num: 3, label: 'Foto' },
-          { num: 4, label: 'Blind Test' }
+          { num: 1, label: 'DATA BARANG' },
+          { num: 2, label: 'LOKASI & WAKTU' },
+          { num: 3, label: 'FOTO BARANG' },
+          { num: 4, label: 'BLIND TEST & SELESAI' }
         ].map((s, idx) => (
           <React.Fragment key={s.num}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: currentStep >= s.num ? 'var(--primary-800)' : 'var(--bg-surface-alt)',
-                color: currentStep >= s.num ? '#fff' : 'var(--text-muted)',
-                display: 'flex',
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              color: currentStep === s.num ? 'var(--ink-900)' : currentStep > s.num ? '#059669' : 'var(--ink-500)',
+              fontWeight: currentStep === s.num ? 700 : 500
+            }}>
+              <span style={{
+                width: '22px',
+                height: '22px',
+                borderRadius: '4px',
+                backgroundColor: currentStep === s.num ? 'var(--ink-900)' : currentStep > s.num ? '#059669' : 'var(--bg-card-alt)',
+                color: currentStep >= s.num ? '#FAF8F5' : 'var(--ink-500)',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                border: '2px solid var(--border-light)'
+                fontSize: '0.7rem',
+                fontWeight: 700
               }}>
-                {currentStep > s.num ? <CheckCircle2 size={16} /> : s.num}
-              </div>
-              <span style={{ fontSize: '0.7rem', color: currentStep >= s.num ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: 600 }}>
-                {s.label}
+                {currentStep > s.num ? '✓' : s.num}
               </span>
+              <span>{s.label}</span>
             </div>
             {idx < 3 && (
-              <div style={{
-                flex: 1,
-                height: '2px',
-                background: currentStep > idx + 1 ? 'var(--primary-800)' : 'var(--border-light)',
-                margin: '0 0.5rem',
-                transform: 'translateY(-10px)'
-              }} />
+              <span style={{ color: 'var(--border-subtle)', userSelect: 'none' }}>&mdash;</span>
             )}
           </React.Fragment>
         ))}
       </div>
 
-      {/* Form Container */}
-      <div className="glass-card" style={{ padding: '1.75rem', border: '1px solid var(--border-light)' }}>
+      {/* Form & Guidelines Grid (05 Lapor — Form Hilang Desktop) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
         
-        {/* STEP 1: INFORMASI DASAR */}
-        {currentStep === 1 && (
-          <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Langkah 1: Informasi Barang</h2>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Judul Barang (Contoh: "KTM UNNES & Dompet Cokelat"):</label>
-              <input
-                type="text"
-                required
-                placeholder="Sebutkan jenis dan merk/warna barang..."
-                value={formData.title}
-                onChange={(e) => handleChange('title', e.target.value)}
-              />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Pilih Kategori Barang:</label>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
-                gap: '0.65rem'
-              }}>
-                {CATEGORIES.map(c => {
-                  const isSelected = formData.category === c.id;
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => handleChange('category', c.id)}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '0.45rem',
-                        padding: '0.75rem 0.5rem',
-                        borderRadius: 'var(--radius-lg)',
-                        border: isSelected ? '2px solid var(--primary-600)' : '1px solid var(--border-light)',
-                        background: isSelected ? 'var(--primary-50)' : 'var(--bg-surface)',
-                        boxShadow: isSelected ? '0 4px 12px rgba(30, 58, 95, 0.15)' : 'var(--shadow-sm)',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        textAlign: 'center'
-                      }}
-                    >
-                      <div style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '12px',
-                        overflow: 'hidden',
-                        background: '#FAF6EB',
-                        border: '1px solid rgba(0,0,0,0.06)',
-                        flexShrink: 0
-                      }}>
-                        <img src={c.image} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </div>
-                      <span style={{
-                        fontSize: '0.75rem',
-                        fontWeight: isSelected ? 700 : 600,
-                        color: isSelected ? 'var(--primary-800)' : 'var(--text-primary)',
-                        lineHeight: 1.2
-                      }}>
-                        {c.name}
-                      </span>
-                    </button>
-                  );
-                })}
+        {/* Left: Form Controls */}
+        <div style={{
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: '6px',
+          padding: '2rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.5rem'
+        }}>
+          
+          {/* STEP 1: INFORMASI BARANG */}
+          {currentStep === 1 && (
+            <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
+              <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink-900)', margin: 0 }}>
+                  Langkah 1: Identitas &amp; Deskripsi Barang
+                </h2>
               </div>
-            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Tanggal Kejadian:</label>
-              <input
-                type="date"
-                required
-                value={formData.date_lost_found}
-                onChange={(e) => handleChange('date_lost_found', e.target.value)}
-              />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Deskripsi Umum:</label>
-              <textarea
-                rows={3}
-                required
-                placeholder="Ceritakan kronologi singkat dan ciri-ciri fisik yang boleh diketahui publik..."
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-              <button type="submit" className="btn btn-primary">
-                Lanjut ke Lokasi Kampus
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* STEP 2: LOKASI KAMPUS UNNES */}
-        {currentStep === 2 && (
-          <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Langkah 2: Lokasi di Lingkungan UNNES</h2>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Gedung / Tempat Utama UNNES:</label>
-              <select
-                value={formData.location_building}
-                onChange={(e) => handleChange('location_building', e.target.value)}
-              >
-                {UNNES_BUILDINGS.map(b => (
-                  <option key={b.id} value={b.name}>{b.name} ({b.zone})</option>
-                ))}
-              </select>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Lantai (Opsional):</label>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-700)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  JUDUL LAPORAN BARANG *
+                </label>
                 <input
                   type="text"
-                  placeholder="Misal: Lantai 2 / Lantai Dasar"
-                  value={formData.location_floor}
-                  onChange={(e) => handleChange('location_floor', e.target.value)}
+                  required
+                  placeholder="Misal: KTM UNNES an Siti Nurhaliza atau Helm KYT Hitam Doff"
+                  value={formData.title}
+                  onChange={(e) => handleChange('title', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-card-alt)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.9rem',
+                    color: 'var(--ink-900)'
+                  }}
                 />
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Ruangan / Bagian (Opsional):</label>
-                <input
-                  type="text"
-                  placeholder="Misal: Lab Komputer D1 / Lobi"
-                  value={formData.location_room}
-                  onChange={(e) => handleChange('location_room', e.target.value)}
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-700)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  KATEGORI BARANG *
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => handleChange('category', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-card-alt)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.9rem',
+                    color: 'var(--ink-900)'
+                  }}
+                >
+                  {CATEGORIES.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-700)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  DESKRIPSI UMUM &amp; CIRI FISIK *
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Deskripsikan merk, warna dominan, kondisi fisik luar, atau kronologi singkat tanpa membocorkan ciri rahasia..."
+                  value={formData.description}
+                  onChange={(e) => handleChange('description', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-card-alt)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.9rem',
+                    color: 'var(--ink-900)',
+                    lineHeight: 1.5
+                  }}
                 />
               </div>
-            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Detail Posisi Presisi:</label>
-              <input
-                type="text"
-                placeholder="Misal: Di atas meja baris ke-2 belakang dekat colokan..."
-                value={formData.location_detail}
-                onChange={(e) => handleChange('location_detail', e.target.value)}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-              <button type="button" onClick={handlePrev} className="btn btn-outline">
-                Kembali
-              </button>
-              <button type="submit" className="btn btn-primary">
-                Lanjut ke Upload Foto
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* STEP 3: UPLOAD FOTO & SENSOR */}
-        {currentStep === 3 && (
-          <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Langkah 3: Unggah Foto Barang</h2>
-
-            <ImageUploadCompressor
-              photos={photos}
-              onPhotosChange={setPhotos}
-              maxPhotos={4}
-              label="Foto Barang (Otomatis Dikompres Ringan)"
-            />
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-              <button type="button" onClick={handlePrev} className="btn btn-outline">
-                Kembali
-              </button>
-              <button type="submit" className="btn btn-primary">
-                Lanjut ke Data Blind Test
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* STEP 4: BLIND TEST & BOUNTY */}
-        {currentStep === 4 && (
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Langkah 4: Data Rahasia (Blind Test)</h2>
-
-            {/* SOP Explanation */}
-            <div style={{
-              background: 'var(--primary-50)',
-              border: '1px solid var(--primary-200)',
-              borderRadius: 'var(--radius-md)',
-              padding: '0.85rem',
-              fontSize: '0.825rem',
-              color: 'var(--primary-900)',
-              lineHeight: 1.5
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                <Lock size={16} /> Rahasia Verifikasi Admin UNNES
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <button type="submit" className="btn btn-dark" style={{ gap: '0.4rem', textTransform: 'uppercase' }}>
+                  LANJUT KE LOKASI <ArrowRight size={14} />
+                </button>
               </div>
-              Tuliskan ciri khas tersembunyi yang <strong>TIDAK DITAMPILKAN DI WEB</strong>. Informasi ini hanya akan dibaca oleh Admin saat memverifikasi jawaban orang yang mengaku pemilik barang.
-            </div>
+            </form>
+          )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                Ciri Khas Rahasia / Isi Tersembunyi:
-              </label>
-              <textarea
-                rows={3}
-                required
-                placeholder="Contoh: Ada stiker kucing di balik case, atau ada pecahan uang 20 ribuan 2 lembar di dompet..."
-                value={formData.hidden_details}
-                onChange={(e) => handleChange('hidden_details', e.target.value)}
-              />
-            </div>
+          {/* STEP 2: LOKASI & WAKTU */}
+          {currentStep === 2 && (
+            <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
+              <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink-900)', margin: 0 }}>
+                  Langkah 2: Lokasi Kampus &amp; Tanggal Kejadian
+                </h2>
+              </div>
 
-            {/* Bounty Option (Especially for Lost Items) */}
-            {reportType === 'hilang' && (
-              <div style={{
-                padding: '1rem',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--amber-50)',
-                border: '1px solid rgba(245, 158, 11, 0.35)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.5rem'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, color: 'var(--amber-800)', fontSize: '0.9rem' }}>
-                  <Award size={18} /> Pasang Hadiah / Bounty Sukarela (Opsional)
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-700)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  FAKULTAS / GEDUNG LOKASI *
+                </label>
+                <select
+                  value={formData.location_building}
+                  onChange={(e) => handleChange('location_building', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-card-alt)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.9rem',
+                    color: 'var(--ink-900)'
+                  }}
+                >
+                  {UNNES_BUILDINGS.map(b => (
+                    <option key={b.id || b.name} value={b.name}>{b.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-700)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    LANTAI (OPSIONAL)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Misal: Lantai 2"
+                    value={formData.location_floor}
+                    onChange={(e) => handleChange('location_floor', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-card-alt)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '0.9rem'
+                    }}
+                  />
                 </div>
-                <p style={{ fontSize: '0.78rem', color: 'var(--amber-700)' }}>
-                  Memberikan imbalan bagi civitas atau penemu yang berhasil mengembalikan barang Anda.
-                </p>
+                <div>
+                  <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-700)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    RUANG / BAGIAN
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Misal: Ruang 103"
+                    value={formData.location_room}
+                    onChange={(e) => handleChange('location_room', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-card-alt)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '0.9rem'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-700)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  DETAIL POSISI PRESISI
+                </label>
                 <input
-                  type="number"
-                  min="0"
-                  step="5000"
-                  placeholder="Jumlah hadiah, misal: 50000"
-                  value={formData.bounty_amount || ''}
-                  onChange={(e) => handleChange('bounty_amount', e.target.value)}
-                  style={{ background: '#fff' }}
+                  type="text"
+                  placeholder="Misal: Di atas meja dosen baris paling depan dekat proyektor"
+                  value={formData.location_detail}
+                  onChange={(e) => handleChange('location_detail', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-card-alt)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.9rem'
+                  }}
                 />
               </div>
-            )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-              <button type="button" onClick={handlePrev} className="btn btn-outline">
-                Kembali
-              </button>
-              <button type="submit" disabled={submitting} className="btn btn-primary" style={{ gap: '0.4rem' }}>
-                <Send size={16} /> {submitting ? 'Mengirim Laporan...' : 'Kirim Laporan ke Admin'}
-              </button>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-700)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  TANGGAL KEJADIAN *
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={formData.date_lost_found}
+                  onChange={(e) => handleChange('date_lost_found', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-card-alt)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.9rem'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+                <button type="button" onClick={handlePrev} className="btn btn-secondary">
+                  &larr; KEMBALI
+                </button>
+                <button type="submit" className="btn btn-dark" style={{ gap: '0.4rem', textTransform: 'uppercase' }}>
+                  LANJUT KE FOTO <ArrowRight size={14} />
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* STEP 3: UPLOAD FOTO */}
+          {currentStep === 3 && (
+            <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
+              <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink-900)', margin: 0 }}>
+                  Langkah 3: Unggah Foto Dokumentasi
+                </h2>
+              </div>
+
+              <ImageUploadCompressor
+                photos={photos}
+                onPhotosChange={setPhotos}
+                maxPhotos={4}
+                label="Foto Dokumentasi (Maks. 4 foto, otomatis kompresi arsip)"
+              />
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+                <button type="button" onClick={handlePrev} className="btn btn-secondary">
+                  &larr; KEMBALI
+                </button>
+                <button type="submit" className="btn btn-dark" style={{ gap: '0.4rem', textTransform: 'uppercase' }}>
+                  LANJUT KE BLIND TEST <ArrowRight size={14} />
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* STEP 4: BLIND TEST & BOUNTY */}
+          {currentStep === 4 && (
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
+              <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink-900)', margin: 0 }}>
+                  Langkah 4: Verifikasi Blind-Test &amp; Imbalan
+                </h2>
+              </div>
+
+              {/* Secret Details for Blind Test */}
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-700)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  CIRI RAHASIA KHUSUS (TIDAK DITAMPILKAN KE PUBLIK) *
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Misal: Di balik case HP terselip uang Rp 20.000 atau di dompet ada kartu timezone..."
+                  value={formData.hidden_details}
+                  onChange={(e) => handleChange('hidden_details', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-card-alt)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.9rem',
+                    lineHeight: 1.5
+                  }}
+                />
+                <span style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '4px', display: 'block' }}>
+                  🔒 Informasi ini hanya akan digunakan oleh sistem dan Admin untuk menguji orang yang mengklaim kepemilikan.
+                </span>
+              </div>
+
+              {/* Bounty Field (Hilang) */}
+              {reportType === 'hilang' && (
+                <div style={{
+                  backgroundColor: '#FFFDF5',
+                  border: '1px solid #FEF08A',
+                  borderRadius: '4px',
+                  padding: '1.25rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', fontWeight: 700, color: '#A16207' }}>
+                    <Award size={16} /> PROGRAM HADIAH SUKARELA (OPSIONAL)
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: '#713F12', margin: 0 }}>
+                    Berikan apresiasi finansial bagi civitas yang mengembalikan barang berharga Anda.
+                  </p>
+                  <input
+                    type="number"
+                    min="0"
+                    step="5000"
+                    placeholder="Nominal rupiah, misal: 50000"
+                    value={formData.bounty_amount || ''}
+                    onChange={(e) => handleChange('bounty_amount', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '4px',
+                      border: '1px solid #FDE047',
+                      backgroundColor: '#FFFFFF',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.9rem'
+                    }}
+                  />
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+                <button type="button" onClick={handlePrev} className="btn btn-secondary">
+                  &larr; KEMBALI
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={submitting} 
+                  className="btn btn-dark"
+                  style={{ gap: '0.45rem', textTransform: 'uppercase' }}
+                >
+                  <Send size={15} /> {submitting ? 'MENYIMPAN ARSIP...' : 'TERBITKAN LAPORAN KE ARSIP'}
+                </button>
+              </div>
+            </form>
+          )}
+
+        </div>
+
+        {/* Right: Archival Guidelines Sidebar (From Figma 05 Lapor Screen) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          
+          <div style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '6px',
+            padding: '1.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              color: 'var(--ink-900)',
+              textTransform: 'uppercase'
+            }}>
+              <FileText size={16} /> PANDUAN PENCATATAN ARSIP
             </div>
-          </form>
-        )}
+            <ul style={{ 
+              margin: 0, 
+              paddingLeft: '1.15rem', 
+              fontSize: '0.825rem', 
+              color: 'var(--ink-700)', 
+              lineHeight: 1.6,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.35rem'
+            }}>
+              <li>Gunakan judul yang jelas dan mencantumkan jenis barang utama.</li>
+              <li>Jangan cantumkan nomor PIN, password, atau kombinasi gembok di deskripsi.</li>
+              <li>Sebutkan gedung dan ruangan secara spesifik agar memudahkan civitas sekitar mencari.</li>
+            </ul>
+          </div>
+
+          <div style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '6px',
+            padding: '1.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              color: 'var(--ink-900)',
+              textTransform: 'uppercase'
+            }}>
+              <Lock size={16} /> ATURAN SENSOR IDENTITAS
+            </div>
+            <p style={{ fontSize: '0.825rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
+              Sistem menyensor otomatis data sensitif pada kartu identitas seperti NIK atau nomor kartu ATM agar tidak disalahgunakan pihak ketiga.
+            </p>
+          </div>
+
+        </div>
 
       </div>
 

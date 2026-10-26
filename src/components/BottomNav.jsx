@@ -322,25 +322,26 @@ export const BottomNav = () => {
           <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>Jelajahi</span>
         </Link>
 
-        {/* Center Golden FAB (+) Button */}
+        {/* Center Report (+) Action */}
         <button
           onClick={() => setShowReportSheet(true)}
           style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--amber-400) 0%, var(--amber-500) 100%)',
-            color: '#fff',
+            width: '44px',
+            height: '44px',
+            borderRadius: '4px',
+            background: 'var(--ink-900)',
+            color: '#FAF8F5',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: 'var(--shadow-glow-amber)',
-            transform: 'translateY(-6px)',
-            transition: 'transform var(--trans-fast)'
+            border: '1px solid var(--ink-700)',
+            transform: 'translateY(-4px)',
+            transition: 'transform var(--trans-fast)',
+            cursor: 'pointer'
           }}
           title="Buat Laporan Baru"
         >
-          <Plus size={26} strokeWidth={2.5} />
+          <Plus size={22} strokeWidth={2.5} />
         </button>
 
         <Link 
@@ -350,25 +351,26 @@ export const BottomNav = () => {
             flexDirection: 'column',
             alignItems: 'center',
             gap: '2px',
-            color: isActive('/pesan') ? 'var(--primary-600)' : 'var(--text-muted)',
+            color: isActive('/pesan') ? 'var(--ink-900)' : 'var(--ink-500)',
             flex: 1,
             padding: '4px 0',
-            position: 'relative'
+            position: 'relative',
+            textDecoration: 'none'
           }}
         >
-          <MessageSquare size={20} />
+          <MessageSquare size={19} />
           {activeChatsCount > 0 && (
             <span style={{
               position: 'absolute',
               top: '2px',
               right: '25%',
-              width: '8px',
-              height: '8px',
+              width: '7px',
+              height: '7px',
               borderRadius: '50%',
-              background: 'var(--teal-500)'
+              background: 'var(--tag-lost-text)'
             }} />
           )}
-          <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>Pesan</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', fontWeight: 600 }}>Pesan</span>
         </Link>
 
         <Link 
@@ -378,13 +380,14 @@ export const BottomNav = () => {
             flexDirection: 'column',
             alignItems: 'center',
             gap: '2px',
-            color: (isActive('/profil') || (!user && isActive('/masuk'))) ? 'var(--primary-600)' : 'var(--text-muted)',
+            color: (isActive('/profil') || (!user && isActive('/masuk'))) ? 'var(--ink-900)' : 'var(--ink-500)',
             flex: 1,
-            padding: '4px 0'
+            padding: '4px 0',
+            textDecoration: 'none'
           }}
         >
-          {user ? <User size={20} /> : <LogIn size={20} />}
-          <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>{user ? 'Profil' : 'Masuk'}</span>
+          {user ? <User size={19} /> : <LogIn size={19} />}
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', fontWeight: 600 }}>{user ? 'Akun' : 'Masuk'}</span>
         </Link>
       </nav>
 

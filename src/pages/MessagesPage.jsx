@@ -7,25 +7,28 @@ import {
   Bike, 
   FileCheck, 
   Share2,
-  Sparkles,
-  MapPin,
-  CheckCircle2,
+  ExternalLink,
   Trash2,
-  ShieldCheck
+  ShieldCheck,
+  CheckCheck,
+  Search,
+  Lock,
+  ArrowRight
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { RunnerOrderModal } from '../components/RunnerOrderModal';
 import { BASTModal } from '../components/BASTModal';
+import { StatusBadge } from '../components/StatusBadge';
 
 export const MessagesPage = () => {
   const { matchId } = useParams();
-  const { matches, messages, sendMessage, markMessagesAsRead, deleteMatchSession } = useData();
+  const { matches, messages, items, sendMessage, markMessagesAsRead, deleteMatchSession } = useData();
   const { user } = useAuth();
 
   // Filter matches:
-  // - Jika Admin: hanya tampilkan match yang disetujui oleh admin ini (approved_by) atau di mana admin terlibat langsung
-  // - Jika Mahasiswa: hanya tampilkan match di mana user adalah finder atau owner
+  // - Admin: matches approved by admin or directly involving admin
+  // - User: matches where user is finder or owner
   const userMatches = (matches || []).filter(m => {
     if (user?.role === 'admin') {
       return !m.approved_by || m.approved_by === user?.id || m.finder_id === user?.id || m.owner_id === user?.id;
@@ -35,6 +38,7 @@ export const MessagesPage = () => {
 
   const [activeMatchId, setActiveMatchId] = useState(matchId || (userMatches.length > 0 ? userMatches[0].id : null));
   const [inputText, setInputText] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [showRunnerModal, setShowRunnerModal] = useState(false);
   const [showBASTModal, setShowBASTModal] = useState(false);
   const [copiedScript, setCopiedScript] = useState(false);
@@ -49,14 +53,15 @@ export const MessagesPage = () => {
   }, [matchId, userMatches]);
 
   const activeMatch = userMatches.find(m => m.id === activeMatchId);
+  const activeItem = items.find(i => i.id === activeMatch?.item_id);
   const matchMessages = messages.filter(m => m.match_id === activeMatchId);
 
-  // Auto-scroll ke pesan terbaru
+  // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [matchMessages.length, activeMatchId]);
 
-  // Tandai pesan sudah dibaca
+  // Mark messages as read
   useEffect(() => {
     if (activeMatchId && markMessagesAsRead) {
       markMessagesAsRead(activeMatchId);
@@ -75,8 +80,8 @@ export const MessagesPage = () => {
     if (!activeMatch) return;
     const confirmDelete = window.confirm(
       `HAPUS SESI OBROLAN #${activeMatch.item_code}?\n\n` +
-      `Seluruh riwayat percakapan pada sesi ini akan dihapus secara permanen.\n` +
-      `Apakah Anda yakin ingin menghapus sesi obrolan ini?`
+      `Seluruh riwayat percakapan pada arsip ini akan dihapus permanen.\n` +
+      `Lanjutkan?`
     );
     if (!confirmDelete) return;
 
@@ -85,162 +90,252 @@ export const MessagesPage = () => {
       if (res?.error) {
         alert(res.error);
       } else {
-        alert('Sesi obrolan berhasil dihapus.');
         const remaining = userMatches.filter(m => m.id !== activeMatch.id);
         setActiveMatchId(remaining.length > 0 ? remaining[0].id : null);
       }
     } catch (err) {
       console.error('Gagal menghapus sesi obrolan:', err);
-      alert('Terjadi kesalahan saat menghapus sesi obrolan.');
     }
   };
 
-  // WhatsApp script from blueprint 7.B
   const handleCopyWAScript = () => {
     if (!activeMatch) return;
-    const script = `[SISTEM MATCHMAKING UNNES LOST & FOUND]\nHalo Kak @${activeMatch.owner_name} dan Kak @${activeMatch.finder_name}! 👋\n\nKontak kalian telah terhubung resmi untuk pengembalian barang berkode #${activeMatch.item_code} (${activeMatch.item_title}).\nSilakan berkoordinasi untuk menentukan waktu & lokasi titik temu penyerahan barang di area kampus UNNES. 📍\n\n---------------------------------------------------\n💡 BUTUH BANTUAN KARENA SIBUK / BEDA KAMPUS?\nKalian bisa menggunakan JASA RUNNER UNNES!\n🚗 Runner akan mengambil barang & mengantar langsung ke lokasi tujuan.\n💰 Tarif: Rp 7.000 - Rp 10.000 (Garansi Aman & Praktis)\n---------------------------------------------------`;
+    const script = `[ARSIP TERPADU UNNES LOST & FOUND]\nHalo Kak @${activeMatch.owner_name} dan Kak @${activeMatch.finder_name}!\n\nKoordinasi resmi penyerahan barang #${activeMatch.item_code} (${activeMatch.item_title}).\nTitik temu yang direkomendasikan: Pos Satpam Fakultas / Kantin Pusat UNNES.\n\nButuh bantuan antar? Gunakan Layanan Jasa Runner UNNES (Tarif Rp 7.000 - Rp 10.000).`;
     navigator.clipboard.writeText(script);
     setCopiedScript(true);
     setTimeout(() => setCopiedScript(false), 2500);
   };
 
-  return (
-    <div className="container pb-mobile-nav" style={{ paddingTop: '1.25rem', height: 'calc(100vh - 120px)', minHeight: '520px', display: 'flex', flexDirection: 'column' }}>
-      
-      <div style={{ marginBottom: '0.75rem' }}>
-        <h1 style={{ fontSize: '1.35rem', fontWeight: 800 }}>Ruang Obrolan & Serah Terima</h1>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-          Komunikasi langsung dan real-time antara penemu dan pemilik setelah verifikasi Admin.
-        </p>
-      </div>
+  const filteredMatches = userMatches.filter(m => {
+    if (!searchTerm.trim()) return true;
+    const q = searchTerm.toLowerCase();
+    return (
+      (m.item_title && m.item_title.toLowerCase().includes(q)) ||
+      (m.item_code && m.item_code.toLowerCase().includes(q)) ||
+      (m.owner_name && m.owner_name.toLowerCase().includes(q)) ||
+      (m.finder_name && m.finder_name.toLowerCase().includes(q))
+    );
+  });
 
+  const getInitials = (name) => {
+    if (!name) return 'UN';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  return (
+    <div style={{ background: 'var(--bg-canvas)', minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column' }}>
+      
       {userMatches.length === 0 ? (
-        <div className="glass-card" style={{ padding: '3.5rem 1.5rem', textAlign: 'center', margin: 'auto', maxWidth: '480px' }}>
-          <MessageSquare size={48} color="var(--text-muted)" style={{ margin: '0 auto 0.75rem' }} />
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Belum Ada Obrolan Aktif</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.35rem', lineHeight: 1.5 }}>
-            Obrolan akan terbuka secara otomatis setelah klaim barang atau laporan penemuan Anda disetujui oleh <strong>Admin Posko UNNES</strong>.
-          </p>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '1rem' }}>
-            <Link to="/jelajahi" className="btn btn-primary btn-sm">
-              Jelajahi Barang Temuan
-            </Link>
+        <div className="container" style={{ paddingTop: '5rem', paddingBottom: '5rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="archive-card" style={{ maxWidth: '520px', width: '100%', padding: '3.5rem 2rem', textAlign: 'center' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(15, 23, 42, 0.05)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+              <MessageSquare size={26} color="var(--ink-500)" />
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+              RUANG KOORDINASI RESMI
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 600, color: 'var(--ink-900)', marginBottom: '0.75rem' }}>
+              Belum Ada Obrolan Aktif
+            </h2>
+            <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', lineHeight: 1.6, marginBottom: '2rem' }}>
+              Ruang obrolan terenkripsi akan dibuka otomatis setelah klaim barang atau laporan penemuan Anda disetujui melalui <strong>verifikasi Admin Posko UNNES</strong>.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Link to="/jelajahi" className="btn-dark" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                JELAJAHI ARSIP TEMUAN <ArrowRight size={14} />
+              </Link>
+            </div>
           </div>
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(240px, 320px) 1fr',
-          flex: 1,
-          gap: '1rem',
-          height: '100%',
-          overflow: 'hidden'
-        }} className="chat-layout">
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '320px 1fr 300px', 
+          height: 'calc(100vh - 72px)',
+          borderTop: '1px solid var(--border-subtle)' 
+        }} className="archival-chat-grid">
           
-          {/* Matches List (Sidebar) */}
-          <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '0.5rem', border: '1px solid var(--border-light)' }}>
-            <div style={{ padding: '0.5rem', fontWeight: 700, fontSize: '0.85rem', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>Percakapan Aktif ({userMatches.length})</span>
-            </div>
-            {userMatches.map(m => (
-              <div
-                key={m.id}
-                onClick={() => setActiveMatchId(m.id)}
-                style={{
-                  padding: '0.75rem',
-                  borderRadius: 'var(--radius-md)',
-                  background: activeMatchId === m.id ? 'var(--primary-50)' : 'transparent',
-                  borderLeft: activeMatchId === m.id ? '3px solid var(--primary-700)' : '3px solid transparent',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.25rem',
-                  marginTop: '0.35rem',
-                  transition: 'background 0.15s ease'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-700)' }}>
-                    #{m.item_code}
-                  </span>
-                  <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
-                    {m.match_type === 'found_report' ? (
-                      <span className="badge" style={{ fontSize: '0.62rem', padding: '0.1rem 0.4rem', background: 'var(--teal-100, #ccfbf1)', color: 'var(--teal-800, #115e59)' }}>
-                        📍 Temuan
-                      </span>
-                    ) : (
-                      <span className="badge" style={{ fontSize: '0.62rem', padding: '0.1rem 0.4rem', background: 'var(--primary-100, #dbeafe)', color: 'var(--primary-800, #1e40af)' }}>
-                        🛡️ Klaim
-                      </span>
-                    )}
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                      {m.status === 'selesai' ? '✅' : '🟢'}
-                    </span>
-                  </div>
-                </div>
-                <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {m.item_title}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                  Dengan: <strong>{user?.id === m.owner_id ? m.finder_name : m.owner_name}</strong>
-                </div>
+          {/* ================= COLUMN 1: SIDEBAR CONVERSATIONS LIST ================= */}
+          <div style={{ 
+            borderRight: '1px solid var(--border-subtle)', 
+            background: 'var(--bg-canvas)', 
+            display: 'flex', 
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}>
+            {/* Header */}
+            <div style={{ padding: '1.25rem 1.25rem 0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 600, margin: 0, color: 'var(--ink-900)' }}>
+                  Obrolan
+                </h1>
+                <span style={{ 
+                  fontFamily: 'var(--font-mono)', 
+                  fontSize: '0.68rem', 
+                  letterSpacing: '0.06em', 
+                  padding: '0.2rem 0.5rem', 
+                  borderRadius: '2px', 
+                  background: 'rgba(15, 23, 42, 0.06)', 
+                  color: 'var(--ink-700)',
+                  fontWeight: 600
+                }}>
+                  {userMatches.length} AKTIF
+                </span>
               </div>
-            ))}
+
+              {/* Search */}
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type="text"
+                  placeholder="Cari obrolan atau kode..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.55rem 0.75rem 0.55rem 2.25rem',
+                    fontSize: '0.8rem',
+                    borderRadius: '2px',
+                    border: '1px solid var(--border-subtle)',
+                    background: 'var(--bg-card)',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                />
+                <Search size={14} color="var(--ink-500)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+              </div>
+            </div>
+
+            {/* List */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {filteredMatches.map(m => {
+                const isActive = activeMatchId === m.id;
+                const otherPartyName = user?.id === m.owner_id ? m.finder_name : m.owner_name;
+                const initials = getInitials(otherPartyName);
+
+                return (
+                  <div
+                    key={m.id}
+                    onClick={() => setActiveMatchId(m.id)}
+                    style={{
+                      padding: '1rem 1.25rem',
+                      borderBottom: '1px solid var(--border-subtle)',
+                      background: isActive ? 'var(--bg-card)' : 'transparent',
+                      borderLeft: isActive ? '3px solid var(--ink-900)' : '3px solid transparent',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s ease',
+                      display: 'flex',
+                      gap: '0.85rem',
+                      alignItems: 'flex-start'
+                    }}
+                  >
+                    <div style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '50%',
+                      background: isActive ? 'var(--ink-900)' : 'rgba(15, 23, 42, 0.07)',
+                      color: isActive ? '#FAF8F5' : 'var(--ink-900)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      flexShrink: 0
+                    }}>
+                      {initials}
+                    </div>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
+                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--ink-900)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {otherPartyName}
+                        </span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--ink-500)' }}>
+                          {m.status === 'selesai' ? 'SELESAI' : 'AKTIF'}
+                        </span>
+                      </div>
+
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        #{m.item_code} · {m.item_title}
+                      </div>
+
+                      <div style={{ fontSize: '0.78rem', color: 'var(--ink-700)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {m.match_type === 'found_report' ? '📍 Laporan Penemuan' : '🛡️ Klaim Terverifikasi'}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Active Chat Window */}
+          {/* ================= COLUMN 2: ACTIVE CHAT MAIN AREA ================= */}
           {activeMatch ? (
-            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+            <div style={{ 
+              background: 'var(--bg-canvas)', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              height: '100%', 
+              overflow: 'hidden',
+              borderRight: '1px solid var(--border-subtle)'
+            }}>
               
-              {/* Chat Header & Toolbars */}
+              {/* Header */}
               <div style={{
-                padding: '0.75rem 1rem',
-                borderBottom: '1px solid var(--border-light)',
+                padding: '0.85rem 1.5rem',
+                borderBottom: '1px solid var(--border-subtle)',
+                background: 'var(--bg-card)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                gap: '0.5rem',
-                background: 'var(--bg-surface)'
+                gap: '0.75rem'
               }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
-                      {activeMatch.item_title}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-700)' }}>
-                      (#{activeMatch.item_code})
-                    </span>
-                    {activeMatch.match_type === 'found_report' ? (
-                      <span className="badge" style={{ fontSize: '0.65rem', background: 'var(--teal-100, #ccfbf1)', color: 'var(--teal-800, #115e59)' }}>
-                        📍 Laporan Temuan
-                      </span>
-                    ) : (
-                      <span className="badge" style={{ fontSize: '0.65rem', background: 'var(--primary-100, #dbeafe)', color: 'var(--primary-800, #1e40af)' }}>
-                        🛡️ Klaim Sah
-                      </span>
-                    )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '50%',
+                    background: 'var(--ink-900)',
+                    color: '#FAF8F5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.85rem',
+                    fontWeight: 700
+                  }}>
+                    {getInitials(user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name)}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.15rem' }}>
-                    Lawan Bicara: <strong>{user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name}</strong>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 600, color: 'var(--ink-900)' }}>
+                        {user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name}
+                      </span>
+                      <StatusBadge status={activeMatch.status === 'selesai' ? 'SELESAI' : 'TERVERIFIKASI'} />
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.04em' }}>
+                      SEPUTAR #{activeMatch.item_code} · {activeMatch.item_title.toUpperCase()}
+                    </div>
                   </div>
                 </div>
 
-                {/* Quick Action Tools */}
-                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                {/* Header Action Tools */}
+                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <button 
                     onClick={handleCopyWAScript} 
-                    className="btn btn-outline btn-sm"
-                    title="Salin template pengantar grup WhatsApp"
-                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}
+                    className="btn-secondary"
+                    title="Salin template pengantar koordinasi WhatsApp"
+                    style={{ fontSize: '0.72rem', padding: '0.4rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'var(--bg-canvas)' }}
                   >
                     <Share2 size={13} /> {copiedScript ? 'Tersalin!' : 'Script WA'}
                   </button>
 
                   <button 
                     onClick={() => setShowRunnerModal(true)} 
-                    className="btn btn-accent btn-sm"
-                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem', gap: '0.3rem' }}
+                    className="btn-secondary"
+                    style={{ fontSize: '0.72rem', padding: '0.4rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'var(--bg-canvas)' }}
                   >
                     <Bike size={13} /> Pesan Runner
                   </button>
@@ -248,73 +343,75 @@ export const MessagesPage = () => {
                   {activeMatch.status !== 'selesai' && (
                     <button 
                       onClick={() => setShowBASTModal(true)} 
-                      className="btn btn-teal btn-sm"
-                      style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem', gap: '0.3rem' }}
+                      className="btn-dark"
+                      style={{ fontSize: '0.72rem', padding: '0.4rem 0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                     >
                       <FileCheck size={13} /> Tanda Tangan BAST
                     </button>
                   )}
 
-                  {/* Tombol Hapus Sesi Percakapan */}
                   <button 
                     onClick={handleDeleteSession} 
-                    className="btn btn-outline btn-sm"
-                    title="Hapus sesi percakapan ini secara permanen"
-                    style={{ 
-                      fontSize: '0.75rem', 
-                      padding: '0.35rem 0.65rem', 
-                      gap: '0.3rem', 
-                      color: 'var(--danger-600, #dc2626)', 
-                      borderColor: 'var(--danger-300, #fca5a5)' 
-                    }}
+                    className="btn-secondary"
+                    title="Hapus sesi arsip ini"
+                    style={{ fontSize: '0.72rem', padding: '0.4rem 0.6rem', color: 'var(--tag-lost-ink)', borderColor: 'var(--tag-lost-border)' }}
                   >
-                    <Trash2 size={13} /> Hapus Sesi
+                    <Trash2 size={13} />
                   </button>
                 </div>
               </div>
 
-              {/* Chat Message Stream */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              {/* Chat Stream */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 
-                {/* Context Announcement Banner */}
-                {activeMatch.match_type === 'found_report' ? (
-                  <div style={{
-                    background: 'rgba(20, 184, 166, 0.08)',
-                    border: '1px solid rgba(20, 184, 166, 0.3)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '0.75rem 0.9rem',
-                    fontSize: '0.78rem',
-                    color: 'var(--teal-900, #134e4a)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    lineHeight: 1.4
-                  }}>
-                    <Sparkles size={16} style={{ flexShrink: 0, color: 'var(--teal-600, #0d9488)' }} />
-                    <span>
-                      <strong>Koneksi Laporan Temuan:</strong> Percakapan ini dibuka karena <strong>{activeMatch.finder_name}</strong> melaporkan telah menemukan barang hilang milik <strong>{activeMatch.owner_name}</strong> dan telah diverifikasi oleh Admin Posko.
-                    </span>
-                  </div>
-                ) : null}
-
-                {/* Safety SOP Notice Banner from Blueprint */}
+                {/* Security SOP Ticker */}
                 <div style={{
-                  background: 'var(--warning-bg)',
-                  border: '1px solid rgba(245, 158, 11, 0.3)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '0.65rem 0.85rem',
-                  fontSize: '0.75rem',
-                  color: 'var(--amber-800)',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '2px',
+                  background: 'rgba(15, 23, 42, 0.03)',
+                  border: '1px solid var(--border-subtle)',
                   display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.65rem',
+                  fontSize: '0.78rem',
+                  color: 'var(--ink-700)',
+                  lineHeight: 1.45
+                }}>
+                  <ShieldAlert size={16} color="var(--ink-900)" style={{ flexShrink: 0 }} />
+                  <div>
+                    <strong>SOP Penyerahan UNNES:</strong> Demi keamanan, lakukan serah terima di area publik (Pos Satpam Fakultas / Rektorat) dan gunakan Berita Acara Serah Terima (BAST) digital.
+                  </div>
+                </div>
+
+                {/* Date Divider */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', margin: '0.5rem 0' }}>
+                  <div style={{ height: '1px', flex: 1, background: 'var(--border-subtle)' }} />
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase' }}>
+                    HARI INI
+                  </span>
+                  <div style={{ height: '1px', flex: 1, background: 'var(--border-subtle)' }} />
+                </div>
+
+                {/* Verified Pill Announcement */}
+                <div style={{
+                  alignSelf: 'center',
+                  padding: '0.35rem 0.85rem',
+                  borderRadius: '2px',
+                  background: 'var(--tag-found-bg)',
+                  border: '1px solid var(--tag-found-border)',
+                  color: 'var(--tag-found-ink)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.68rem',
+                  letterSpacing: '0.06em',
+                  fontWeight: 600,
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.4rem'
                 }}>
-                  <ShieldAlert size={16} style={{ flexShrink: 0 }} />
-                  <span>
-                    <strong>Himbauan Keamanan UNNES:</strong> Sangat direkomendasikan penyerahan barang mandiri dilakukan di area publik yang ramai (Pos Satpam Fakultas, Kantin Pusat, atau Gedung Rektorat).
-                  </span>
+                  <CheckCheck size={13} /> BLIND TEST LOLOS — IDENTITAS DIVERIFIKASI ADMIN
                 </div>
 
+                {/* Messages Loop */}
                 {matchMessages.map(msg => {
                   const isMe = msg.sender_id === user?.id;
                   const isSystem = msg.type === 'system';
@@ -324,15 +421,15 @@ export const MessagesPage = () => {
                     return (
                       <div key={msg.id} style={{
                         alignSelf: 'center',
-                        maxWidth: '90%',
-                        background: 'var(--info-bg)',
-                        border: '1px solid rgba(2, 132, 199, 0.25)',
-                        color: 'var(--info)',
-                        borderRadius: 'var(--radius-md)',
-                        padding: '0.65rem 0.85rem',
+                        maxWidth: '85%',
+                        padding: '0.65rem 1rem',
+                        borderRadius: '2px',
+                        background: 'rgba(15, 23, 42, 0.04)',
+                        border: '1px solid var(--border-subtle)',
                         fontSize: '0.78rem',
-                        lineHeight: 1.4,
-                        textAlign: 'center'
+                        color: 'var(--ink-700)',
+                        textAlign: 'center',
+                        lineHeight: 1.45
                       }}>
                         {msg.content}
                       </div>
@@ -340,68 +437,70 @@ export const MessagesPage = () => {
                   }
 
                   return (
-                    <div 
+                    <div
                       key={msg.id}
                       style={{
                         alignSelf: isMe ? 'flex-end' : 'flex-start',
-                        maxWidth: '75%',
+                        maxWidth: '70%',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '0.2rem'
+                        gap: '0.25rem'
                       }}
                     >
-                      {/* Sender Name & Admin Badge */}
+                      {/* Sender label */}
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '0.35rem',
-                        marginBottom: '0.15rem',
+                        gap: '0.4rem',
                         alignSelf: isMe ? 'flex-end' : 'flex-start'
                       }}>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--ink-500)' }}>
                           {isMe ? 'Anda' : (msg.sender_name || (isSenderAdmin ? 'Admin Posko' : 'Pengguna'))}
                         </span>
                         {isSenderAdmin && (
                           <span style={{
                             fontSize: '0.6rem',
-                            fontWeight: 800,
-                            padding: '0.1rem 0.4rem',
-                            borderRadius: 'var(--radius-full, 9999px)',
-                            background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)',
-                            color: '#fbbf24',
-                            border: '1px solid rgba(251, 191, 36, 0.5)',
+                            fontFamily: 'var(--font-mono)',
+                            fontWeight: 700,
+                            padding: '0.05rem 0.35rem',
+                            borderRadius: '2px',
+                            background: 'var(--ink-900)',
+                            color: 'var(--tag-bounty-ink)',
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '0.25rem',
-                            boxShadow: '0 1px 4px rgba(0,0,0,0.15)'
+                            gap: '0.2rem'
                           }}>
-                            <ShieldCheck size={11} color="#fbbf24" /> Admin Posko UNNES
+                            <ShieldCheck size={10} /> ADMIN
                           </span>
                         )}
                       </div>
 
-                      {/* Chat Bubble with visual distinction for Admin */}
+                      {/* Chat bubble */}
                       <div style={{
-                        padding: '0.65rem 0.9rem',
-                        borderRadius: 'var(--radius-lg)',
-                        background: isSenderAdmin 
-                          ? (isMe ? 'linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%)' : '#f0fdf4')
-                          : (isMe ? 'var(--primary-800)' : 'var(--bg-surface-alt)'),
-                        color: isSenderAdmin
-                          ? (isMe ? '#ffffff' : '#064e3b')
-                          : (isMe ? '#ffffff' : 'var(--text-primary)'),
-                        border: isSenderAdmin 
-                          ? (isMe ? '1.5px solid rgba(251, 191, 36, 0.6)' : '1.5px solid #86efac')
-                          : 'none',
-                        fontSize: '0.85rem',
-                        boxShadow: isSenderAdmin ? '0 2px 8px rgba(16, 185, 129, 0.12)' : 'var(--shadow-sm)',
-                        lineHeight: 1.4
+                        padding: '0.75rem 1rem',
+                        borderRadius: '2px',
+                        background: isSenderAdmin
+                          ? (isMe ? 'var(--ink-900)' : 'var(--tag-found-bg)')
+                          : (isMe ? 'var(--ink-900)' : 'var(--bg-card)'),
+                        color: isMe ? '#FAF8F5' : 'var(--ink-900)',
+                        border: isSenderAdmin
+                          ? (isMe ? '1px solid var(--ink-900)' : '1px solid var(--tag-found-border)')
+                          : (isMe ? 'none' : '1px solid var(--border-subtle)'),
+                        fontSize: '0.86rem',
+                        lineHeight: 1.5,
+                        boxShadow: 'var(--shadow-subtle)'
                       }}>
                         {msg.content}
                       </div>
 
-                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', alignSelf: isMe ? 'flex-end' : 'flex-start' }}>
+                      <div style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.65rem',
+                        color: 'var(--ink-500)',
+                        alignSelf: isMe ? 'flex-end' : 'flex-start'
+                      }}>
                         {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                        {isMe && ' ✓✓'}
                       </div>
                     </div>
                   );
@@ -411,26 +510,150 @@ export const MessagesPage = () => {
 
               {/* Chat Input Bar */}
               <form onSubmit={handleSend} style={{
-                padding: '0.75rem',
-                borderTop: '1px solid var(--border-light)',
+                padding: '0.85rem 1.25rem',
+                borderTop: '1px solid var(--border-subtle)',
+                background: 'var(--bg-card)',
                 display: 'flex',
-                gap: '0.5rem',
-                background: 'var(--bg-surface)'
+                gap: '0.75rem',
+                alignItems: 'center'
               }}>
                 <input
                   type="text"
-                  placeholder="Ketik pesan koordinasi penyerahan barang..."
+                  placeholder="Tulis pesan… identitas pribadi otomatis disensor"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  style={{ flex: 1 }}
+                  style={{
+                    flex: 1,
+                    padding: '0.65rem 1rem',
+                    fontSize: '0.85rem',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '2px',
+                    background: 'var(--bg-canvas)'
+                  }}
                 />
-                <button type="submit" className="btn btn-primary" style={{ padding: '0.65rem 1rem' }}>
-                  <Send size={16} />
+                <button type="submit" className="btn-dark" style={{ padding: '0.65rem 1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Send size={15} />
                 </button>
               </form>
 
             </div>
-          ) : null}
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-500)' }}>
+              Pilih percakapan untuk memulai
+            </div>
+          )}
+
+          {/* ================= COLUMN 3: CONTEXT SIDEBAR ================= */}
+          <div style={{ 
+            background: 'var(--bg-canvas)', 
+            padding: '1.25rem', 
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.5rem'
+          }} className="chat-context-col">
+            
+            <div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                KONTEKS LAPORAN
+              </div>
+
+              {activeMatch && (
+                <div className="archive-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  {/* Item Image / Censored Badge */}
+                  <div style={{
+                    width: '100%',
+                    height: '140px',
+                    borderRadius: '2px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    background: '#EAE3DC',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {activeItem?.image_url ? (
+                      <img 
+                        src={activeItem.image_url} 
+                        alt={activeMatch.item_title} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div style={{ textAlign: 'center', color: 'var(--ink-500)' }}>
+                        <Lock size={20} style={{ margin: '0 auto 0.25rem' }} />
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.06em' }}>[FOTO DISENSOR]</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-500)', marginBottom: '0.2rem' }}>
+                      #{activeMatch.item_code}
+                    </div>
+                    <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', fontWeight: 600, color: 'var(--ink-900)', margin: '0 0 0.5rem' }}>
+                      {activeMatch.item_title}
+                    </h3>
+                    <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem' }}>
+                      <StatusBadge status={activeMatch.match_type === 'found_report' ? 'DITEMUKAN' : 'BARANG HILANG'} />
+                    </div>
+                  </div>
+
+                  {activeItem && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem' }}>
+                      <div className="dotted-row">
+                        <span className="dotted-row-label">Lokasi:</span>
+                        <span className="dotted-row-filler"></span>
+                        <span className="dotted-row-value">{activeItem.location_building}</span>
+                      </div>
+                      <div className="dotted-row">
+                        <span className="dotted-row-label">Kategori:</span>
+                        <span className="dotted-row-filler"></span>
+                        <span className="dotted-row-value">{activeItem.category}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <Link 
+                    to={`/barang/${activeMatch.item_id}`}
+                    className="btn-secondary"
+                    style={{ 
+                      textDecoration: 'none', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      gap: '0.4rem', 
+                      fontSize: '0.75rem',
+                      padding: '0.55rem',
+                      marginTop: '0.25rem'
+                    }}
+                  >
+                    LIHAT ARSIP LENGKAP <ExternalLink size={13} />
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Aturan Obrolan */}
+            <div style={{
+              padding: '1rem',
+              borderRadius: '2px',
+              background: 'rgba(15, 23, 42, 0.02)',
+              border: '1px solid var(--border-subtle)',
+              fontSize: '0.78rem',
+              color: 'var(--ink-700)',
+              lineHeight: 1.55
+            }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--ink-900)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                ATURAN OBROLAN
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <li>Nomor HP & alamat tersensor otomatis demi privasi.</li>
+                <li>Bagikan kontak personal hanya setelah blind test dinyatakan cocok.</li>
+                <li>Laporan palsu dikenai sanksi penonaktifan akun UNNES.</li>
+              </ul>
+            </div>
+
+          </div>
 
         </div>
       )}
@@ -451,9 +674,19 @@ export const MessagesPage = () => {
       />
 
       <style>{`
+        @media (max-width: 1024px) {
+          .archival-chat-grid {
+            grid-template-columns: 280px 1fr !important;
+          }
+          .chat-context-col {
+            display: none !important;
+          }
+        }
         @media (max-width: 768px) {
-          .chat-layout {
+          .archival-chat-grid {
             grid-template-columns: 1fr !important;
+            height: auto !important;
+            min-height: calc(100vh - 120px) !important;
           }
         }
       `}</style>

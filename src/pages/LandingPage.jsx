@@ -1,441 +1,606 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, 
-  PlusCircle, 
-  CheckCircle2, 
   ArrowRight, 
-  Bike, 
-  Sparkles
+  AlertCircle, 
+  Sparkles, 
+  Award, 
+  Building2, 
+  ShieldCheck, 
+  Clock, 
+  CheckCircle2 
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
-import { CATEGORIES } from '../data/initialData';
 import { ItemCard } from '../components/ItemCard';
+import { UNNES_BUILDINGS } from '../data/initialData';
 
 export const LandingPage = () => {
-  const { approvedItems, stats } = useData();
+  const { approvedItems, items } = useData();
+  const navigate = useNavigate();
 
-  // Get recent 4 items
-  const recentItems = approvedItems.slice(0, 4);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [activeTab, setActiveTab] = useState('semua'); // 'semua' | 'hilang' | 'temuan'
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchKeyword.trim()) params.append('q', searchKeyword.trim());
+    if (selectedLocation) params.append('lokasi', selectedLocation);
+    navigate(`/jelajahi?${params.toString()}`);
+  };
+
+  const handleQuickSearch = (keyword) => {
+    navigate(`/jelajahi?q=${encodeURIComponent(keyword)}`);
+  };
+
+  // Filter items for tab
+  const filteredRecentItems = approvedItems
+    .filter(item => {
+      if (activeTab === 'hilang') return item.type === 'hilang';
+      if (activeTab === 'temuan') return item.type === 'temuan';
+      return true;
+    })
+    .slice(0, 6);
+
+  const countHilang = approvedItems.filter(i => i.type === 'hilang').length;
+  const countTemuan = approvedItems.filter(i => i.type === 'temuan').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem' }} className="pb-mobile-nav">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem' }} className="pb-mobile-nav">
       
-      {/* 1. Hero Section */}
+      {/* 1. Hero Section (01 Beranda — Desktop) */}
       <section style={{
-        position: 'relative',
-        padding: '4.5rem 0 3rem',
-        background: 'radial-gradient(ellipse at top, rgba(13, 148, 136, 0.12), transparent 70%), radial-gradient(ellipse at bottom right, rgba(30, 58, 95, 0.15), transparent 70%)',
-        borderBottom: '1px solid var(--border-light)'
+        padding: '3.5rem 0 2.5rem',
+        borderBottom: '1px solid var(--border-subtle)',
+        backgroundColor: 'var(--bg-canvas)'
       }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '820px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '860px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
           
-          {/* Badge Kampus */}
+          {/* Monospace Archival Label */}
           <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.65rem',
-            padding: '0.35rem 1rem 0.35rem 0.45rem',
-            borderRadius: 'var(--radius-full)',
-            background: 'var(--primary-50)',
-            color: 'var(--primary-800)',
-            fontSize: '0.825rem',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.72rem',
             fontWeight: 700,
-            border: '1px solid var(--primary-200)',
-            boxShadow: 'var(--shadow-sm)'
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: 'var(--ink-700)',
+            backgroundColor: 'var(--bg-card)',
+            padding: '4px 12px',
+            borderRadius: '4px',
+            border: '1px solid var(--border-subtle)'
           }}>
-            <div style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              background: '#FAF6EB',
-              border: '1.5px solid var(--amber-400)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <img src="/logo.png" alt="Logo UNNES" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-            <span>Portal Resmi Crowdsourcing Civitas UNNES</span>
+            ARSIP BARANG HILANG &amp; TEMUAN KAMPUS
           </div>
 
+          {/* Fraunces Headline */}
           <h1 style={{
-            fontSize: 'clamp(2rem, 5vw, 3.25rem)',
-            fontWeight: 800,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 'clamp(2.4rem, 5.5vw, 3.75rem)',
+            fontWeight: 700,
             lineHeight: 1.15,
-            letterSpacing: '-0.03em',
-            color: 'var(--text-primary)'
+            letterSpacing: '-0.025em',
+            color: 'var(--ink-900)',
+            margin: '0.2rem 0'
           }}>
-            Kehilangan Barang di UNNES? <br />
-            <span style={{ 
-              background: 'linear-gradient(135deg, var(--primary-700) 0%, var(--teal-600) 50%, var(--amber-500) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}>
-              Kami Bantu Temukan & Antarkan
-            </span>
+            Hilang di kampus,<br />
+            <span style={{ fontStyle: 'italic', fontWeight: 400 }}>ditemukan di sini.</span>
           </h1>
 
+          {/* Editorial Subtext */}
           <p style={{
-            fontSize: 'clamp(0.95rem, 2vw, 1.15rem)',
-            color: 'var(--text-secondary)',
+            fontFamily: 'var(--font-sans)',
+            fontSize: 'clamp(0.95rem, 1.8vw, 1.125rem)',
+            color: 'var(--ink-700)',
             lineHeight: 1.6,
-            maxWidth: '640px'
+            maxWidth: '680px',
+            margin: '0 0 0.5rem'
           }}>
-            Platform pencarian dan pengembalian barang hilang berbasis gotong royong mahasiswa Universitas Negeri Semarang. Aman dengan verifikasi Blind Test dan layanan Jasa Antar Runner.
+            Platform terbuka civitas Universitas Negeri Semarang untuk mencatat, melacak, dan mengembalikan barang tercecer dengan aman dan transparan.
           </p>
 
-          {/* CTA Buttons */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.85rem', justifyContent: 'center', marginTop: '0.5rem' }}>
-            <Link to="/jelajahi" className="btn btn-primary btn-lg" style={{ gap: '0.5rem' }}>
-              <Search size={18} /> Cari Barang Saya
-            </Link>
-            <Link to="/lapor/pilih" className="btn btn-accent btn-lg" style={{ gap: '0.5rem' }}>
-              <PlusCircle size={18} /> Lapor Barang
-            </Link>
-          </div>
-
-          {/* Quick Metrics Bar */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '1rem',
-            width: '100%',
-            maxWidth: '650px',
-            marginTop: '2.5rem',
-            padding: '1.25rem',
-            borderRadius: 'var(--radius-xl)',
-            background: 'var(--bg-glass-card)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid var(--border-glass)',
-            boxShadow: 'var(--shadow-md)'
-          }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--primary-700)' }}>
-                {stats.totalItems + 24}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                Laporan Aktif
-              </div>
+          {/* Search Box Bar */}
+          <form 
+            onSubmit={handleSearchSubmit}
+            style={{
+              width: '100%',
+              maxWidth: '780px',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '6px',
+              padding: '6px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.04)'
+            }}
+          >
+            <div style={{ flex: '1 1 280px', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0 0.75rem' }}>
+              <Search size={18} color="var(--ink-500)" style={{ flexShrink: 0 }} />
+              <input 
+                type="text" 
+                placeholder="Cari nama barang, nomor seri, atau kata kunci..."
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  width: '100%',
+                  background: 'transparent',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.9rem',
+                  color: 'var(--ink-900)',
+                  padding: '8px 0'
+                }}
+              />
             </div>
-            <div style={{ textAlign: 'center', borderLeft: '1px solid var(--border-light)', borderRight: '1px solid var(--border-light)' }}>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--teal-600)' }}>
-                {stats.totalReturned + 18}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                Barang Kembali
-              </div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--amber-500)' }}>
-                100%
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                Verifikasi Admin
-              </div>
-            </div>
-          </div>
 
-        </div>
-      </section>
+            <div style={{ width: '1px', height: '28px', backgroundColor: 'var(--border-subtle)', display: 'none' }} className="d-md-block" />
 
-      {/* 2. Kategori Populer */}
-      <section className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.35rem' }}>
-          <div>
-            <div style={{ 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              gap: '0.35rem', 
-              fontSize: '0.78rem', 
-              fontWeight: 700, 
-              color: 'var(--teal-600)', 
-              textTransform: 'uppercase', 
-              letterSpacing: '0.04em',
-              marginBottom: '0.2rem' 
-            }}>
-              <Sparkles size={13} /> Kategori Barang Kampus
+            <div style={{ flex: '0 1 200px', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0 0.5rem' }}>
+              <Building2 size={16} color="var(--ink-500)" style={{ flexShrink: 0 }} />
+              <select 
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.85rem',
+                  color: selectedLocation ? 'var(--ink-900)' : 'var(--ink-500)',
+                  width: '100%',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="">Semua Fakultas / Lokasi</option>
+                {UNNES_BUILDINGS.map(b => (
+                  <option key={b.id || b.name} value={b.name}>{b.name}</option>
+                ))}
+              </select>
             </div>
-            <h2 style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Pilih Kategori Temuan</h2>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Kategori yang paling sering dilaporkan di lingkungan UNNES</p>
-          </div>
-          <Link to="/jelajahi" style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            Lihat Semua <ArrowRight size={14} />
-          </Link>
-        </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-          gap: '1rem'
-        }}>
-          {CATEGORIES.map(cat => (
-            <Link 
-              key={cat.id} 
-              to={`/jelajahi?kategori=${cat.id}`}
-              className="category-card"
+            <button 
+              type="submit" 
+              className="btn btn-dark"
+              style={{ 
+                padding: '0.65rem 1.4rem', 
+                fontSize: '0.825rem',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                flexShrink: 0
+              }}
             >
-              <div className="category-img-box">
-                <img 
-                  src={cat.image} 
-                  alt={cat.name} 
-                  className="category-card-img" 
-                  loading="lazy"
-                />
-              </div>
-              <span className="category-title">{cat.name}</span>
-              <span className="category-badge-count">
-                {approvedItems.filter(item => item.category === cat.id).length} Laporan
-              </span>
-            </Link>
-          ))}
+              <Search size={15} strokeWidth={2.5} /> CARI BARANG
+            </button>
+          </form>
+
+          {/* Quick Search Ticker */}
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.45rem',
+            fontSize: '0.75rem',
+            color: 'var(--ink-500)',
+            marginTop: '0.25rem'
+          }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>Pencarian populer:</span>
+            {['KTM UNNES', 'Helm KYT', 'Kunci Honda', 'Jaket Parka', 'Flashdisk Sandisk', 'Kacamata'].map(tag => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => handleQuickSearch(tag)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '4px',
+                  padding: '2px 8px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.7rem',
+                  color: 'var(--ink-700)',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s ease'
+                }}
+                className="hover-tag-btn"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+
         </div>
       </section>
 
-      {/* 3. Recent Items Showcase */}
+      {/* 2. Dua Kartu Pilihan Utama (SAYA KEHILANGAN vs SAYA MENEMUKAN) */}
       <section className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.25rem' }}>
-          <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Laporan Terbaru Terverifikasi</h2>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Barang hilang dan temuan yang telah di-ACC oleh Admin Posko</p>
-          </div>
-          <Link to="/jelajahi" style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-            Jelajahi Semua <ArrowRight size={14} />
-          </Link>
-        </div>
-
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-          gap: '1.25rem'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '1.5rem'
         }}>
-          {recentItems.map(item => (
-            <ItemCard key={item.id} item={item} />
-          ))}
+          {/* Card 1: Saya Kehilangan Barang */}
+          <div style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderLeft: '4px solid #DC2626',
+            borderRadius: '6px',
+            padding: '2rem 1.75rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span className="badge badge-lost">
+                <AlertCircle size={12} strokeWidth={2.5} /> KATEGORI 01
+              </span>
+            </div>
+
+            <div>
+              <h2 style={{ 
+                fontFamily: 'var(--font-serif)', 
+                fontSize: '1.45rem', 
+                fontWeight: 700, 
+                color: 'var(--ink-900)',
+                margin: '0 0 0.4rem'
+              }}>
+                Saya Kehilangan Barang
+              </h2>
+              <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', lineHeight: 1.55, margin: 0 }}>
+                Laporkan barang Anda yang tertinggal atau tercecer di lingkungan kampus agar civitas dan posko dapat membantu menemukan dengan cepat.
+              </p>
+            </div>
+
+            <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
+              <Link 
+                to="/lapor/hilang" 
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  color: '#DC2626',
+                  textDecoration: 'none',
+                  border: '1px solid #FCA5A5',
+                  backgroundColor: '#FEF2F2',
+                  padding: '8px 14px',
+                  borderRadius: '4px',
+                  transition: 'background 0.15s ease'
+                }}
+              >
+                BUAT LAPORAN KEHILANGAN <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+
+          {/* Card 2: Saya Menemukan Barang */}
+          <div style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderLeft: '4px solid #2563EB',
+            borderRadius: '6px',
+            padding: '2rem 1.75rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span className="badge badge-found">
+                <Sparkles size={12} strokeWidth={2.5} /> KATEGORI 02
+              </span>
+            </div>
+
+            <div>
+              <h2 style={{ 
+                fontFamily: 'var(--font-serif)', 
+                fontSize: '1.45rem', 
+                fontWeight: 700, 
+                color: 'var(--ink-900)',
+                margin: '0 0 0.4rem'
+              }}>
+                Saya Menemukan Barang
+              </h2>
+              <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', lineHeight: 1.55, margin: 0 }}>
+                Pegang barang milik orang lain? Catat ciri-cirinya tanpa membocorkan detail sensitif agar dapat diklaim oleh pemilik sah melalui blind-test.
+              </p>
+            </div>
+
+            <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
+              <Link 
+                to="/lapor/temuan" 
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  color: '#2563EB',
+                  textDecoration: 'none',
+                  border: '1px solid #93C5FD',
+                  backgroundColor: '#EFF6FF',
+                  padding: '8px 14px',
+                  borderRadius: '4px',
+                  transition: 'background 0.15s ease'
+                }}
+              >
+                LAPORKAN BARANG TEMUAN <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 4. Alur Kerja (Cara Kerja 3 Langkah) */}
-      <section style={{ background: 'var(--bg-surface-alt)', padding: '3.5rem 0', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)' }}>
-        <div className="container">
-          <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto 2.5rem' }}>
-            <h2 style={{ fontSize: '1.65rem', fontWeight: 800 }}>Cara Kerja Platform</h2>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
-              Alur terstruktur yang menjamin keamanan data dan validitas kepemilikan barang.
+      {/* 3. Section: Barang Terbaru Dilaporkan */}
+      <section className="container">
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-end', 
+          gap: '1rem',
+          marginBottom: '1.5rem',
+          paddingBottom: '1rem',
+          borderBottom: '1px solid var(--border-subtle)'
+        }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              ARSIP TERBARU KAMPUS
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0.2rem 0' }}>
+              Barang Terbaru Dilaporkan
+            </h2>
+            <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', margin: 0 }}>
+              Arsip data barang yang baru saja dicatat oleh civitas UNNES hari ini.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-            
-            {/* Step 1 */}
-            <div className="glass-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--primary-800)',
-                color: '#fff',
-                fontWeight: 800,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                01
-              </div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Lapor & Sensor Katalog</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Unggah laporan barang. Nomor identitas (NIM/NIK) dan ciri rahasia disensor dari publik untuk keamanan data pribadi.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="glass-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--teal-600)',
-                color: '#fff',
-                fontWeight: 800,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                02
-              </div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Review Admin & Blind Test</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Admin meninjau postingan sebelum tampil. Pemilik wajib menjawab minimal 2 pertanyaan blind test untuk membuka kontak.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="glass-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--amber-500)',
-                color: '#fff',
-                fontWeight: 800,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                03
-              </div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Serah Terima / Jasa Runner</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Bertemu mandiri di titik ramai kampus atau gunakan Jasa Runner UNNES untuk diantarkan langsung ke lokasi kelas Anda.
-              </p>
-            </div>
-
+          {/* Filter Tabs */}
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setActiveTab('semua')}
+              className={`filter-chip ${activeTab === 'semua' ? 'active' : ''}`}
+            >
+              SEMUA ({approvedItems.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('hilang')}
+              className={`filter-chip ${activeTab === 'hilang' ? 'active' : ''}`}
+            >
+              BARANG HILANG ({countHilang})
+            </button>
+            <button
+              onClick={() => setActiveTab('temuan')}
+              className={`filter-chip ${activeTab === 'temuan' ? 'active' : ''}`}
+            >
+              BARANG TEMUAN ({countTemuan})
+            </button>
           </div>
+        </div>
+
+        {/* Item Grid */}
+        {filteredRecentItems.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '4rem 1rem',
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '6px'
+          }}>
+            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: 'var(--ink-700)' }}>
+              Belum ada arsip untuk kategori ini.
+            </p>
+          </div>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
+            gap: '1.5rem'
+          }}>
+            {filteredRecentItems.map(item => (
+              <ItemCard key={item.id} item={item} />
+            ))}
+          </div>
+        )}
+
+        {/* Link to Explore */}
+        <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+          <Link 
+            to="/jelajahi" 
+            className="btn btn-secondary"
+            style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.8rem',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase'
+            }}
+          >
+            LIHAT SEMUA ARSIP DI JELAJAHI <ArrowRight size={14} />
+          </Link>
         </div>
       </section>
 
-      {/* 5. Jasa Runner Kampus Showcase */}
+      {/* 4. Program Hadiah Banner (01 Beranda — Desktop) */}
       <section className="container">
-        <div className="glass-panel" style={{
-          borderRadius: 'var(--radius-xl)',
-          padding: '2.5rem',
+        <div style={{
+          backgroundColor: '#FFFDF5',
+          border: '1px solid #FEF08A',
+          borderRadius: '6px',
+          padding: '2.5rem 2rem',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '2rem',
-          alignItems: 'center',
-          background: 'linear-gradient(135deg, rgba(30, 58, 95, 0.04) 0%, rgba(245, 158, 11, 0.08) 100%)',
-          border: '1.5px solid rgba(245, 158, 11, 0.25)'
+          alignItems: 'center'
         }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.3rem 0.75rem',
-              borderRadius: 'var(--radius-full)',
-              background: 'var(--amber-100)',
-              color: 'var(--amber-700)',
-              fontSize: '0.775rem',
-              fontWeight: 700,
-              width: 'fit-content'
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <span className="badge badge-bounty" style={{ width: 'fit-content' }}>
+              <Award size={12} strokeWidth={2.5} /> PROGRAM APRESIASI RESMI
+            </span>
+            <h2 style={{ 
+              fontFamily: 'var(--font-serif)', 
+              fontSize: '1.85rem', 
+              fontWeight: 700, 
+              color: 'var(--ink-900)', 
+              margin: 0,
+              lineHeight: 1.25
             }}>
-              <Bike size={16} /> Technopreneurship Delivery Service
+              Hargai Kejujuran dengan Imbalan Terbuka
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
+              Beri apresiasi bagi civitas penemu yang mengembalikan barang berharga Anda. Transparan, aman, dan memicu budaya kejujuran di seluruh fakultas UNNES.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'flex-start' }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.78rem',
+              color: 'var(--ink-700)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <CheckCircle2 size={16} color="#CA8A04" />
+                <span>Nominal imbalan tercatat resmi di arsip barang</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <CheckCircle2 size={16} color="#CA8A04" />
+                <span>Serah terima di Posko Keamanan atau Gedung Rektorat</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <CheckCircle2 size={16} color="#CA8A04" />
+                <span>Tercatat dalam Berita Acara Serah Terima digital</span>
+              </div>
             </div>
 
-            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, lineHeight: 1.25 }}>
-              Sibuk Kuliah atau Beda Gedung? Gunakan Jasa Runner UNNES!
-            </h2>
+            <Link 
+              to="/jelajahi?hadiah=true" 
+              className="btn btn-dark btn-sm"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.78rem',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                marginTop: '0.5rem'
+              }}
+            >
+              LIHAT BARANG DENGAN HADIAH <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </section>
 
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              Runner resmi kami siap mengambil barang yang tertinggal di kelas, berkoordinasi dengan petugas/satpam gedung, dan mengantarkannya langsung ke lokasi Anda.
-            </p>
-
-            <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem' }}>
-              <div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-800)' }}>
-                  Rp 7.000 - 10.000
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Tarif Pick-up & Delivery</div>
-              </div>
-              <div style={{ borderLeft: '1px solid var(--border-light)', paddingLeft: '1.5rem' }}>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--teal-600)' }}>
-                  No Find, No Fee
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Barang Nihil Bebas Biaya</div>
-              </div>
+      {/* 5. Statistik & Metrik Arsip Kampus */}
+      <section className="container">
+        <div style={{
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: '6px',
+          padding: '2.5rem 1.5rem',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '2rem',
+          textAlign: 'center'
+        }}>
+          <div>
+            <div style={{ 
+              fontFamily: 'var(--font-mono)', 
+              fontSize: '2.4rem', 
+              fontWeight: 700, 
+              color: 'var(--ink-900)',
+              lineHeight: 1
+            }}>
+              {(items?.length || 9) + 142}
+            </div>
+            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
+              Total Arsip Tercatat
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
+              Periode Tahun Akademik Ini
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <div className="glass-card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <CheckCircle2 size={22} color="var(--teal-600)" />
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Runner Mahasiswa Teridentifikasi</div>
-                <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Shift runner terjadwal dan terdata oleh Posko Kampus</div>
-              </div>
+          <div>
+            <div style={{ 
+              fontFamily: 'var(--font-mono)', 
+              fontSize: '2.4rem', 
+              fontWeight: 700, 
+              color: '#059669',
+              lineHeight: 1
+            }}>
+              89%
             </div>
-
-            <div className="glass-card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <CheckCircle2 size={22} color="var(--teal-600)" />
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Bukti Foto Transparan</div>
-                <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Foto sudut ruangan & bukti barang dikirim langsung via WhatsApp</div>
-              </div>
+            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
+              Tingkat Pengembalian
             </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
+              Berhasil Verifikasi &amp; Diambil
+            </div>
+          </div>
 
-            <div className="glass-card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <CheckCircle2 size={22} color="var(--teal-600)" />
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Berita Acara Digital (BAST)</div>
-                <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Konfirmasi resmi bebas sengketa saat serah terima</div>
-              </div>
+          <div>
+            <div style={{ 
+              fontFamily: 'var(--font-mono)', 
+              fontSize: '2.4rem', 
+              fontWeight: 700, 
+              color: '#2563EB',
+              lineHeight: 1
+            }}>
+              12 Posko
+            </div>
+            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
+              Titik Pengambilan Aktif
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
+              Tersebar di Seluruh Fakultas
+            </div>
+          </div>
+
+          <div>
+            <div style={{ 
+              fontFamily: 'var(--font-mono)', 
+              fontSize: '2.4rem', 
+              fontWeight: 700, 
+              color: 'var(--ink-900)',
+              lineHeight: 1
+            }}>
+              &lt; 24 Jam
+            </div>
+            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
+              Rata-rata Respon Posko
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
+              Verifikasi Blind-Test Cepat
             </div>
           </div>
         </div>
       </section>
 
-      {/* 6. Footer */}
-      <footer style={{
-        marginTop: '2rem',
-        padding: '2.5rem 0 2rem',
-        borderTop: '1px solid var(--border-light)',
-        background: 'var(--bg-surface)'
-      }}>
-        <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '1.5rem', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-              <div style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '50%',
-                overflow: 'hidden',
-                background: '#FAF6EB',
-                border: '2px solid var(--amber-400)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                boxShadow: '0 3px 10px rgba(0,0,0,0.08)'
-              }}>
-                <img src="/logo.png" alt="UNNES Lost & Found Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <div>
-                <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.1rem' }}>
-                  UNNES <span style={{ color: 'var(--amber-500)' }}>Lost & Found</span>
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Platform Crowdsourcing Barang Hilang Civitas Universitas Negeri Semarang
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              <Link to="/beranda">Beranda</Link>
-              <Link to="/jelajahi">Jelajahi</Link>
-              <Link to="/pengaturan">Disclaimer Hukum</Link>
-              <Link to="/masuk">Masuk</Link>
-            </div>
-          </div>
-
-          <div style={{
-            paddingTop: '1rem',
-            borderTop: '1px solid var(--border-light)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            fontSize: '0.75rem',
-            color: 'var(--text-muted)',
-            flexWrap: 'wrap',
-            gap: '0.5rem'
-          }}>
-            <div>© {new Date().getFullYear()} UNNES Lost & Found. Inisiatif Technopreneurship Mahasiswa UNNES.</div>
-            <div>Kampus Sekaran, Gunungpati, Kota Semarang</div>
-          </div>
-        </div>
-      </footer>
-
+      <style>{`
+        .hover-tag-btn:hover {
+          background-color: var(--border-subtle) !important;
+        }
+      `}</style>
     </div>
   );
 };
+

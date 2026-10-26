@@ -5,6 +5,8 @@ import { BottomNav } from './components/BottomNav';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 
+import { Footer } from './components/Footer';
+
 // User Pages
 import { LandingPage } from './pages/LandingPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -36,6 +38,7 @@ function App() {
           {/* Public & Core Pages */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/beranda" element={<DashboardPage />} />
+          <Route path="/laporan-saya" element={<DashboardPage />} />
           <Route path="/jelajahi" element={<ExplorePage />} />
           <Route path="/barang/:id" element={<ItemDetailPage />} />
           <Route path="/pengaturan" element={<SettingsPage />} />
@@ -45,6 +48,7 @@ function App() {
           <Route path="/daftar" element={<RegisterPage />} />
 
           {/* Protected User Pages */}
+          <Route path="/lapor" element={<Navigate to="/lapor/pilih" replace />} />
           <Route 
             path="/lapor/:type" 
             element={
@@ -141,6 +145,7 @@ function App() {
         </Routes>
       </main>
 
+      <Footer />
       <BottomNav />
     </div>
   );

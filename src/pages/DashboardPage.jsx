@@ -1,468 +1,459 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
+  Plus, 
   Search, 
-  AlertCircle, 
-  Sparkles, 
-  FileText, 
-  Bike, 
-  MapPin, 
   Clock, 
-  Award,
-  Filter
+  CheckCircle2, 
+  Trash2, 
+  ExternalLink, 
+  Bike, 
+  FileText,
+  AlertCircle,
+  HelpCircle,
+  ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
+import { StatusBadge } from '../components/StatusBadge';
 import { getRunnerStatusInfo } from '../data/initialData';
-import { ItemCard } from '../components/ItemCard';
 import { RunnerOrderModal } from '../components/RunnerOrderModal';
 
 export const DashboardPage = () => {
-  const { user, isAdmin } = useAuth();
-  const { approvedItems, items, orders } = useData();
+  const { user } = useAuth();
+  const { items, orders, deleteItem, markItemAsReturned } = useData();
   const navigate = useNavigate();
 
+  const [activeTab, setActiveTab] = useState('semua');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBuilding, setSelectedBuilding] = useState('semua');
-  const [selectedCategory, setSelectedCategory] = useState('semua');
   const [showRunnerModal, setShowRunnerModal] = useState(false);
 
-  // Time greeting in Indonesian
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 11) return 'Selamat Pagi';
-    if (hour < 15) return 'Selamat Siang';
-    if (hour < 18) return 'Selamat Sore';
-    return 'Selamat Malam';
+  // User's own items
+  const userItems = (items || []).filter(i => i.user_id === user?.id);
+  const myLostItems = userItems.filter(i => i.type === 'hilang');
+  const myFoundItems = userItems.filter(i => i.type === 'ditemukan');
+  const myOrders = (orders || []).filter(o => o.requester_id === user?.id);
+
+  // Metrics counters
+  const totalCount = userItems.length;
+  const pendingCount = userItems.filter(i => i.post_status === 'menunggu_review').length;
+  const verifiedCount = userItems.filter(i => i.post_status === 'approved' && i.status !== 'selesai').length;
+  const completedCount = userItems.filter(i => i.status === 'selesai' || i.post_status === 'selesai').length;
+
+  // Filtered Items based on Tab & Search
+  const getFilteredItems = () => {
+    let list = userItems;
+    if (activeTab === 'hilang') list = myLostItems;
+    if (activeTab === 'ditemukan') list = myFoundItems;
+    if (activeTab === 'selesai') list = userItems.filter(i => i.status === 'selesai' || i.post_status === 'selesai');
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(i => 
+        (i.title && i.title.toLowerCase().includes(q)) ||
+        (i.item_code && i.item_code.toLowerCase().includes(q)) ||
+        (i.location_building && i.location_building.toLowerCase().includes(q)) ||
+        (i.category && i.category.toLowerCase().includes(q))
+      );
+    }
+    return list;
   };
 
-  // User's own items
-  const myReports = items.filter(i => i.user_id === user?.id);
-  const myPendingReports = myReports.filter(i => i.post_status === 'menunggu_review');
+  const filteredItems = getFilteredItems();
 
-  // Active Runner order for this user
-  const activeOrder = orders.find(o => 
-    o.requester_id === user?.id && o.status !== 'selesai' && o.status !== 'dibatalkan'
-  );
+  const handleDelete = async (item) => {
+    const confirm = window.confirm(
+      `HAPUS LAPORAN #${item.item_code}?\n\n` +
+      `Apakah Anda yakin ingin menghapus laporan "${item.title}" dari arsip kampus?\n` +
+      `Tindakan ini tidak dapat dibatalkan.`
+    );
+    if (!confirm) return;
 
-  // Filtered nearby items
-  const displayItems = approvedItems.filter(item => {
-    const matchesSearch = searchQuery === '' || 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.location_building.toLowerCase().includes(searchQuery.toLowerCase());
+    try {
+      await deleteItem(item.id);
+      alert('Laporan berhasil dihapus dari arsip.');
+    } catch (err) {
+      console.error('Gagal menghapus laporan:', err);
+      alert('Terjadi kesalahan saat menghapus laporan.');
+    }
+  };
 
-    const matchesBuilding = selectedBuilding === 'semua' || item.location_building.includes(selectedBuilding);
-    const matchesCategory = selectedCategory === 'semua' || item.category === selectedCategory;
+  const handleMarkReturned = async (item) => {
+    const confirm = window.confirm(
+      `TANDAI SELESAI #${item.item_code}?\n\n` +
+      `Konfirmasi bahwa barang "${item.title}" telah berhasil diserahkan/diterima kembali?`
+    );
+    if (!confirm) return;
 
-    return matchesSearch && matchesBuilding && matchesCategory;
-  });
+    try {
+      await markItemAsReturned(item.id);
+      alert('Status laporan diperbarui: SELESAI / KEMBALI!');
+    } catch (err) {
+      console.error('Gagal memperbarui status laporan:', err);
+      alert('Terjadi kesalahan saat memperbarui status.');
+    }
+  };
 
   return (
-    <div className="container pb-mobile-nav" style={{ paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-      
-      {/* 1. Top Header Profile Greeting */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          {user ? (
-            user.avatar_url ? (
-              <img 
-                src={user.avatar_url} 
-                alt={user.full_name} 
-                style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-600)' }}
-              />
-            ) : (
-              <div style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--teal-600) 100%)',
-                color: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.2rem',
-                fontWeight: 700
-              }}>
-                {(user.full_name || user.email || 'U')[0].toUpperCase()}
-              </div>
-            )
-          ) : (
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--primary-800) 0%, var(--teal-600) 100%)',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.25rem',
-              fontWeight: 800,
-              boxShadow: '0 4px 10px rgba(30, 58, 95, 0.25)'
-            }}>
-              U
-            </div>
-          )}
+    <div style={{ background: 'var(--bg-canvas)', minHeight: 'calc(100vh - 72px)', paddingTop: '2.5rem', paddingBottom: '5rem' }}>
+      <div className="container">
+        
+        {/* ================= 1. HEADER ROW ================= */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '2rem' }}>
           <div>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{getGreeting()},</span>
-            <h1 style={{ fontSize: '1.35rem', fontWeight: 800, lineHeight: 1.2 }}>
-              {user?.full_name || 'Civitas Akademika UNNES'}
-            </h1>
-            <span style={{ fontSize: '0.75rem', color: 'var(--teal-600)', fontWeight: 600 }}>
-              {user ? (user.fakultas ? `${user.fakultas} UNNES` : 'Mahasiswa UNNES') : 'Portal Terpadu Barang Hilang & Temuan'}
-            </span>
-          </div>
-        </div>
-
-        {/* Action button */}
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button 
-            onClick={() => {
-              if (!user) {
-                navigate('/masuk', { state: { from: { pathname: '/beranda' } } });
-                return;
-              }
-              setShowRunnerModal(true);
-            }} 
-            className="btn btn-accent btn-sm"
-            style={{ gap: '0.4rem' }}
-          >
-            <Bike size={16} /> Pesan Runner
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Notice if user has pending review reports */}
-      {myPendingReports.length > 0 && (
-        <div style={{
-          background: 'var(--warning-bg)',
-          border: '1px solid rgba(245, 158, 11, 0.35)',
-          borderRadius: 'var(--radius-md)',
-          padding: '0.85rem 1rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '0.75rem',
-          fontSize: '0.85rem',
-          color: 'var(--amber-700)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Clock size={18} style={{ flexShrink: 0 }} />
-            <span>
-              Anda memiliki <strong>{myPendingReports.length} laporan</strong> yang sedang ditinjau oleh Admin Posko UNNES.
-            </span>
-          </div>
-          <Link to="/profil" style={{ fontWeight: 700, textDecoration: 'underline', whiteSpace: 'nowrap' }}>
-            Lihat Status
-          </Link>
-        </div>
-      )}
-
-      {/* Active Runner Tracker Widget if any */}
-      {activeOrder && (() => {
-        const statusInfo = getRunnerStatusInfo(activeOrder.status);
-        return (
-          <div className="glass-panel" style={{
-            borderRadius: 'var(--radius-lg)',
-            padding: '1rem 1.25rem',
-            borderLeft: `4px solid ${statusInfo.border || 'var(--teal-600)'}`,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '0.75rem'
-          }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                <span className={`badge ${statusInfo.badgeClass}`} style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-                  {statusInfo.label}
-                </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>#{activeOrder.item_code}</span>
-              </div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>
-                Antar ke: {activeOrder.delivery_location}
-              </div>
-              <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>
-                Runner: {activeOrder.runner_name || 'Menunggu penugasan tim'} • {activeOrder.runner_notes || statusInfo.description}
-              </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+              ARSIP LAPORAN PRIBADI
             </div>
-            <Link to="/profil" className="btn btn-outline btn-sm">
-              Cek Detail
+            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', fontWeight: 600, color: 'var(--ink-900)', margin: '0 0 0.35rem' }}>
+              Laporan Saya
+            </h1>
+            <p style={{ fontSize: '0.9rem', color: 'var(--ink-700)', maxWidth: '640px', lineHeight: 1.5, margin: 0 }}>
+              Pantau status verifikasi posko, proses blind test klaim, dan riwayat pengembalian barang milik Anda.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button 
+              onClick={() => setShowRunnerModal(true)}
+              className="btn-secondary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', padding: '0.65rem 1rem' }}
+            >
+              <Bike size={16} /> PESAN RUNNER
+            </button>
+            <Link 
+              to="/lapor/pilih" 
+              className="btn-dark"
+              style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', padding: '0.65rem 1.25rem' }}
+            >
+              <Plus size={16} /> BUAT LAPORAN BARU
             </Link>
           </div>
-        );
-      })()}
-
-      {/* 3. Search Bar with Glassmorphic Input */}
-      <div style={{ position: 'relative' }}>
-        <input 
-          type="text"
-          placeholder="Cari barang hilang, merk, lokasi gedung di UNNES..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '0.85rem 1rem 0.85rem 2.75rem',
-            fontSize: '0.95rem',
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-sm)'
-          }}
-        />
-        <Search 
-          size={18} 
-          color="var(--text-muted)" 
-          style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} 
-        />
-      </div>
-
-      {/* 4. Quick Actions Grid (Matching the Dribbble Reference) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-        <Link 
-          to={user ? "/lapor/hilang" : "/masuk"}
-          state={!user ? { from: { pathname: '/lapor/hilang' } } : undefined}
-          className="glass-card"
-          style={{
-            padding: '0.9rem 0.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            gap: '0.4rem',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: 'var(--radius-md)',
-            background: 'var(--danger-bg)',
-            color: 'var(--danger)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <AlertCircle size={20} />
-          </div>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>Lapor Hilang</span>
-        </Link>
-
-        <Link 
-          to={user ? "/lapor/temuan" : "/masuk"}
-          state={!user ? { from: { pathname: '/lapor/temuan' } } : undefined}
-          className="glass-card"
-          style={{
-            padding: '0.9rem 0.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            gap: '0.4rem',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: 'var(--radius-md)',
-            background: 'var(--success-bg)',
-            color: 'var(--success)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <Sparkles size={20} />
-          </div>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>Lapor Temuan</span>
-        </Link>
-
-        <div 
-          onClick={() => {
-            if (!user) {
-              navigate('/masuk', { state: { from: { pathname: '/beranda' } } });
-              return;
-            }
-            setShowRunnerModal(true);
-          }}
-          className="glass-card"
-          style={{
-            padding: '0.9rem 0.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            gap: '0.4rem',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: 'var(--radius-md)',
-            background: 'var(--amber-100)',
-            color: 'var(--amber-700)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <Bike size={20} />
-          </div>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>Jasa Runner</span>
         </div>
 
-        <Link 
-          to={user ? "/profil" : "/masuk"}
-          state={!user ? { from: { pathname: '/profil' } } : undefined}
-          className="glass-card"
-          style={{
-            padding: '0.9rem 0.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            gap: '0.4rem',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: 'var(--radius-md)',
-            background: 'var(--primary-100)',
-            color: 'var(--primary-800)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <FileText size={20} />
-          </div>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>Laporan Saya</span>
-        </Link>
-      </div>
-
-      {/* 5. Rewards / Bounty Banner Promo Card (Matching Dribbble Reference) */}
-      <div 
-        className="glass-panel"
-        style={{
-          borderRadius: 'var(--radius-xl)',
-          padding: '1.25rem 1.5rem',
-          background: 'linear-gradient(135deg, #1e3a5f 0%, #0f1f38 100%)',
-          color: '#ffffff',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '1rem',
-          boxShadow: '0 8px 20px rgba(30, 58, 95, 0.25)'
-        }}
-      >
-        <div>
-          <span style={{
-            background: 'rgba(245, 158, 11, 0.25)',
-            color: 'var(--amber-400)',
-            border: '1px solid rgba(245, 158, 11, 0.4)',
-            padding: '0.2rem 0.6rem',
-            borderRadius: 'var(--radius-full)',
-            fontSize: '0.7rem',
-            fontWeight: 700,
-            display: 'inline-block',
-            marginBottom: '0.4rem'
-          }}>
-            Program Hadiah UNNES
-          </span>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>
-            Dapatkan Hadiah untuk Temuan Barang
-          </h3>
-          <p style={{ fontSize: '0.78rem', color: '#cbd5e1', marginTop: '0.2rem' }}>
-            Beberapa barang kehilangan menyediakan imbalan hingga Rp 100.000 untuk penemu jujur.
-          </p>
-        </div>
-
-        <div style={{
-          width: '52px',
-          height: '52px',
-          borderRadius: 'var(--radius-lg)',
-          background: 'linear-gradient(135deg, var(--amber-400) 0%, var(--amber-500) 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          boxShadow: 'var(--shadow-glow-amber)'
-        }}>
-          <Award size={28} color="#fff" />
-        </div>
-      </div>
-
-      {/* 6. Filter Chips: Gedung UNNES & Kategori */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Barang di Sekitar Kampus</h2>
-          <Link to="/jelajahi" style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-600)' }}>
-            Lihat Semua ({approvedItems.length})
-          </Link>
-        </div>
-
-        {/* Building Filter Pills */}
-        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.35rem' }}>
-          <button
-            onClick={() => setSelectedBuilding('semua')}
-            style={{
-              padding: '0.35rem 0.85rem',
-              borderRadius: 'var(--radius-full)',
-              fontSize: '0.775rem',
-              fontWeight: 700,
-              whiteSpace: 'nowrap',
-              background: selectedBuilding === 'semua' ? 'var(--primary-800)' : 'var(--bg-surface)',
-              color: selectedBuilding === 'semua' ? '#fff' : 'var(--text-secondary)',
-              border: '1px solid var(--border-light)'
-            }}
-          >
-            Semua Gedung
-          </button>
-          {['FMIPA', 'FT', 'FBS', 'FEB', 'Masjid Ulul Albab', 'Perpustakaan'].map(b => (
-            <button
-              key={b}
-              onClick={() => setSelectedBuilding(b)}
-              style={{
-                padding: '0.35rem 0.85rem',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '0.775rem',
-                fontWeight: 600,
-                whiteSpace: 'nowrap',
-                background: selectedBuilding === b ? 'var(--primary-800)' : 'var(--bg-surface)',
-                color: selectedBuilding === b ? '#fff' : 'var(--text-secondary)',
-                border: '1px solid var(--border-light)'
-              }}
-            >
-              {b}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 7. Grid of items */}
-      {displayItems.length === 0 ? (
-        <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-          <MapPin size={36} style={{ margin: '0 auto 0.5rem', opacity: 0.5 }} />
-          <p style={{ fontWeight: 600 }}>Tidak ada barang yang cocok dengan filter lokasi ini.</p>
-          <button 
-            onClick={() => { setSelectedBuilding('semua'); setSelectedCategory('semua'); setSearchQuery(''); }}
-            className="btn btn-outline btn-sm"
-            style={{ marginTop: '0.75rem' }}
-          >
-            Reset Filter
-          </button>
-        </div>
-      ) : (
+        {/* ================= 2. METRICS TICKER BOXES ================= */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-          gap: '1.25rem'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1rem',
+          marginBottom: '2rem'
         }}>
-          {displayItems.map(item => (
-            <ItemCard key={item.id} item={item} />
-          ))}
+          {/* Card 1: Total */}
+          <div className="archive-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase' }}>
+              TOTAL LAPORAN
+            </span>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '2rem', fontWeight: 700, color: 'var(--ink-900)' }}>
+              {totalCount}
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--ink-500)' }}>Semua kategori terdaftar</span>
+          </div>
+
+          {/* Card 2: Menunggu Review */}
+          <div className="archive-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase' }}>
+              MENUNGGU REVIEW
+            </span>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '2rem', fontWeight: 700, color: 'var(--ink-900)' }}>
+              {pendingCount}
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--ink-500)' }}>Proses kurasi Admin Posko</span>
+          </div>
+
+          {/* Card 3: Terverifikasi */}
+          <div className="archive-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase' }}>
+              TERVERIFIKASI AKTIF
+            </span>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '2rem', fontWeight: 700, color: 'var(--ink-900)' }}>
+              {verifiedCount}
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--ink-500)' }}>Tayang di arsip publik</span>
+          </div>
+
+          {/* Card 4: Selesai */}
+          <div className="archive-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase' }}>
+              SELESAI / KEMBALI
+            </span>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '2rem', fontWeight: 700, color: 'var(--tag-found-ink)' }}>
+              {completedCount}
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--ink-500)' }}>Berhasil diserahterimakan</span>
+          </div>
         </div>
-      )}
+
+        {/* ================= 3. FILTER TABS & SEARCH ================= */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          flexWrap: 'wrap', 
+          gap: '1rem',
+          borderBottom: '1px solid var(--border-subtle)',
+          paddingBottom: '1rem',
+          marginBottom: '1.5rem'
+        }}>
+          {/* Tab Buttons */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {[
+              { id: 'semua', label: `SEMUA (${totalCount})` },
+              { id: 'hilang', label: `KEHILANGAN (${myLostItems.length})` },
+              { id: 'ditemukan', label: `TEMUAN (${myFoundItems.length})` },
+              { id: 'runner', label: `PESANAN RUNNER (${myOrders.length})` },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`filter-chip ${activeTab === tab.id ? 'active' : ''}`}
+                style={{ fontSize: '0.78rem', padding: '0.45rem 0.95rem' }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search Box */}
+          {activeTab !== 'runner' && (
+            <div style={{ position: 'relative', width: '280px' }}>
+              <input 
+                type="text"
+                placeholder="Cari dalam laporan saya..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem 0.75rem 0.5rem 2.25rem',
+                  fontSize: '0.8rem',
+                  borderRadius: '2px',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-card)'
+                }}
+              />
+              <Search size={14} color="var(--ink-500)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+            </div>
+          )}
+        </div>
+
+        {/* ================= 4. CONTENT AREA ================= */}
+        {activeTab === 'runner' ? (
+          /* ================= RUNNER ORDERS TAB ================= */
+          myOrders.length === 0 ? (
+            <div className="archive-card" style={{ padding: '3.5rem 1.5rem', textAlign: 'center' }}>
+              <Bike size={36} color="var(--ink-500)" style={{ margin: '0 auto 0.75rem' }} />
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 600, color: 'var(--ink-900)' }}>
+                Belum Ada Pesanan Jasa Runner
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--ink-700)', maxWidth: '420px', margin: '0.35rem auto 1.5rem' }}>
+                Gunakan Jasa Runner UNNES untuk mengambil dan mengantar barang temuan langsung ke fakultas Anda.
+              </p>
+              <button 
+                onClick={() => setShowRunnerModal(true)} 
+                className="btn-dark"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem' }}
+              >
+                <Bike size={15} /> PESAN RUNNER SEKARANG
+              </button>
+            </div>
+          ) : (
+            <div className="archive-card" style={{ overflowX: 'auto', padding: 0 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-subtle)', background: 'rgba(15, 23, 42, 0.03)', fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.06em' }}>
+                    <th style={{ padding: '0.85rem 1rem' }}>ORDER ID</th>
+                    <th style={{ padding: '0.85rem 1rem' }}>BARANG TERKAIT</th>
+                    <th style={{ padding: '0.85rem 1rem' }}>LOKASI PENGANTARAN</th>
+                    <th style={{ padding: '0.85rem 1rem' }}>RUNNER</th>
+                    <th style={{ padding: '0.85rem 1rem' }}>STATUS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {myOrders.map(order => {
+                    const statusInfo = getRunnerStatusInfo(order.status);
+                    return (
+                      <tr key={order.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                        <td style={{ padding: '1rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--ink-900)' }}>
+                          #{order.item_code || order.id?.slice(0, 8)}
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--ink-900)' }}>{order.item_title || 'Barang UNNES'}</div>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-500)' }}>Ongkir: Rp {(order.delivery_fee || 7000).toLocaleString('id-ID')}</div>
+                        </td>
+                        <td style={{ padding: '1rem', color: 'var(--ink-700)' }}>
+                          {order.delivery_location}
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--ink-900)' }}>{order.runner_name || 'Menunggu Penugasan'}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--ink-500)' }}>{order.runner_phone || 'Tim Logistik'}</div>
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <span className={`badge ${statusInfo.badgeClass}`} style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.04em' }}>
+                            {statusInfo.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )
+        ) : (
+          /* ================= ARSIP ITEMS TABLE ================= */
+          filteredItems.length === 0 ? (
+            <div className="archive-card" style={{ padding: '3.5rem 1.5rem', textAlign: 'center' }}>
+              <FileText size={36} color="var(--ink-500)" style={{ margin: '0 auto 0.75rem' }} />
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 600, color: 'var(--ink-900)' }}>
+                Tidak Ada Laporan Ditemukan
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--ink-700)', maxWidth: '420px', margin: '0.35rem auto 1.5rem' }}>
+                {searchQuery ? `Tidak ada laporan yang cocok dengan kata kunci "${searchQuery}".` : 'Anda belum membuat laporan dalam kategori ini.'}
+              </p>
+              <Link 
+                to="/lapor/pilih" 
+                className="btn-dark"
+                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem' }}
+              >
+                <Plus size={15} /> BUAT LAPORAN BARU
+              </Link>
+            </div>
+          ) : (
+            <div className="archive-card" style={{ overflowX: 'auto', padding: 0 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-subtle)', background: 'rgba(15, 23, 42, 0.03)', fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.06em' }}>
+                    <th style={{ padding: '0.85rem 1rem' }}>KODE ARSIP</th>
+                    <th style={{ padding: '0.85rem 1rem' }}>NAMA BARANG</th>
+                    <th style={{ padding: '0.85rem 1rem' }}>JENIS</th>
+                    <th style={{ padding: '0.85rem 1rem' }}>TANGGAL</th>
+                    <th style={{ padding: '0.85rem 1rem' }}>STATUS</th>
+                    <th style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>AKSI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredItems.map(item => {
+                    const isResolved = item.status === 'selesai' || item.post_status === 'selesai';
+                    const isPending = item.post_status === 'menunggu_review';
+
+                    return (
+                      <tr key={item.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                        {/* Kode */}
+                        <td style={{ padding: '1rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--ink-900)' }}>
+                          #{item.item_code}
+                        </td>
+
+                        {/* Foto & Nama Barang */}
+                        <td style={{ padding: '1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                            <div style={{
+                              width: '42px',
+                              height: '42px',
+                              borderRadius: '2px',
+                              background: '#EAE3DC',
+                              overflow: 'hidden',
+                              flexShrink: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              {item.image_url ? (
+                                <img src={item.image_url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--ink-500)' }}>FOTO</span>
+                              )}
+                            </div>
+                            <div>
+                              <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, fontSize: '0.95rem', color: 'var(--ink-900)' }}>
+                                {item.title}
+                              </div>
+                              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)' }}>
+                                {item.location_building} · {item.category}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Jenis */}
+                        <td style={{ padding: '1rem' }}>
+                          <StatusBadge status={item.type === 'hilang' ? 'BARANG HILANG' : 'DITEMUKAN'} />
+                        </td>
+
+                        {/* Tanggal */}
+                        <td style={{ padding: '1rem', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--ink-700)' }}>
+                          {item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '24 Sep 2024'}
+                        </td>
+
+                        {/* Status */}
+                        <td style={{ padding: '1rem' }}>
+                          {isResolved ? (
+                            <StatusBadge status="SELESAI / KEMBALI" />
+                          ) : isPending ? (
+                            <StatusBadge status="MENUNGGU REVIEW" />
+                          ) : (
+                            <StatusBadge status="TERVERIFIKASI" />
+                          )}
+                        </td>
+
+                        {/* Aksi */}
+                        <td style={{ padding: '1rem', textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center' }}>
+                            <Link 
+                              to={`/barang/${item.id}`}
+                              className="btn-secondary"
+                              title="Lihat rincian arsip"
+                              style={{ 
+                                textDecoration: 'none', 
+                                padding: '0.35rem 0.65rem', 
+                                fontSize: '0.72rem', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '0.25rem' 
+                              }}
+                            >
+                              LIHAT <ArrowRight size={12} />
+                            </Link>
+
+                            {!isResolved && !isPending && (
+                              <button
+                                onClick={() => handleMarkReturned(item)}
+                                className="btn-secondary"
+                                title="Konfirmasi barang telah diserahkan / kembali"
+                                style={{ 
+                                  padding: '0.35rem 0.65rem', 
+                                  fontSize: '0.72rem',
+                                  color: 'var(--tag-found-ink)',
+                                  borderColor: 'var(--tag-found-border)',
+                                  background: 'var(--tag-found-bg)'
+                                }}
+                              >
+                                TANDAI SELESAI
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => handleDelete(item)}
+                              className="btn-secondary"
+                              title="Hapus laporan dari arsip"
+                              style={{ 
+                                padding: '0.35rem 0.55rem', 
+                                fontSize: '0.72rem',
+                                color: 'var(--tag-lost-ink)',
+                                borderColor: 'var(--tag-lost-border)'
+                              }}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )
+        )}
+
+      </div>
 
       {/* Modal Pesan Runner */}
       <RunnerOrderModal
@@ -470,7 +461,8 @@ export const DashboardPage = () => {
         onClose={() => setShowRunnerModal(false)}
         onSuccess={() => alert('Pesanan Jasa Runner UNNES berhasil dibuat! Runner terdekat akan menghubungi Anda.')}
       />
-
     </div>
   );
 };
+
+export default DashboardPage;
