@@ -6,6 +6,8 @@ import {
   Edit2,
   Trash2,
   MessageCircle,
+  Clock,
+  CheckCircle2,
   X
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
@@ -135,30 +137,55 @@ export const OrdersPage = () => {
       </div>
 
       {/* Summary Metrics Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-        <div className="glass-card" style={{ padding: '1rem', borderLeft: '4px solid var(--primary-600)' }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Total Pesanan</div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.2rem' }}>{totalOrders}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.85rem' }}>
+        <div className="archive-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', color: 'var(--ink-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Pesanan</span>
+            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'var(--primary-50)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Bike size={14} color="var(--primary-indigo)" />
+            </div>
+          </div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--ink-900)' }}>{totalOrders}</div>
         </div>
 
-        <div className="glass-card" style={{ padding: '1rem', borderLeft: '4px solid var(--amber-500)' }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Menunggu Penugasan</div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.2rem', color: 'var(--amber-600)' }}>{pendingOrders}</div>
+        <div className="archive-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', color: 'var(--ink-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Menunggu Penugasan</span>
+            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Clock size={14} color="#D97706" />
+            </div>
+          </div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 700, fontFamily: 'var(--font-mono)', color: '#D97706' }}>{pendingOrders}</div>
         </div>
 
-        <div className="glass-card" style={{ padding: '1rem', borderLeft: '4px solid var(--teal-600)' }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Sedang Proses / OTW</div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.2rem', color: 'var(--teal-600)' }}>{inProgressOrders}</div>
+        <div className="archive-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', color: 'var(--ink-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sedang Proses / OTW</span>
+            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Bike size={14} color="#059669" />
+            </div>
+          </div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 700, fontFamily: 'var(--font-mono)', color: '#059669' }}>{inProgressOrders}</div>
         </div>
 
-        <div className="glass-card" style={{ padding: '1rem', borderLeft: '4px solid var(--success)' }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Selesai Diantar</div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.2rem', color: 'var(--success)' }}>{completedOrders}</div>
+        <div className="archive-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', color: 'var(--ink-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Selesai Diantar</span>
+            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CheckCircle2 size={14} color="var(--ink-700)" />
+            </div>
+          </div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--ink-900)' }}>{completedOrders}</div>
         </div>
 
-        <div className="glass-card" style={{ padding: '1rem', borderLeft: '4px solid #8b5cf6' }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Total Tarif Terkonfirmasi</div>
-          <div style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.2rem', color: '#6d28d9' }}>
+        <div className="archive-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', color: 'var(--ink-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Tarif Kas</span>
+            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-indigo)' }}>Rp</span>
+            </div>
+          </div>
+          <div style={{ fontSize: '1.35rem', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--primary-indigo)' }}>
             Rp {totalRevenue.toLocaleString('id-ID')}
           </div>
         </div>
@@ -184,11 +211,9 @@ export const OrdersPage = () => {
             return (
               <div 
                 key={order.id} 
-                className="glass-card" 
+                className="archive-card" 
                 style={{ 
                   padding: '1.25rem', 
-                  border: '1px solid var(--border-light)', 
-                  borderLeft: `4px solid ${statusInfo.border || 'var(--teal-600)'}`,
                   display: 'flex', 
                   flexDirection: 'column', 
                   gap: '0.85rem' 

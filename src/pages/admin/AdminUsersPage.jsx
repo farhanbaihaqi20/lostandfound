@@ -157,51 +157,48 @@ export const AdminUsersPage = () => {
 
       {/* Stats Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.85rem' }}>
-        <div className="glass-card" style={{
-          padding: '1rem 1.15rem', display: 'flex', alignItems: 'center', gap: '0.85rem',
-          borderLeft: '4px solid var(--primary-600)'
+        <div className="archive-card" style={{
+          padding: '1rem 1.15rem', display: 'flex', alignItems: 'center', gap: '0.85rem'
         }}>
           <div style={{
-            width: '40px', height: '40px', borderRadius: 'var(--radius-md)',
-            background: 'var(--primary-100)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            width: '40px', height: '40px', borderRadius: '8px',
+            background: 'var(--primary-50)', display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <ShieldCheck size={20} color="var(--primary-700)" />
+            <ShieldCheck size={20} color="var(--primary-indigo)" />
           </div>
           <div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>{adminCount}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Admin Aktif</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--ink-900)' }}>{adminCount}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', fontWeight: 600 }}>Admin & Posko Aktif</div>
           </div>
         </div>
 
-        <div className="glass-card" style={{
-          padding: '1rem 1.15rem', display: 'flex', alignItems: 'center', gap: '0.85rem',
-          borderLeft: '4px solid var(--teal-600)'
+        <div className="archive-card" style={{
+          padding: '1rem 1.15rem', display: 'flex', alignItems: 'center', gap: '0.85rem'
         }}>
           <div style={{
-            width: '40px', height: '40px', borderRadius: 'var(--radius-md)',
-            background: 'var(--teal-50)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            width: '40px', height: '40px', borderRadius: '8px',
+            background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <UserCheck size={20} color="var(--teal-600)" />
+            <UserCheck size={20} color="#059669" />
           </div>
           <div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>{userCount}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Pengguna Biasa</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--ink-900)' }}>{userCount}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', fontWeight: 600 }}>Pengguna Mahasiswa</div>
           </div>
         </div>
 
-        <div className="glass-card" style={{
-          padding: '1rem 1.15rem', display: 'flex', alignItems: 'center', gap: '0.85rem',
-          borderLeft: '4px solid var(--amber-500)'
+        <div className="archive-card" style={{
+          padding: '1rem 1.15rem', display: 'flex', alignItems: 'center', gap: '0.85rem'
         }}>
           <div style={{
-            width: '40px', height: '40px', borderRadius: 'var(--radius-md)',
-            background: 'var(--warning-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            width: '40px', height: '40px', borderRadius: '8px',
+            background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <Users size={20} color="var(--amber-600)" />
+            <Users size={20} color="#D97706" />
           </div>
           <div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>{users.length}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Terdaftar</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--ink-900)' }}>{users.length}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', fontWeight: 600 }}>Total Terdaftar</div>
           </div>
         </div>
       </div>
@@ -332,17 +329,14 @@ export const AdminUsersPage = () => {
             return (
               <div
                 key={u.id}
-                className="glass-card"
+                className="archive-card"
                 style={{
                   padding: '1rem 1.25rem',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '1rem',
-                  transition: 'all 0.2s',
-                  borderLeft: isAdmin
-                    ? `4px solid ${isSuperAdmin ? 'var(--amber-500)' : 'var(--primary-600)'}`
-                    : '4px solid transparent',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  borderColor: selectedUser?.id === u.id ? 'var(--primary-indigo)' : undefined
                 }}
                 onClick={() => setSelectedUser(selectedUser?.id === u.id ? null : u)}
               >
@@ -526,16 +520,16 @@ export const AdminUsersPage = () => {
       )}
 
       {/* Info card */}
-      <div className="glass-card" style={{
-        padding: '0.85rem 1rem', display: 'flex', gap: '0.6rem',
-        alignItems: 'flex-start', fontSize: '0.78rem', color: 'var(--text-muted)',
-        background: 'var(--bg-surface-alt)', borderLeft: '3px solid var(--primary-400)'
+      <div style={{
+        padding: '0.85rem 1rem', display: 'flex', gap: '0.75rem', borderRadius: '8px',
+        alignItems: 'flex-start', fontSize: '0.8rem', color: 'var(--ink-700)',
+        background: 'var(--primary-50)', border: '1px solid var(--primary-100)'
       }}>
-        <Info size={16} style={{ flexShrink: 0, marginTop: '1px' }} color="var(--primary-500)" />
+        <Info size={16} style={{ flexShrink: 0, marginTop: '2px' }} color="var(--primary-indigo)" />
         <div>
-          <strong style={{ color: 'var(--text-secondary)' }}>Catatan:</strong> Admin dapat menyetujui/menolak laporan barang,
+          <strong style={{ color: 'var(--ink-900)' }}>Catatan Akses Admin:</strong> Admin dapat menyetujui/menolak laporan barang,
           memverifikasi klaim blind test, dan mengelola pesanan runner.
-          Super Admin <Crown size={11} style={{ verticalAlign: 'middle' }} color="var(--amber-500)" /> tidak dapat dihapus dari role admin.
+          Super Admin <Crown size={11} style={{ verticalAlign: 'middle' }} color="#D97706" /> memiliki perlindungan role permanen.
         </div>
       </div>
 

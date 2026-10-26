@@ -144,9 +144,9 @@ export const FoundReportsModerationPage = () => {
       {/* Reports List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {filteredReports.length === 0 ? (
-          <div className="glass-card" style={{ padding: '3.5rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <Search size={40} color="var(--teal-600)" style={{ margin: '0 auto 0.5rem' }} />
-            <p style={{ fontWeight: 600 }}>Tidak ada laporan penemuan dalam kategori ini.</p>
+          <div className="archive-card" style={{ padding: '3.5rem 1rem', textAlign: 'center', color: 'var(--ink-500)' }}>
+            <Search size={40} color="#059669" style={{ margin: '0 auto 0.5rem' }} />
+            <p style={{ fontWeight: 600, color: 'var(--ink-900)' }}>Tidak ada laporan penemuan dalam kategori ini.</p>
           </div>
         ) : (
           filteredReports.map(report => {
@@ -156,10 +156,9 @@ export const FoundReportsModerationPage = () => {
             return (
               <div 
                 key={report.id} 
-                className="glass-card"
+                className="archive-card"
                 style={{ 
                   padding: '1.25rem', 
-                  border: '1px solid var(--border-light)', 
                   display: 'flex', 
                   flexDirection: 'column', 
                   gap: '1rem' 

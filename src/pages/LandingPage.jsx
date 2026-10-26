@@ -58,20 +58,25 @@ export const LandingPage = () => {
       }}>
         <div className="container" style={{ textAlign: 'center', maxWidth: '860px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
           
-          {/* Monospace Archival Label */}
+          {/* Refined Archival Brand Pill */}
           <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.45rem',
             fontFamily: 'var(--font-mono)',
             fontSize: '0.72rem',
             fontWeight: 700,
-            letterSpacing: '0.12em',
+            letterSpacing: '0.06em',
             textTransform: 'uppercase',
-            color: 'var(--ink-700)',
-            backgroundColor: 'var(--bg-card)',
-            padding: '4px 12px',
-            borderRadius: '4px',
-            border: '1px solid var(--border-subtle)'
+            color: 'var(--primary-indigo)',
+            backgroundColor: 'var(--primary-50)',
+            padding: '5px 14px',
+            borderRadius: 'var(--radius-full)',
+            border: '1px solid var(--primary-200)',
+            boxShadow: '0 1px 3px rgba(79, 70, 229, 0.08)'
           }}>
-            ARSIP BARANG HILANG &amp; TEMUAN KAMPUS
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary-indigo)' }}></span>
+            SISTEM REPOSITORI RESMI &bull; UNIVERSITAS NEGERI SEMARANG
           </div>
 
           {/* Fraunces Headline */}
@@ -105,19 +110,19 @@ export const LandingPage = () => {
             onSubmit={handleSearchSubmit}
             style={{
               width: '100%',
-              maxWidth: '780px',
+              maxWidth: '820px',
               backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: '6px',
+              border: '1px solid var(--border-color)',
+              borderRadius: '10px',
               padding: '6px',
               display: 'flex',
               flexWrap: 'wrap',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.04)'
+              boxShadow: '0 8px 30px rgba(15, 23, 42, 0.06)'
             }}
           >
-            <div style={{ flex: '1 1 280px', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0 0.75rem' }}>
+            <div style={{ flex: '1 1 280px', display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0 0.85rem' }}>
               <Search size={18} color="var(--ink-500)" style={{ flexShrink: 0 }} />
               <input 
                 type="text" 
@@ -130,14 +135,14 @@ export const LandingPage = () => {
                   width: '100%',
                   background: 'transparent',
                   fontFamily: 'var(--font-sans)',
-                  fontSize: '0.9rem',
+                  fontSize: '0.925rem',
                   color: 'var(--ink-900)',
-                  padding: '8px 0'
+                  padding: '10px 0'
                 }}
               />
             </div>
 
-            <div style={{ width: '1px', height: '28px', backgroundColor: 'var(--border-subtle)', display: 'none' }} className="d-md-block" />
+            <div style={{ width: '1px', height: '32px', backgroundColor: 'var(--border-subtle)', display: 'none' }} className="d-md-block" />
 
             <div style={{ flex: '0 1 200px', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0 0.5rem' }}>
               <Building2 size={16} color="var(--ink-500)" style={{ flexShrink: 0 }} />
@@ -226,36 +231,45 @@ export const LandingPage = () => {
           gap: '1.5rem'
         }}>
           {/* Card 1: Saya Kehilangan Barang */}
-          <div style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            borderLeft: '4px solid var(--danger-500)',
-            borderRadius: '6px',
-            padding: '2rem 1.75rem',
+          <div className="archive-card" style={{
+            padding: '2rem',
+            borderRadius: '10px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '1rem',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+            gap: '1.25rem',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="badge badge-lost">
-                <AlertCircle size={12} strokeWidth={2.5} /> KATEGORI 01
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span className="badge badge-lost" style={{ fontSize: '0.68rem', padding: '3px 8px', letterSpacing: '0.04em' }}>
+                <AlertCircle size={12} strokeWidth={2.5} /> KATEGORI 01 &bull; KEHILANGAN
               </span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--ink-500)', fontFamily: 'var(--font-mono)' }}>FORM ARSIP</span>
             </div>
 
             <div>
               <h2 style={{ 
                 fontFamily: 'var(--font-serif)', 
-                fontSize: '1.45rem', 
+                fontSize: '1.5rem', 
                 fontWeight: 700, 
                 color: 'var(--ink-900)',
-                margin: '0 0 0.4rem'
+                margin: '0 0 0.5rem'
               }}>
                 Saya Kehilangan Barang
               </h2>
-              <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', lineHeight: 1.55, margin: 0 }}>
-                Laporkan barang Anda yang tertinggal atau tercecer di lingkungan kampus agar civitas dan posko dapat membantu menemukan dengan cepat.
+              <p style={{ fontSize: '0.88rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
+                Barang Anda tertinggal di fakultas, perpustakaan, atau area kampus? Catat laporannya agar petugas posko &amp; civitas dapat mencocokkannya.
               </p>
+            </div>
+
+            {/* Micro Feature List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem', color: 'var(--ink-600)', background: 'var(--bg-surface-alt)', padding: '0.75rem 1rem', borderRadius: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <span style={{ color: 'var(--danger-500)', fontWeight: 700 }}>&bull;</span> Notifikasi otomatis saat ditemukan barang identik
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <span style={{ color: 'var(--danger-500)', fontWeight: 700 }}>&bull;</span> Dilindungi verifikasi blind-test anti klaim fiktif
+              </div>
             </div>
 
             <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
@@ -264,18 +278,29 @@ export const LandingPage = () => {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: '0.5rem',
+                  width: '100%',
                   fontFamily: 'var(--font-mono)',
                   fontSize: '0.8rem',
                   fontWeight: 700,
                   letterSpacing: '0.04em',
                   color: 'var(--danger-700)',
                   textDecoration: 'none',
-                  border: '1px solid var(--danger-200)',
+                  border: '1px solid var(--danger-300)',
                   backgroundColor: 'var(--danger-50)',
-                  padding: '8px 14px',
+                  padding: '10px 16px',
                   borderRadius: '6px',
-                  transition: 'background 0.15s ease'
+                  transition: 'all 0.15s ease',
+                  boxShadow: '0 1px 2px rgba(244, 63, 94, 0.05)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--danger-600)';
+                  e.currentTarget.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--danger-50)';
+                  e.currentTarget.style.color = 'var(--danger-700)';
                 }}
               >
                 BUAT LAPORAN KEHILANGAN <ArrowRight size={14} />
@@ -284,36 +309,45 @@ export const LandingPage = () => {
           </div>
 
           {/* Card 2: Saya Menemukan Barang */}
-          <div style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            borderLeft: '4px solid var(--primary-indigo)',
-            borderRadius: '6px',
-            padding: '2rem 1.75rem',
+          <div className="archive-card" style={{
+            padding: '2rem',
+            borderRadius: '10px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '1rem',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+            gap: '1.25rem',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="badge badge-found">
-                <Sparkles size={12} strokeWidth={2.5} /> KATEGORI 02
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span className="badge badge-found" style={{ fontSize: '0.68rem', padding: '3px 8px', letterSpacing: '0.04em' }}>
+                <Sparkles size={12} strokeWidth={2.5} /> KATEGORI 02 &bull; PENEMUAN
               </span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--ink-500)', fontFamily: 'var(--font-mono)' }}>POSKO KAMPUS</span>
             </div>
 
             <div>
               <h2 style={{ 
                 fontFamily: 'var(--font-serif)', 
-                fontSize: '1.45rem', 
+                fontSize: '1.5rem', 
                 fontWeight: 700, 
                 color: 'var(--ink-900)',
-                margin: '0 0 0.4rem'
+                margin: '0 0 0.5rem'
               }}>
                 Saya Menemukan Barang
               </h2>
-              <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', lineHeight: 1.55, margin: 0 }}>
-                Pegang barang milik orang lain? Catat ciri-cirinya tanpa membocorkan detail sensitif agar dapat diklaim oleh pemilik sah melalui blind-test.
+              <p style={{ fontSize: '0.88rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
+                Mengamankan barang milik orang lain di kampus? Catat kategori dan titipkan di posko fakultas terdekat agar dapat diambil pemilik sah.
               </p>
+            </div>
+
+            {/* Micro Feature List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem', color: 'var(--ink-600)', background: 'var(--bg-surface-alt)', padding: '0.75rem 1rem', borderRadius: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <span style={{ color: 'var(--primary-indigo)', fontWeight: 700 }}>&bull;</span> Sensor otomatis foto dokumen untuk privasi
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <span style={{ color: 'var(--primary-indigo)', fontWeight: 700 }}>&bull;</span> Serah terima resmi dengan Digital BAST kampus
+              </div>
             </div>
 
             <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
@@ -322,18 +356,29 @@ export const LandingPage = () => {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: '0.5rem',
+                  width: '100%',
                   fontFamily: 'var(--font-mono)',
                   fontSize: '0.8rem',
                   fontWeight: 700,
                   letterSpacing: '0.04em',
-                  color: 'var(--primary-indigo)',
+                  color: 'var(--primary-700)',
                   textDecoration: 'none',
-                  border: '1px solid var(--primary-200)',
+                  border: '1px solid var(--primary-300)',
                   backgroundColor: 'var(--primary-50)',
-                  padding: '8px 14px',
+                  padding: '10px 16px',
                   borderRadius: '6px',
-                  transition: 'background 0.15s ease'
+                  transition: 'all 0.15s ease',
+                  boxShadow: '0 1px 2px rgba(79, 70, 229, 0.05)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--primary-indigo)';
+                  e.currentTarget.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--primary-50)';
+                  e.currentTarget.style.color = 'var(--primary-700)';
                 }}
               >
                 LAPORKAN BARANG TEMUAN <ArrowRight size={14} />

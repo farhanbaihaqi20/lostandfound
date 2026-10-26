@@ -349,11 +349,7 @@ export const ItemDetailPage = () => {
           )}
 
           {/* SOP Archival Guidelines Box (From Figma Detail Screen) */}
-          <div style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            borderLeft: '3px solid var(--ink-900)',
-            borderRadius: '4px',
+          <div className="archive-card" style={{
             padding: '1.25rem',
             display: 'flex',
             flexDirection: 'column',
@@ -551,14 +547,12 @@ export const ItemDetailPage = () => {
 
           {/* Panel Pengelolaan (Admin & Pemilik) */}
           {(isAdmin || isOwner) && (
-            <div className="glass-card" style={{
-              padding: '1rem 1.25rem',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-light)',
+            <div className="archive-card" style={{
+              padding: '1.25rem',
               display: 'flex',
               flexDirection: 'column',
               gap: '0.75rem',
-              background: 'var(--bg-surface-alt)'
+              background: 'var(--bg-card-alt)'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <span style={{ fontWeight: 700, fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>

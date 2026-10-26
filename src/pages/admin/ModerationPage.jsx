@@ -100,18 +100,17 @@ export const ModerationPage = () => {
       {/* Main List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
         {filteredItems.length === 0 ? (
-          <div className="glass-card" style={{ padding: '3.5rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <Check size={40} color="var(--success)" style={{ margin: '0 auto 0.5rem' }} />
-            <p style={{ fontWeight: 600 }}>Tidak ada postingan dalam status ini.</p>
+          <div className="archive-card" style={{ padding: '3.5rem 1rem', textAlign: 'center', color: 'var(--ink-500)' }}>
+            <Check size={40} color="#059669" style={{ margin: '0 auto 0.5rem' }} />
+            <p style={{ fontWeight: 600, color: 'var(--ink-900)' }}>Tidak ada postingan dalam status ini.</p>
           </div>
         ) : (
           filteredItems.map(item => (
             <div 
               key={item.id} 
-              className="glass-card"
+              className="archive-card"
               style={{
                 padding: '1.25rem',
-                border: '1px solid var(--border-light)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.75rem'

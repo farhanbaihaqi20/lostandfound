@@ -713,9 +713,16 @@ img {
   background: var(--bg-app);
 }
 ::-webkit-scrollbar-thumb {
-  background: #d5cebf;
+  background: var(--border-color);
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b5ac99;
+  background: var(--ink-300);
+}
+
+/* Hide Mobile Bottom Nav Bar on Desktop Viewports */
+@media (min-width: 769px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
 }

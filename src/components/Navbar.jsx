@@ -167,12 +167,28 @@ export const Navbar = () => {
           {isAdmin && (
             <Link 
               to="/admin" 
-              className="badge badge-admin"
               style={{ 
                 textDecoration: 'none',
-                padding: '0.3rem 0.65rem',
-                gap: '0.35rem',
-                cursor: 'pointer'
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--primary-indigo)',
+                background: 'var(--primary-50)',
+                border: '1px solid var(--primary-200)',
+                padding: '0.35rem 0.75rem',
+                borderRadius: '6px',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--primary-indigo)';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--primary-50)';
+                e.currentTarget.style.color = 'var(--primary-indigo)';
               }}
             >
               <ShieldCheck size={14} /> PANEL ADMIN
@@ -181,7 +197,7 @@ export const Navbar = () => {
         </nav>
 
         {/* Right Tools & Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           
           {/* Buat Laporan Primary Button */}
           <Link 
@@ -199,13 +215,14 @@ export const Navbar = () => {
             style={{ 
               background: 'transparent',
               border: '1px solid var(--border-subtle)',
-              borderRadius: '4px',
-              padding: '0.4rem', 
+              borderRadius: '6px',
+              padding: '0.45rem', 
               color: 'var(--ink-700)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              transition: 'all 0.15s ease'
             }}
             title={theme === 'dark' ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap'}
           >
@@ -220,14 +237,15 @@ export const Navbar = () => {
                 style={{ 
                   background: 'transparent',
                   border: '1px solid var(--border-subtle)',
-                  borderRadius: '4px',
-                  padding: '0.4rem', 
+                  borderRadius: '6px',
+                  padding: '0.45rem', 
                   color: 'var(--ink-700)',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  position: 'relative'
+                  position: 'relative',
+                  transition: 'all 0.15s ease'
                 }}
                 title="Notifikasi"
               >
@@ -235,21 +253,23 @@ export const Navbar = () => {
                 {unreadCount > 0 && (
                   <span style={{
                     position: 'absolute',
-                    top: '-3px',
-                    right: '-3px',
-                    background: 'var(--tag-lost-text)',
-                    color: '#fff',
+                    top: '-5px',
+                    right: '-5px',
+                    background: 'var(--danger-500)',
+                    color: '#ffffff',
                     fontFamily: 'var(--font-mono)',
                     fontSize: '0.62rem',
                     fontWeight: 700,
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '50%',
+                    minWidth: '18px',
+                    height: '18px',
+                    padding: '0 4px',
+                    borderRadius: '10px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 6px rgba(244, 63, 94, 0.45)'
                   }}>
-                    {unreadCount}
+                    {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
               </button>
@@ -319,13 +339,14 @@ export const Navbar = () => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '3px 8px 3px 4px',
-                  borderRadius: '4px',
+                  gap: '0.45rem',
+                  padding: '4px 8px 4px 5px',
+                  borderRadius: '6px',
                   border: '1px solid var(--border-subtle)',
                   cursor: 'pointer',
                   background: 'var(--bg-card)',
-                  color: 'var(--ink-900)'
+                  color: 'var(--ink-900)',
+                  transition: 'all 0.15s ease'
                 }}
                 title={user?.full_name || 'Profil Pengguna'}
               >
@@ -333,7 +354,7 @@ export const Navbar = () => {
                   <img 
                     src={user.avatar_url} 
                     alt={user.full_name || 'User'} 
-                    style={{ width: '26px', height: '26px', borderRadius: '4px', objectFit: 'cover' }}
+                    style={{ width: '26px', height: '26px', borderRadius: '6px', objectFit: 'cover' }}
                   />
                 ) : (
                   <div style={{
@@ -352,9 +373,10 @@ export const Navbar = () => {
                     {(user.full_name || user.email || 'U')[0].toUpperCase()}
                   </div>
                 )}
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 600 }}>
-                  {user.full_name?.split(' ')[0] || 'AKUN'}
+                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', fontWeight: 600 }}>
+                  {user.full_name?.split(' ')[0] || 'Akun'}
                 </span>
+                <ChevronDown size={14} color="var(--ink-500)" style={{ marginLeft: '1px' }} />
               </button>
 
               {showUserDropdown && (
@@ -362,37 +384,51 @@ export const Navbar = () => {
                   position: 'absolute',
                   top: 'calc(100% + 8px)',
                   right: 0,
-                  width: '240px',
+                  width: '260px',
                   backgroundColor: 'var(--bg-card)',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   border: '1px solid var(--border-subtle)',
-                  padding: '0.85rem',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                  padding: '0.75rem',
+                  boxShadow: '0 12px 32px rgba(15, 23, 42, 0.12)',
                   zIndex: 60,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '0.4rem'
+                  gap: '0.25rem'
                 }}>
-                  <div style={{ paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--ink-900)' }}>
+                  {/* User Profile Header */}
+                  <div style={{ padding: '0.25rem 0.4rem 0.65rem', borderBottom: '1px solid var(--border-subtle)', marginBottom: '0.25rem' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink-900)' }}>
                       {user.full_name}
                     </div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px', wordBreak: 'break-all' }}>
                       {user.email}
                     </div>
-                    <div style={{ marginTop: '6px' }}>
-                      <span className={`badge ${isAdmin ? 'badge-verified' : 'badge-found'}`} style={{ fontSize: '0.62rem' }}>
-                        {isAdmin ? 'PETUGAS ARSIP' : 'MAHASISWA UNNES'}
+                    <div style={{ marginTop: '8px' }}>
+                      <span className={`badge ${isAdmin ? 'badge-admin' : 'badge-found'}`} style={{ fontSize: '0.65rem', padding: '2px 7px' }}>
+                        {isAdmin ? 'PETUGAS ARSIP KAMPUS' : 'MAHASISWA UNNES'}
                       </span>
                     </div>
                   </div>
 
+                  {/* Links */}
                   <Link 
                     to="/beranda" 
                     onClick={() => setShowUserDropdown(false)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem', fontSize: '0.825rem', color: 'var(--ink-700)', textDecoration: 'none' }}
+                    className="dropdown-item-link"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.65rem',
+                      padding: '0.5rem 0.65rem',
+                      fontSize: '0.825rem',
+                      fontWeight: 500,
+                      color: 'var(--ink-800)',
+                      textDecoration: 'none',
+                      borderRadius: '6px',
+                      transition: 'background 0.15s ease'
+                    }}
                   >
-                    <User size={15} /> Laporan Saya
+                    <User size={15} color="var(--ink-500)" /> Laporan Saya
                   </Link>
 
                   {isAdmin && (
@@ -400,16 +436,41 @@ export const Navbar = () => {
                       <Link 
                         to="/admin" 
                         onClick={() => setShowUserDropdown(false)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem', fontSize: '0.825rem', color: '#6D28D9', textDecoration: 'none' }}
+                        className="dropdown-item-link"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.65rem',
+                          padding: '0.5rem 0.65rem',
+                          fontSize: '0.825rem',
+                          fontWeight: 600,
+                          color: 'var(--primary-indigo)',
+                          textDecoration: 'none',
+                          borderRadius: '6px',
+                          background: 'var(--primary-50)',
+                          transition: 'background 0.15s ease'
+                        }}
                       >
-                        <ShieldCheck size={15} /> Moderasi Posko
+                        <ShieldCheck size={15} color="var(--primary-indigo)" /> Panel Moderasi Posko
                       </Link>
                       <Link 
                         to="/admin/pesanan" 
                         onClick={() => setShowUserDropdown(false)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem', fontSize: '0.825rem', color: 'var(--ink-700)', textDecoration: 'none' }}
+                        className="dropdown-item-link"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.65rem',
+                          padding: '0.5rem 0.65rem',
+                          fontSize: '0.825rem',
+                          fontWeight: 500,
+                          color: 'var(--ink-800)',
+                          textDecoration: 'none',
+                          borderRadius: '6px',
+                          transition: 'background 0.15s ease'
+                        }}
                       >
-                        <Bike size={15} /> Layanan Runner
+                        <Bike size={15} color="var(--ink-500)" /> Layanan Runner
                       </Link>
                     </>
                   )}
@@ -417,10 +478,24 @@ export const Navbar = () => {
                   <Link 
                     to="/pengaturan" 
                     onClick={() => setShowUserDropdown(false)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem', fontSize: '0.825rem', color: 'var(--ink-700)', textDecoration: 'none' }}
+                    className="dropdown-item-link"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.65rem',
+                      padding: '0.5rem 0.65rem',
+                      fontSize: '0.825rem',
+                      fontWeight: 500,
+                      color: 'var(--ink-800)',
+                      textDecoration: 'none',
+                      borderRadius: '6px',
+                      transition: 'background 0.15s ease'
+                    }}
                   >
-                    <Settings size={15} /> Pengaturan
+                    <Settings size={15} color="var(--ink-500)" /> Pengaturan
                   </Link>
+
+                  <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.25rem 0' }} />
 
                   <button 
                     onClick={() => {
@@ -431,20 +506,23 @@ export const Navbar = () => {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.5rem',
-                      padding: '0.5rem 0.45rem 0.2rem',
+                      gap: '0.65rem',
+                      padding: '0.5rem 0.65rem',
                       fontSize: '0.825rem',
-                      color: 'var(--tag-lost-text)',
+                      fontWeight: 600,
+                      color: 'var(--danger-600)',
                       border: 'none',
-                      borderTop: '1px solid var(--border-subtle)',
                       background: 'transparent',
-                      marginTop: '0.25rem',
+                      borderRadius: '6px',
                       width: '100%',
                       cursor: 'pointer',
-                      textAlign: 'left'
+                      textAlign: 'left',
+                      transition: 'background 0.15s ease'
                     }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--danger-50)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
-                    <LogOut size={15} /> Keluar Akun
+                    <LogOut size={15} color="var(--danger-500)" /> Keluar Akun
                   </button>
                 </div>
               )}

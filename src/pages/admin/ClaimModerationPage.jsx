@@ -133,9 +133,9 @@ export const ClaimModerationPage = () => {
       {/* List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {filteredClaims.length === 0 ? (
-          <div className="glass-card" style={{ padding: '3.5rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <ShieldCheck size={40} color="var(--teal-600)" style={{ margin: '0 auto 0.5rem' }} />
-            <p style={{ fontWeight: 600 }}>Tidak ada klaim dalam antrean ini.</p>
+          <div className="archive-card" style={{ padding: '3.5rem 1rem', textAlign: 'center', color: 'var(--ink-500)' }}>
+            <ShieldCheck size={40} color="#059669" style={{ margin: '0 auto 0.5rem' }} />
+            <p style={{ fontWeight: 600, color: 'var(--ink-900)' }}>Tidak ada klaim dalam antrean ini.</p>
           </div>
         ) : (
           filteredClaims.map(claim => {
@@ -144,8 +144,8 @@ export const ClaimModerationPage = () => {
             return (
               <div 
                 key={claim.id} 
-                className="glass-card"
-                style={{ padding: '1.25rem', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '1rem' }}
+                className="archive-card"
+                style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div>

@@ -150,100 +150,124 @@ export const ReportPage = () => {
           {/* Option 1: Hilang */}
           <div 
             onClick={() => navigate('/lapor/hilang')}
+            className="archive-card"
             style={{
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border-subtle)',
-              borderTop: '4px solid #DC2626',
-              borderRadius: '6px',
-              padding: '2.25rem 2rem',
+              padding: '2rem 1.75rem',
               display: 'flex',
               flexDirection: 'column',
-              gap: '1.25rem',
-              cursor: 'pointer',
-              transition: 'transform 0.2s, box-shadow 0.2s'
+              gap: '1.15rem',
+              cursor: 'pointer'
             }}
-            className="hover-card-btn"
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span className="badge badge-lost">
-                <AlertCircle size={12} strokeWidth={2.5} /> KATEGORI 01
+                <AlertCircle size={12} strokeWidth={2.5} /> KATEGORI 01 • KEHILANGAN
               </span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--ink-500)' }}>
-                #KEHILANGAN
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-500)' }}>
+                FORM RESMI
               </span>
             </div>
 
             <div>
-              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.65rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0 0 0.5rem' }}>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0 0 0.4rem' }}>
                 Saya Kehilangan Barang
               </h2>
-              <p style={{ fontSize: '0.88rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
+              <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
                 Laporkan barang milik Anda yang tertinggal atau tercecer di area UNNES agar seluruh civitas kampus dan posko keamanan dapat mengenali dan membantu menemukan.
               </p>
             </div>
 
-            <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                color: '#DC2626'
-              }}>
-                MULAI ISI FORM KEHILANGAN <ArrowRight size={15} />
-              </div>
+            <div style={{
+              background: 'var(--bg-app)',
+              padding: '0.75rem 0.85rem',
+              borderRadius: '6px',
+              fontSize: '0.8rem',
+              color: 'var(--ink-700)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.35rem'
+            }}>
+              <div>• Notifikasi real-time saat posko menemukan barang serupa</div>
+              <div>• Verifikasi blind test rahasia mencegah klaim pihak tak bertanggung jawab</div>
+            </div>
+
+            <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
+              <button 
+                type="button" 
+                className="btn btn-outline"
+                style={{
+                  width: '100%',
+                  borderColor: 'var(--tag-lost-border)',
+                  color: 'var(--tag-lost-ink)',
+                  fontSize: '0.8rem',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700
+                }}
+              >
+                BUAT LAPORAN KEHILANGAN &rarr;
+              </button>
             </div>
           </div>
 
           {/* Option 2: Temuan */}
           <div 
             onClick={() => navigate('/lapor/temuan')}
+            className="archive-card"
             style={{
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border-subtle)',
-              borderTop: '4px solid #2563EB',
-              borderRadius: '6px',
-              padding: '2.25rem 2rem',
+              padding: '2rem 1.75rem',
               display: 'flex',
               flexDirection: 'column',
-              gap: '1.25rem',
-              cursor: 'pointer',
-              transition: 'transform 0.2s, box-shadow 0.2s'
+              gap: '1.15rem',
+              cursor: 'pointer'
             }}
-            className="hover-card-btn"
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span className="badge badge-found">
-                <Sparkles size={12} strokeWidth={2.5} /> KATEGORI 02
+                <Sparkles size={12} strokeWidth={2.5} /> KATEGORI 02 • PENEMUAN
               </span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--ink-500)' }}>
-                #PENEMUAN
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-500)' }}>
+                POSKO KAMPUS
               </span>
             </div>
 
             <div>
-              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.65rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0 0 0.5rem' }}>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0 0 0.4rem' }}>
                 Saya Menemukan Barang
               </h2>
-              <p style={{ fontSize: '0.88rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
+              <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
                 Anda memegang barang milik orang lain? Laporkan ciri umumnya ke arsip kampus tanpa membocorkan ciri rahasia untuk diverifikasi via blind-test kepemilikan.
               </p>
             </div>
 
-            <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                color: '#2563EB'
-              }}>
-                MULAI ISI FORM TEMUAN <ArrowRight size={15} />
-              </div>
+            <div style={{
+              background: 'var(--bg-app)',
+              padding: '0.75rem 0.85rem',
+              borderRadius: '6px',
+              fontSize: '0.8rem',
+              color: 'var(--ink-700)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.35rem'
+            }}>
+              <div>• Sensor otomatis foto kartu berharga (KTM/SIM/ATM) demi privasi</div>
+              <div>• Berita acara serah terima resmi (BAST) dengan tanda tangan digital</div>
+            </div>
+
+            <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
+              <button 
+                type="button" 
+                className="btn btn-outline"
+                style={{
+                  width: '100%',
+                  borderColor: 'var(--primary-200)',
+                  color: 'var(--primary-indigo)',
+                  fontSize: '0.8rem',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700
+                }}
+              >
+                LAPORKAN BARANG TEMUAN &rarr;
+              </button>
             </div>
           </div>
         </div>

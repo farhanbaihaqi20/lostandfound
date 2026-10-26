@@ -235,7 +235,7 @@ export const BottomNav = () => {
 
       {/* Floating Bottom Navigation Bar for Mobile */}
       <nav 
-        className="glass-panel"
+        className="glass-panel mobile-bottom-nav"
         onTouchStart={handleTouchStart}
         onTouchEnd={(e) => handleTouchEnd(e, 'collapse')}
         style={{
@@ -395,6 +395,7 @@ export const BottomNav = () => {
       {/* Floating Trigger Pill when Navigation is Collapsed */}
       {isCollapsed && (
         <div
+          className="mobile-bottom-nav"
           onTouchStart={handleTouchStart}
           onTouchEnd={(e) => handleTouchEnd(e, 'expand')}
           style={{
