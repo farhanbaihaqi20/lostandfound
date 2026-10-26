@@ -249,7 +249,7 @@ export const ItemDetailPage = () => {
                 justifyContent: 'center',
                 background: 'rgba(15, 23, 42, 0.65)',
                 backdropFilter: 'blur(4px)',
-                color: '#FAF8F5',
+                color: '#FFFFFF',
                 padding: '1.5rem',
                 textAlign: 'center',
                 zIndex: 4,
@@ -258,20 +258,20 @@ export const ItemDetailPage = () => {
                 <div style={{
                   width: '42px',
                   height: '42px',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   background: 'rgba(255, 255, 255, 0.15)',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <Lock size={20} color="#FAF8F5" />
+                  <Lock size={20} color="#FFFFFF" />
                 </div>
                 <div>
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', fontWeight: 700, letterSpacing: '0.08em' }}>
                     [FOTO DOKUMEN DISENSOR]
                   </div>
-                  <p style={{ fontSize: '0.8rem', color: '#D6D3D1', maxWidth: '320px', margin: '0.35rem auto 0', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: '0.8rem', color: '#CBD5E1', maxWidth: '320px', margin: '0.35rem auto 0', lineHeight: 1.5 }}>
                     Sesuai SOP Arsip UNNES, foto barang temuan disensor untuk mencegah klaim fiktif. Masuk untuk melihat foto asli atau ajukan blind test.
                   </p>
                 </div>
@@ -306,7 +306,7 @@ export const ItemDetailPage = () => {
               right: '0',
               background: 'linear-gradient(to top, rgba(15, 23, 42, 0.85) 0%, transparent 100%)',
               padding: '8px 12px',
-              color: '#FAF8F5',
+              color: '#FFFFFF',
               fontFamily: 'var(--font-mono)',
               fontSize: '0.72rem',
               display: 'flex',
@@ -314,10 +314,10 @@ export const ItemDetailPage = () => {
               alignItems: 'center',
               zIndex: 6
             }}>
-              <span style={{ fontWeight: 700, color: '#93C5FD' }}>
+              <span style={{ fontWeight: 700, color: '#A5B4FC' }}>
                 #{item.item_code}
               </span>
-              <span style={{ color: '#D6D3D1' }}>
+              <span style={{ color: '#CBD5E1' }}>
                 {new Date(item.date_lost_found || item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
               </span>
             </div>

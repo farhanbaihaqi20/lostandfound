@@ -65,15 +65,15 @@ export const Navbar = () => {
           <div style={{
             width: '36px',
             height: '36px',
-            backgroundColor: 'var(--ink-900)',
-            color: '#FAF8F5',
+            backgroundColor: 'var(--primary-indigo)',
+            color: '#ffffff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: 'var(--font-mono)',
             fontWeight: 800,
             fontSize: '0.95rem',
-            borderRadius: '4px',
+            borderRadius: '6px',
             flexShrink: 0
           }}>
             LF
@@ -109,11 +109,11 @@ export const Navbar = () => {
               fontFamily: 'var(--font-sans)',
               fontWeight: isActive('/') ? 700 : 500, 
               fontSize: '0.9rem',
-              color: isActive('/') ? 'var(--ink-900)' : 'var(--ink-500)',
+              color: isActive('/') ? 'var(--primary-indigo)' : 'var(--ink-500)',
               textDecoration: 'none',
-              borderBottom: isActive('/') ? '2px solid var(--ink-900)' : '2px solid transparent',
+              borderBottom: isActive('/') ? '2px solid var(--primary-indigo)' : '2px solid transparent',
               paddingBottom: '2px',
-              transition: 'color 0.15s ease'
+              transition: 'all 0.15s ease'
             }}
           >
             Beranda
@@ -124,11 +124,11 @@ export const Navbar = () => {
               fontFamily: 'var(--font-sans)',
               fontWeight: isActive('/jelajahi') ? 700 : 500, 
               fontSize: '0.9rem',
-              color: isActive('/jelajahi') ? 'var(--ink-900)' : 'var(--ink-500)',
+              color: isActive('/jelajahi') ? 'var(--primary-indigo)' : 'var(--ink-500)',
               textDecoration: 'none',
-              borderBottom: isActive('/jelajahi') ? '2px solid var(--ink-900)' : '2px solid transparent',
+              borderBottom: isActive('/jelajahi') ? '2px solid var(--primary-indigo)' : '2px solid transparent',
               paddingBottom: '2px',
-              transition: 'color 0.15s ease'
+              transition: 'all 0.15s ease'
             }}
           >
             Jelajahi Arsip
@@ -139,11 +139,11 @@ export const Navbar = () => {
               fontFamily: 'var(--font-sans)',
               fontWeight: location.pathname.startsWith('/lapor') ? 700 : 500, 
               fontSize: '0.9rem',
-              color: location.pathname.startsWith('/lapor') ? 'var(--ink-900)' : 'var(--ink-500)',
+              color: location.pathname.startsWith('/lapor') ? 'var(--primary-indigo)' : 'var(--ink-500)',
               textDecoration: 'none',
-              borderBottom: location.pathname.startsWith('/lapor') ? '2px solid var(--ink-900)' : '2px solid transparent',
+              borderBottom: location.pathname.startsWith('/lapor') ? '2px solid var(--primary-indigo)' : '2px solid transparent',
               paddingBottom: '2px',
-              transition: 'color 0.15s ease'
+              transition: 'all 0.15s ease'
             }}
           >
             Lapor
@@ -154,11 +154,11 @@ export const Navbar = () => {
               fontFamily: 'var(--font-sans)',
               fontWeight: isActive('/pesan') ? 700 : 500, 
               fontSize: '0.9rem',
-              color: isActive('/pesan') ? 'var(--ink-900)' : 'var(--ink-500)',
+              color: isActive('/pesan') ? 'var(--primary-indigo)' : 'var(--ink-500)',
               textDecoration: 'none',
-              borderBottom: isActive('/pesan') ? '2px solid var(--ink-900)' : '2px solid transparent',
+              borderBottom: isActive('/pesan') ? '2px solid var(--primary-indigo)' : '2px solid transparent',
               paddingBottom: '2px',
-              transition: 'color 0.15s ease'
+              transition: 'all 0.15s ease'
             }}
           >
             Pesan &amp; Klaim
@@ -167,19 +167,12 @@ export const Navbar = () => {
           {isAdmin && (
             <Link 
               to="/admin" 
+              className="badge badge-admin"
               style={{ 
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                color: '#6D28D9',
-                display: 'inline-flex',
-                alignItems: 'center',
+                textDecoration: 'none',
+                padding: '0.3rem 0.65rem',
                 gap: '0.35rem',
-                backgroundColor: '#EDE9FE',
-                padding: '0.25rem 0.65rem',
-                borderRadius: '4px',
-                border: '1px solid #DDD6FE',
-                textDecoration: 'none'
+                cursor: 'pointer'
               }}
             >
               <ShieldCheck size={14} /> PANEL ADMIN
@@ -193,7 +186,7 @@ export const Navbar = () => {
           {/* Buat Laporan Primary Button */}
           <Link 
             to="/lapor/pilih" 
-            className="btn btn-dark btn-sm"
+            className="btn btn-primary btn-sm"
             style={{ display: 'none', gap: '0.35rem', textTransform: 'uppercase' }}
             id="desktop-report-btn"
           >
@@ -346,9 +339,9 @@ export const Navbar = () => {
                   <div style={{
                     width: '26px',
                     height: '26px',
-                    borderRadius: '4px',
-                    background: 'var(--ink-900)',
-                    color: '#FAF8F5',
+                    borderRadius: '6px',
+                    background: 'var(--primary-indigo)',
+                    color: '#FFFFFF',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

@@ -249,8 +249,8 @@ export const AdminUsersPage = () => {
               style={{
                 padding: '0.4rem 0.85rem', borderRadius: 'var(--radius-sm)',
                 fontSize: '0.78rem', fontWeight: 600, border: 'none', cursor: 'pointer',
-                background: filterRole === tab.key ? 'var(--primary-600)' : 'transparent',
-                color: filterRole === tab.key ? '#fff' : 'var(--text-secondary)',
+                background: filterRole === tab.key ? 'var(--ink-900)' : 'transparent',
+                color: filterRole === tab.key ? '#ffffff' : 'var(--ink-700)',
                 transition: 'all 0.2s'
               }}
             >

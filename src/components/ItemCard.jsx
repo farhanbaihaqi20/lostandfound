@@ -53,9 +53,9 @@ export const ItemCard = ({ item }) => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(15, 23, 42, 0.55)',
+            background: 'rgba(15, 23, 42, 0.65)',
             backdropFilter: 'blur(3px)',
-            color: '#FAF8F5',
+            color: '#FFFFFF',
             padding: '1rem',
             textAlign: 'center',
             zIndex: 4
@@ -63,7 +63,7 @@ export const ItemCard = ({ item }) => {
             <div style={{
               width: '32px',
               height: '32px',
-              borderRadius: '4px',
+              borderRadius: '6px',
               background: 'rgba(255, 255, 255, 0.15)',
               border: '1px solid rgba(255, 255, 255, 0.3)',
               display: 'flex',
@@ -71,7 +71,7 @@ export const ItemCard = ({ item }) => {
               justifyContent: 'center',
               marginBottom: '0.4rem'
             }}>
-              <Lock size={16} color="#FAF8F5" />
+              <Lock size={16} color="#FFFFFF" />
             </div>
             <span style={{ 
               fontFamily: 'var(--font-mono)', 
@@ -82,7 +82,7 @@ export const ItemCard = ({ item }) => {
             }}>
               [FOTO DISENSOR]
             </span>
-            <span style={{ fontSize: '0.675rem', color: '#D6D3D1', marginTop: '2px' }}>
+            <span style={{ fontSize: '0.675rem', color: '#CBD5E1', marginTop: '2px' }}>
               Masuk untuk melihat foto asli
             </span>
           </div>
@@ -114,16 +114,16 @@ export const ItemCard = ({ item }) => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          color: '#FAF8F5',
+          color: '#FFFFFF',
           fontFamily: 'var(--font-mono)',
           fontSize: '0.7rem',
           letterSpacing: '0.04em',
           zIndex: 5
         }}>
-          <span style={{ fontWeight: 600, color: '#93C5FD' }}>
+          <span style={{ fontWeight: 600, color: '#A5B4FC' }}>
             #{item.item_code || `LF-${item.id?.substring(0, 6)?.toUpperCase()}`}
           </span>
-          <span style={{ color: '#D6D3D1' }}>
+          <span style={{ color: '#CBD5E1' }}>
             {formattedDate}
           </span>
         </div>

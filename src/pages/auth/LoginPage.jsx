@@ -82,7 +82,7 @@ export const LoginPage = () => {
       {/* Left Column: Dark Navy Editorial Panel (Figma 06 Masuk) */}
       <div style={{
         backgroundColor: '#0F172A',
-        color: '#FAF8F5',
+        color: '#FFFFFF',
         padding: '4rem 3rem',
         display: 'flex',
         flexDirection: 'column',
@@ -94,20 +94,21 @@ export const LoginPage = () => {
           <div style={{
             width: '36px',
             height: '36px',
-            backgroundColor: '#FAF8F5',
-            color: 'var(--ink-900)',
+            backgroundColor: 'var(--primary-indigo)',
+            color: '#FFFFFF',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: 'var(--font-mono)',
             fontWeight: 800,
             fontSize: '0.95rem',
-            borderRadius: '4px'
+            borderRadius: '6px',
+            boxShadow: '0 2px 8px rgba(79, 70, 229, 0.4)'
           }}>
             LF
           </div>
           <div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, fontSize: '1.1rem', color: '#FAF8F5' }}>
+            <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, fontSize: '1.1rem', color: '#FFFFFF' }}>
               UNNES Lost &amp; Found
             </div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.625rem', color: '#94A3B8', letterSpacing: '0.06em' }}>
@@ -121,7 +122,7 @@ export const LoginPage = () => {
           <div style={{
             fontFamily: 'var(--font-mono)',
             fontSize: '0.72rem',
-            color: '#60A5FA',
+            color: '#818CF8',
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
             marginBottom: '1rem'
@@ -133,7 +134,7 @@ export const LoginPage = () => {
             fontSize: 'clamp(2rem, 3.5vw, 2.75rem)',
             fontWeight: 700,
             lineHeight: 1.2,
-            color: '#FAF8F5',
+            color: '#FFFFFF',
             margin: '0 0 1.25rem'
           }}>
             &ldquo;Setiap barang punya jalan pulang.&rdquo;
@@ -327,7 +328,7 @@ export const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-dark"
+              className="btn btn-primary"
               style={{
                 width: '100%',
                 padding: '0.85rem',

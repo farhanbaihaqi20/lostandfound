@@ -157,7 +157,7 @@ export const ExplorePage = () => {
             className={`filter-chip ${typeFilter === 'hilang' ? 'active' : ''}`}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
           >
-            <AlertCircle size={13} color={typeFilter === 'hilang' ? '#DC2626' : 'var(--ink-500)'} />
+            <AlertCircle size={13} color={typeFilter === 'hilang' ? '#ffffff' : 'var(--danger-500)'} />
             BARANG HILANG ({countHilang})
           </button>
 
@@ -166,7 +166,7 @@ export const ExplorePage = () => {
             className={`filter-chip ${typeFilter === 'temuan' ? 'active' : ''}`}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
           >
-            <Sparkles size={13} color={typeFilter === 'temuan' ? '#2563EB' : 'var(--ink-500)'} />
+            <Sparkles size={13} color={typeFilter === 'temuan' ? '#ffffff' : 'var(--primary-indigo)'} />
             BARANG TEMUAN ({countTemuan})
           </button>
 
@@ -175,7 +175,7 @@ export const ExplorePage = () => {
             className={`filter-chip ${onlyBounty ? 'active' : ''}`}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
           >
-            <Award size={13} color={onlyBounty ? '#CA8A04' : 'var(--ink-500)'} />
+            <Award size={13} color={onlyBounty ? '#ffffff' : 'var(--amber-500)'} />
             DENGAN HADIAH ({countBounty})
           </button>
 

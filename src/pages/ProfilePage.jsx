@@ -78,23 +78,23 @@ export const ProfilePage = () => {
                 <img 
                   src={user?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80'} 
                   alt={user?.full_name} 
-                  style={{ width: '84px', height: '84px', borderRadius: '2px', objectFit: 'cover', border: '2px solid var(--border-subtle)', background: '#EAE3DC' }}
+                  style={{ width: '84px', height: '84px', borderRadius: '6px', objectFit: 'cover', border: '2px solid var(--border-subtle)', background: 'var(--ink-100)' }}
                 />
                 <label 
                   style={{
                     position: 'absolute',
                     bottom: '-6px',
                     right: '-6px',
-                    background: 'var(--ink-900)',
-                    color: '#FAF8F5',
+                    background: 'var(--primary-indigo)',
+                    color: '#FFFFFF',
                     width: '26px',
                     height: '26px',
-                    borderRadius: '2px',
+                    borderRadius: '6px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    boxShadow: 'var(--shadow-subtle)'
+                    boxShadow: '0 2px 6px rgba(79, 70, 229, 0.4)'
                   }}
                   title="Ubah Foto Profil"
                 >
@@ -112,11 +112,11 @@ export const ProfilePage = () => {
                     fontFamily: 'var(--font-mono)', 
                     fontSize: '0.68rem', 
                     fontWeight: 700, 
-                    padding: '0.15rem 0.5rem', 
-                    borderRadius: '2px', 
-                    background: isAdmin ? 'var(--ink-900)' : 'var(--tag-found-bg)', 
-                    color: isAdmin ? '#FAF8F5' : 'var(--tag-found-ink)',
-                    border: `1px solid ${isAdmin ? 'var(--ink-900)' : 'var(--tag-found-border)'}`
+                    padding: '0.2rem 0.55rem', 
+                    borderRadius: '4px', 
+                    background: isAdmin ? 'var(--primary-indigo)' : 'var(--tag-found-bg)', 
+                    color: isAdmin ? '#FFFFFF' : 'var(--tag-found-ink)',
+                    border: `1px solid ${isAdmin ? 'var(--primary-indigo)' : 'var(--tag-found-border)'}`
                   }}>
                     {isAdmin ? 'PETUGAS ARSIP KAMPUS' : 'MAHASISWA UNNES'}
                   </span>

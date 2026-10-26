@@ -233,8 +233,8 @@ export const MessagesPage = () => {
                       width: '38px',
                       height: '38px',
                       borderRadius: '50%',
-                      background: isActive ? 'var(--ink-900)' : 'rgba(15, 23, 42, 0.07)',
-                      color: isActive ? '#FAF8F5' : 'var(--ink-900)',
+                      background: isActive ? 'var(--primary-indigo)' : 'var(--bg-secondary)',
+                      color: isActive ? '#FFFFFF' : 'var(--ink-900)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -297,8 +297,8 @@ export const MessagesPage = () => {
                     width: '38px',
                     height: '38px',
                     borderRadius: '50%',
-                    background: 'var(--ink-900)',
-                    color: '#FAF8F5',
+                    background: 'var(--primary-indigo)',
+                    color: '#FFFFFF',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -478,13 +478,13 @@ export const MessagesPage = () => {
                       {/* Chat bubble */}
                       <div style={{
                         padding: '0.75rem 1rem',
-                        borderRadius: '2px',
+                        borderRadius: '6px',
                         background: isSenderAdmin
-                          ? (isMe ? 'var(--ink-900)' : 'var(--tag-found-bg)')
-                          : (isMe ? 'var(--ink-900)' : 'var(--bg-card)'),
-                        color: isMe ? '#FAF8F5' : 'var(--ink-900)',
+                          ? (isMe ? 'var(--primary-indigo)' : 'var(--tag-found-bg)')
+                          : (isMe ? 'var(--primary-indigo)' : 'var(--bg-card)'),
+                        color: isMe ? '#FFFFFF' : 'var(--ink-900)',
                         border: isSenderAdmin
-                          ? (isMe ? '1px solid var(--ink-900)' : '1px solid var(--tag-found-border)')
+                          ? (isMe ? 'none' : '1px solid var(--tag-found-border)')
                           : (isMe ? 'none' : '1px solid var(--border-subtle)'),
                         fontSize: '0.86rem',
                         lineHeight: 1.5,

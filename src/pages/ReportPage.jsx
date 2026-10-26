@@ -343,15 +343,15 @@ export const ReportPage = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '0.45rem',
-              color: currentStep === s.num ? 'var(--ink-900)' : currentStep > s.num ? '#059669' : 'var(--ink-500)',
+              color: currentStep === s.num ? 'var(--primary-indigo)' : currentStep > s.num ? '#10B981' : 'var(--ink-500)',
               fontWeight: currentStep === s.num ? 700 : 500
             }}>
               <span style={{
                 width: '22px',
                 height: '22px',
-                borderRadius: '4px',
-                backgroundColor: currentStep === s.num ? 'var(--ink-900)' : currentStep > s.num ? '#059669' : 'var(--bg-card-alt)',
-                color: currentStep >= s.num ? '#FAF8F5' : 'var(--ink-500)',
+                borderRadius: '6px',
+                backgroundColor: currentStep === s.num ? 'var(--primary-indigo)' : currentStep > s.num ? '#10B981' : 'var(--bg-card-alt)',
+                color: currentStep >= s.num ? '#FFFFFF' : 'var(--ink-500)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',

@@ -31,28 +31,28 @@ export const AdminNavTabs = () => {
       label: 'Review Laporan',
       icon: Clock,
       badge: pendingItemsCount > 0 ? pendingItemsCount : null,
-      badgeColor: 'var(--amber-500)'
+      badgeColor: '#f59e0b'
     },
     {
       to: '/admin/klaim',
       label: 'Verifikasi Klaim',
       icon: ShieldCheck,
       badge: pendingClaimsCount > 0 ? pendingClaimsCount : null,
-      badgeColor: 'var(--primary-600)'
+      badgeColor: '#4f46e5'
     },
     {
       to: '/admin/laporan-temuan',
       label: 'Laporan Temuan',
       icon: Search,
       badge: pendingFoundReportsCount > 0 ? pendingFoundReportsCount : null,
-      badgeColor: 'var(--teal-600)'
+      badgeColor: '#059669'
     },
     {
       to: '/admin/pesanan',
       label: 'Jasa Runner',
       icon: Bike,
       badge: activeOrdersCount > 0 ? activeOrdersCount : null,
-      badgeColor: 'var(--teal-600)'
+      badgeColor: '#0284c7'
     },
     {
       to: '/admin/pengguna',
@@ -69,7 +69,7 @@ export const AdminNavTabs = () => {
       gap: '0.5rem',
       overflowX: 'auto',
       paddingBottom: '0.25rem',
-      borderBottom: '1px solid var(--border-light)',
+      borderBottom: '1px solid var(--border-color)',
       marginBottom: '0.5rem'
     }}>
       {tabs.map(tab => {
@@ -91,18 +91,18 @@ export const AdminNavTabs = () => {
               textDecoration: 'none',
               whiteSpace: 'nowrap',
               transition: 'all var(--trans-fast)',
-              background: isActive ? 'var(--primary-800)' : 'var(--bg-surface)',
-              color: isActive ? '#ffffff' : 'var(--text-secondary)',
-              border: isActive ? '1px solid var(--primary-800)' : '1px solid var(--border-light)',
-              boxShadow: isActive ? '0 2px 8px rgba(30, 58, 95, 0.2)' : 'none'
+              background: isActive ? '#4f46e5' : 'var(--bg-surface)',
+              color: isActive ? '#ffffff' : 'var(--ink-700)',
+              border: isActive ? '1px solid #4f46e5' : '1px solid var(--border-color)',
+              boxShadow: isActive ? '0 2px 8px rgba(79, 70, 229, 0.28)' : 'none'
             }}
           >
             <Icon size={16} />
             <span>{tab.label}</span>
             {tab.badge && (
               <span style={{
-                background: isActive ? 'rgba(255, 255, 255, 0.25)' : (tab.badgeColor || 'var(--primary-600)'),
-                color: '#ffffff',
+                background: isActive ? '#ffffff' : (tab.badgeColor || '#4f46e5'),
+                color: isActive ? '#4f46e5' : '#ffffff',
                 fontSize: '0.65rem',
                 fontWeight: 800,
                 padding: '0.1rem 0.45rem',

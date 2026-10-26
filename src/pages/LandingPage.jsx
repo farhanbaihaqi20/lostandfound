@@ -164,7 +164,7 @@ export const LandingPage = () => {
 
             <button 
               type="submit" 
-              className="btn btn-dark"
+              className="btn btn-primary"
               style={{ 
                 padding: '0.65rem 1.4rem', 
                 fontSize: '0.825rem',
@@ -229,7 +229,7 @@ export const LandingPage = () => {
           <div style={{
             backgroundColor: 'var(--bg-card)',
             border: '1px solid var(--border-subtle)',
-            borderLeft: '4px solid #DC2626',
+            borderLeft: '4px solid var(--danger-500)',
             borderRadius: '6px',
             padding: '2rem 1.75rem',
             display: 'flex',
@@ -269,12 +269,12 @@ export const LandingPage = () => {
                   fontSize: '0.8rem',
                   fontWeight: 700,
                   letterSpacing: '0.04em',
-                  color: '#DC2626',
+                  color: 'var(--danger-700)',
                   textDecoration: 'none',
-                  border: '1px solid #FCA5A5',
-                  backgroundColor: '#FEF2F2',
+                  border: '1px solid var(--danger-200)',
+                  backgroundColor: 'var(--danger-50)',
                   padding: '8px 14px',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   transition: 'background 0.15s ease'
                 }}
               >
@@ -287,7 +287,7 @@ export const LandingPage = () => {
           <div style={{
             backgroundColor: 'var(--bg-card)',
             border: '1px solid var(--border-subtle)',
-            borderLeft: '4px solid #2563EB',
+            borderLeft: '4px solid var(--primary-indigo)',
             borderRadius: '6px',
             padding: '2rem 1.75rem',
             display: 'flex',
@@ -327,12 +327,12 @@ export const LandingPage = () => {
                   fontSize: '0.8rem',
                   fontWeight: 700,
                   letterSpacing: '0.04em',
-                  color: '#2563EB',
+                  color: 'var(--primary-indigo)',
                   textDecoration: 'none',
-                  border: '1px solid #93C5FD',
-                  backgroundColor: '#EFF6FF',
+                  border: '1px solid var(--primary-200)',
+                  backgroundColor: 'var(--primary-50)',
                   padding: '8px 14px',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   transition: 'background 0.15s ease'
                 }}
               >

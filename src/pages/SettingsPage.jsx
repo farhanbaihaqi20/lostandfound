@@ -106,7 +106,7 @@ export const SettingsPage = () => {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                 <Sun size={18} color="var(--tag-bounty-ink)" />
-                <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--ink-900)' }}>Parchment (Terang)</span>
+                <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--ink-900)' }}>Slate Light (Terang)</span>
               </div>
               {theme === 'light' && <Check size={16} color="var(--ink-900)" />}
             </div>
