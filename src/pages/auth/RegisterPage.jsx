@@ -203,7 +203,7 @@ export const RegisterPage = () => {
             textTransform: 'uppercase',
             marginBottom: '1rem'
           }}>
-            REGISTRASI ARSIP &bull; CIVITAS AKADEMIKA
+            DAFTAR AKUN &bull; CIVITAS AKADEMIKA
           </div>
           <h2 style={{
             fontFamily: 'var(--font-serif)',
@@ -227,7 +227,7 @@ export const RegisterPage = () => {
 
         {/* Bottom Bar */}
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#64748B' }}>
-          UNIVERSITAS NEGERI SEMARANG &bull; REPOSITORY ARSIP TERBUKA
+          UNIVERSITAS NEGERI SEMARANG &bull; UNNES LOST &amp; FOUND
         </div>
       </div>
 
@@ -250,7 +250,7 @@ export const RegisterPage = () => {
             </h1>
             <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', margin: 0 }}>
               {pendingGoogleUser 
-                ? 'Konfirmasi identitas akademik untuk mengaktifkan akses arsip.' 
+                ? 'Konfirmasi identitas akademik untuk mengaktifkan akun.' 
                 : 'Khusus civitas aktif Universitas Negeri Semarang (@students.unnes.ac.id).'}
             </p>
           </div>
@@ -605,7 +605,7 @@ export const RegisterPage = () => {
                     marginTop: '0.5rem'
                   }}
                 >
-                  {loading ? 'MENDAFTARKAN...' : 'BUAT AKUN ARSIP KAMPUS'}
+                  {loading ? 'MENDAFTARKAN...' : 'BUAT AKUN SEKARANG'}
                 </button>
               </form>
 

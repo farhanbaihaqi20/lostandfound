@@ -64,14 +64,14 @@ export const DashboardPage = () => {
   const handleDelete = async (item) => {
     const confirm = window.confirm(
       `HAPUS LAPORAN #${item.item_code}?\n\n` +
-      `Apakah Anda yakin ingin menghapus laporan "${item.title}" dari arsip kampus?\n` +
+      `Apakah Anda yakin ingin menghapus laporan "${item.title}"?\n` +
       `Tindakan ini tidak dapat dibatalkan.`
     );
     if (!confirm) return;
 
     try {
       await deleteItem(item.id);
-      alert('Laporan berhasil dihapus dari arsip.');
+      alert('Laporan berhasil dihapus.');
     } catch (err) {
       console.error('Gagal menghapus laporan:', err);
       alert('Terjadi kesalahan saat menghapus laporan.');
@@ -102,7 +102,7 @@ export const DashboardPage = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '2rem' }}>
           <div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-              ARSIP LAPORAN PRIBADI
+              DASHBOARD LAPORAN SAYA
             </div>
             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', fontWeight: 600, color: 'var(--ink-900)', margin: '0 0 0.35rem' }}>
               Laporan Saya
@@ -188,7 +188,7 @@ export const DashboardPage = () => {
                 <CheckCircle2 size={18} color="#059669" />
               </div>
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--ink-500)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem' }}>Tayang di arsip publik</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--ink-500)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem' }}>Tayang di katalog publik</span>
           </div>
 
           {/* Card 4: Selesai */}
@@ -338,7 +338,7 @@ export const DashboardPage = () => {
               <p style={{ fontSize: '0.88rem', color: 'var(--ink-600)', maxWidth: '480px', margin: '0 auto 2rem', lineHeight: 1.6 }}>
                 {searchQuery 
                   ? 'Coba periksa ejaan kata kunci atau ganti filter kategori laporan.' 
-                  : 'Mulai pencatatan arsip barang Anda untuk memantau status kurasi posko dan mencocokkan laporan secara otomatis.'}
+                  : 'Mulai laporkan barang Anda untuk memantau status pencocokan dan klaim secara cepat.'}
               </p>
 
               <div style={{ display: 'flex', justifyContent: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
@@ -390,7 +390,7 @@ export const DashboardPage = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-subtle)', background: 'rgba(15, 23, 42, 0.03)', fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.06em' }}>
-                    <th style={{ padding: '0.85rem 1rem' }}>KODE ARSIP</th>
+                    <th style={{ padding: '0.85rem 1rem' }}>KODE BARANG</th>
                     <th style={{ padding: '0.85rem 1rem' }}>NAMA BARANG</th>
                     <th style={{ padding: '0.85rem 1rem' }}>JENIS</th>
                     <th style={{ padding: '0.85rem 1rem' }}>TANGGAL</th>
@@ -468,7 +468,7 @@ export const DashboardPage = () => {
                             <Link 
                               to={`/barang/${item.id}`}
                               className="btn-secondary"
-                              title="Lihat rincian arsip"
+                              title="Lihat rincian barang"
                               style={{ 
                                 textDecoration: 'none', 
                                 padding: '0.35rem 0.65rem', 
@@ -501,7 +501,7 @@ export const DashboardPage = () => {
                             <button
                               onClick={() => handleDelete(item)}
                               className="btn-secondary"
-                              title="Hapus laporan dari arsip"
+                              title="Hapus laporan"
                               style={{ 
                                 padding: '0.35rem 0.55rem', 
                                 fontSize: '0.72rem',

@@ -94,7 +94,7 @@ export const NotificationsPage = () => {
                 Tidak Ada Pemberitahuan
               </div>
               <p style={{ fontSize: '0.85rem', color: 'var(--ink-500)', marginTop: '0.35rem' }}>
-                Semua notifikasi penting terkait arsip barang akan muncul di sini.
+                Semua notifikasi penting terkait laporan barang Anda akan muncul di sini.
               </p>
             </div>
           ) : (

@@ -203,7 +203,7 @@ export const ItemDetailPage = () => {
             padding: '4px 0'
           }}
         >
-          <ArrowLeft size={15} /> &larr; KEMBALI KE JELAJAHI ARSIP
+          <ArrowLeft size={15} /> &larr; KEMBALI KE JELAJAHI BARANG
         </button>
       </div>
 
@@ -272,7 +272,7 @@ export const ItemDetailPage = () => {
                     [FOTO DOKUMEN DISENSOR]
                   </div>
                   <p style={{ fontSize: '0.8rem', color: '#CBD5E1', maxWidth: '320px', margin: '0.35rem auto 0', lineHeight: 1.5 }}>
-                    Sesuai SOP Arsip UNNES, foto barang temuan disensor untuk mencegah klaim fiktif. Masuk untuk melihat foto asli atau ajukan blind test.
+                    Sesuai ketentuan keamanan UNNES Lost &amp; Found, foto barang temuan disensor untuk mencegah klaim fiktif. Masuk untuk melihat foto asli atau ajukan blind test.
                   </p>
                 </div>
                 <button
@@ -440,7 +440,7 @@ export const ItemDetailPage = () => {
               paddingBottom: '0.4rem',
               marginBottom: '0.2rem'
             }}>
-              DATA ARSIP SPESIFIKASI BARANG
+              DATA SPESIFIKASI BARANG
             </div>
 
             <div className="dotted-row">
@@ -472,7 +472,7 @@ export const ItemDetailPage = () => {
             )}
 
             <div className="dotted-row">
-              <span className="dotted-label">STATUS ARSIP</span>
+              <span className="dotted-label">STATUS BARANG</span>
               <span className="dotted-line"></span>
               <span className="dotted-value" style={{ fontWeight: 700, color: item.item_status === 'dikembalikan' ? '#059669' : 'var(--ink-900)' }}>
                 {item.item_status === 'dikembalikan' ? 'SELESAI (SUDAH KEMBALI)' : isItemVerified ? 'TERVERIFIKASI PEMILIK' : 'TERBUKA / MENUNGGU KLAIM'}
@@ -540,7 +540,7 @@ export const ItemDetailPage = () => {
               className="btn btn-secondary btn-sm"
               style={{ gap: '0.35rem', fontFamily: 'var(--font-mono)', fontSize: '0.72rem' }}
             >
-              <Share2 size={13} /> {copied ? 'LINK TERSALIN!' : 'BAGIKAN ARSIP'}
+              <Share2 size={13} /> {copied ? 'LINK TERSALIN!' : 'BAGIKAN BARANG'}
             </button>
           </div>
 

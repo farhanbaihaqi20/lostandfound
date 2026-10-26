@@ -71,7 +71,7 @@ export const Footer = () => {
               textTransform: 'uppercase',
               marginBottom: '1rem' 
             }}>
-              ARSIP & NAVIGASI
+              KATALOG &amp; NAVIGASI
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.825rem' }}>
               <li>
@@ -81,7 +81,7 @@ export const Footer = () => {
               </li>
               <li>
                 <Link to="/jelajahi" style={{ color: '#CBD5E1', textDecoration: 'none' }} className="footer-link">
-                  Jelajahi Semua Arsip
+                  Jelajahi Semua Barang
                 </Link>
               </li>
               <li>
@@ -154,7 +154,7 @@ export const Footer = () => {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10B981' }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
-                <span>ARSIP KAMPUS: AKTIF</span>
+                <span>LAYANAN KAMPUS: AKTIF</span>
               </div>
               <div style={{ color: '#94A3B8' }}>
                 Jam Operasional Posko:<br />
@@ -178,10 +178,10 @@ export const Footer = () => {
           color: '#64748B'
         }}>
           <div>
-            &copy; {new Date().getFullYear()} UNNES Lost & Found &mdash; Redesign Arsip Kampus.
+            &copy; {new Date().getFullYear()} UNNES Lost &amp; Found &mdash; Platform Informasi Barang Hilang.
           </div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#94A3B8' }}>
-            UNIVERSITAS NEGERI SEMARANG &bull; REPOSITORY ARSIP TERBUKA
+            UNIVERSITAS NEGERI SEMARANG &bull; LOST &amp; FOUND KAMPUS
           </div>
         </div>
 

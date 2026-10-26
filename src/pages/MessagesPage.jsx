@@ -80,7 +80,7 @@ export const MessagesPage = () => {
     if (!activeMatch) return;
     const confirmDelete = window.confirm(
       `HAPUS SESI OBROLAN #${activeMatch.item_code}?\n\n` +
-      `Seluruh riwayat percakapan pada arsip ini akan dihapus permanen.\n` +
+      `Seluruh riwayat percakapan pada sesi ini akan dihapus permanen.\n` +
       `Lanjutkan?`
     );
     if (!confirmDelete) return;
@@ -100,7 +100,7 @@ export const MessagesPage = () => {
 
   const handleCopyWAScript = () => {
     if (!activeMatch) return;
-    const script = `[ARSIP TERPADU UNNES LOST & FOUND]\nHalo Kak @${activeMatch.owner_name} dan Kak @${activeMatch.finder_name}!\n\nKoordinasi resmi penyerahan barang #${activeMatch.item_code} (${activeMatch.item_title}).\nTitik temu yang direkomendasikan: Pos Satpam Fakultas / Kantin Pusat UNNES.\n\nButuh bantuan antar? Gunakan Layanan Jasa Runner UNNES (Tarif Rp 7.000 - Rp 10.000).`;
+    const script = `[UNNES LOST & FOUND]\nHalo Kak @${activeMatch.owner_name} dan Kak @${activeMatch.finder_name}!\n\nKoordinasi resmi penyerahan barang #${activeMatch.item_code} (${activeMatch.item_title}).\nTitik temu yang direkomendasikan: Pos Satpam Fakultas / Kantin Pusat UNNES.\n\nButuh bantuan antar? Gunakan Layanan Jasa Runner UNNES (Tarif Rp 7.000 - Rp 10.000).`;
     navigator.clipboard.writeText(script);
     setCopiedScript(true);
     setTimeout(() => setCopiedScript(false), 2500);
@@ -144,7 +144,7 @@ export const MessagesPage = () => {
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link to="/jelajahi" className="btn-dark" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                JELAJAHI ARSIP TEMUAN <ArrowRight size={14} />
+                JELAJAHI BARANG TEMUAN <ArrowRight size={14} />
               </Link>
             </div>
           </div>
@@ -353,7 +353,7 @@ export const MessagesPage = () => {
                   <button 
                     onClick={handleDeleteSession} 
                     className="btn-secondary"
-                    title="Hapus sesi arsip ini"
+                    title="Hapus sesi obrolan ini"
                     style={{ fontSize: '0.72rem', padding: '0.4rem 0.6rem', color: 'var(--tag-lost-ink)', borderColor: 'var(--tag-lost-border)' }}
                   >
                     <Trash2 size={13} />
@@ -627,7 +627,7 @@ export const MessagesPage = () => {
                       marginTop: '0.25rem'
                     }}
                   >
-                    LIHAT ARSIP LENGKAP <ExternalLink size={13} />
+                    LIHAT DETAIL BARANG <ExternalLink size={13} />
                   </Link>
                 </div>
               )}

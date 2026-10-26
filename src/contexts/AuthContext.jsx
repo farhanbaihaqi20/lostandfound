@@ -10,19 +10,18 @@ export const validateUnnesEmail = (email) => {
 };
 
 export const AuthProvider = ({ children }) => {
-  // Theme state
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('unnes_lf_theme') || 
-      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  });
+  // Theme state: locked to 'light' per user preference
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('unnes_lf_theme', theme);
-  }, [theme]);
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('unnes_lf_theme', 'light');
+  }, []);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    // Dark mode temporarily disabled per user preference
+    setTheme('light');
+    document.documentElement.setAttribute('data-theme', 'light');
   };
 
   // User state

@@ -183,7 +183,7 @@ export const ItemCard = ({ item }) => {
           justifyContent: 'space-between'
         }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.675rem', color: 'var(--ink-500)', textTransform: 'uppercase' }}>
-            UNNES ARSIP
+            LOST &amp; FOUND
           </span>
 
           <Link 
@@ -206,7 +206,7 @@ export const ItemCard = ({ item }) => {
             }}
             className="hover-card-btn"
           >
-            LIHAT ARSIP <ArrowRight size={13} />
+            LIHAT RINCIAN <ArrowRight size={13} />
           </Link>
         </div>
       </div>

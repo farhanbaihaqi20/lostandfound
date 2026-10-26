@@ -73,7 +73,7 @@ export const ExplorePage = () => {
           textTransform: 'uppercase',
           color: 'var(--ink-500)'
         }}>
-          ARSIP REPOSITORI &bull; UNIVERSITAS NEGERI SEMARANG
+          KATALOG RESMI &bull; UNIVERSITAS NEGERI SEMARANG
         </div>
 
         <h1 style={{ 
@@ -83,7 +83,7 @@ export const ExplorePage = () => {
           color: 'var(--ink-900)',
           margin: 0
         }}>
-          Jelajahi Arsip Barang Tercecer
+          Katalog Barang Hilang &amp; Temuan
         </h1>
 
         <p style={{ fontSize: '0.9rem', color: 'var(--ink-700)', maxWidth: '680px', margin: 0 }}>
@@ -303,7 +303,7 @@ export const ExplorePage = () => {
         paddingBottom: '0.65rem'
       }}>
         <span>
-          MENAMPILKAN <strong>{filteredItems.length}</strong> ARSIP BARANG
+          MENAMPILKAN <strong>{filteredItems.length}</strong> BARANG
         </span>
         <span style={{ color: 'var(--ink-500)' }}>
           STATUS: TERVERIFIKASI SISTEM
@@ -337,7 +337,7 @@ export const ExplorePage = () => {
           </div>
           <div>
             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 600, color: 'var(--ink-900)', margin: '0 0 0.35rem' }}>
-              Tidak Ada Arsip yang Sesuai
+              Tidak Ada Barang yang Sesuai
             </h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--ink-700)', maxWidth: '440px', margin: 0 }}>
               Kombinasi kata kunci, kategori, atau lokasi tidak menemukan hasil. Coba atur ulang filter pencarian Anda.

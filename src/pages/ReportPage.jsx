@@ -131,7 +131,7 @@ export const ReportPage = () => {
             textTransform: 'uppercase',
             color: 'var(--ink-500)'
           }}>
-            PENGAJUAN LAPORAN &bull; REPOSITORI ARSIP UNNES
+            BUAT LAPORAN BARU &bull; UNNES LOST &amp; FOUND
           </div>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 700, color: 'var(--ink-900)', margin: 0 }}>
             Pilih Jenis Laporan Anda
@@ -235,7 +235,7 @@ export const ReportPage = () => {
                 Saya Menemukan Barang
               </h2>
               <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
-                Anda memegang barang milik orang lain? Laporkan ciri umumnya ke arsip kampus tanpa membocorkan ciri rahasia untuk diverifikasi via blind-test kepemilikan.
+                Anda memegang barang milik orang lain? Laporkan ciri umumnya ke platform tanpa membocorkan ciri rahasia untuk diverifikasi via blind-test kepemilikan.
               </p>
             </div>
 
@@ -325,7 +325,7 @@ export const ReportPage = () => {
               {reportType === 'hilang' ? 'Formulir Laporan Barang Hilang' : 'Formulir Laporan Barang Temuan'}
             </h1>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.04em' }}>
-              ARSIP RESMI KAMPUS &bull; UNIVERSITAS NEGERI SEMARANG
+              LOST &amp; FOUND RESMI &bull; UNIVERSITAS NEGERI SEMARANG
             </div>
           </div>
         </div>
@@ -637,7 +637,7 @@ export const ReportPage = () => {
                 photos={photos}
                 onPhotosChange={setPhotos}
                 maxPhotos={4}
-                label="Foto Dokumentasi (Maks. 4 foto, otomatis kompresi arsip)"
+                label="Foto Dokumentasi (Maks. 4 foto, otomatis kompresi gambar)"
               />
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
@@ -734,7 +734,7 @@ export const ReportPage = () => {
                   className="btn btn-dark"
                   style={{ gap: '0.45rem', textTransform: 'uppercase' }}
                 >
-                  <Send size={15} /> {submitting ? 'MENYIMPAN ARSIP...' : 'TERBITKAN LAPORAN KE ARSIP'}
+                  <Send size={15} /> {submitting ? 'MENGIRIM LAPORAN...' : 'KIRIM LAPORAN SEKARANG'}
                 </button>
               </div>
             </form>
@@ -765,7 +765,7 @@ export const ReportPage = () => {
               color: 'var(--ink-900)',
               textTransform: 'uppercase'
             }}>
-              <FileText size={16} /> PANDUAN PENCATATAN ARSIP
+              <FileText size={16} /> PANDUAN PEMBUATAN LAPORAN
             </div>
             <ul style={{ 
               margin: 0, 

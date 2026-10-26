@@ -80,57 +80,23 @@ export const SettingsPage = () => {
             Pengaturan &amp; Kebijakan
           </h1>
           <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', margin: 0 }}>
-            Kustomisasi tema tampilan, preferensi navigasi perangkat, serta syarat dan ketentuan hukum arsip UNNES.
+            Kustomisasi preferensi navigasi perangkat, serta syarat dan ketentuan layanan UNNES Lost &amp; Found.
           </p>
         </div>
 
-        {/* Tampilan (Dark / Light Mode) */}
-        <div className="archive-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.06em', color: 'var(--ink-500)', textTransform: 'uppercase' }}>
-            TEMA TAMPILAN
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-            <div
-              onClick={() => theme === 'dark' && toggleTheme()}
-              style={{
-                padding: '1rem',
-                borderRadius: '2px',
-                border: theme === 'light' ? '2px solid var(--ink-900)' : '1px solid var(--border-subtle)',
-                background: 'var(--bg-card)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <Sun size={18} color="var(--tag-bounty-ink)" />
-                <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--ink-900)' }}>Slate Light (Terang)</span>
-              </div>
-              {theme === 'light' && <Check size={16} color="var(--ink-900)" />}
+        {/* Tampilan Tema: Terkunci ke Mode Terang */}
+        <div className="archive-card" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.06em', color: 'var(--ink-500)', textTransform: 'uppercase' }}>
+              TEMA TAMPILAN
             </div>
-
-            <div
-              onClick={() => theme === 'light' && toggleTheme()}
-              style={{
-                padding: '1rem',
-                borderRadius: '2px',
-                border: theme === 'dark' ? '2px solid var(--ink-900)' : '1px solid var(--border-subtle)',
-                background: 'var(--bg-card)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <Moon size={18} color="var(--ink-700)" />
-                <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--ink-900)' }}>Dark Navy (Gelap)</span>
-              </div>
-              {theme === 'dark' && <Check size={16} color="var(--ink-900)" />}
+            <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--ink-900)', marginTop: '0.2rem' }}>
+              Mode Terang (Slate Light)
             </div>
           </div>
+          <span className="badge badge-verified" style={{ fontSize: '0.75rem' }}>
+            <Check size={13} /> Aktif
+          </span>
         </div>
 
         {/* Pengaturan Navigasi Bawah Mengambang */}
@@ -140,7 +106,7 @@ export const SettingsPage = () => {
               NAVIGASI MOBILE
             </div>
             <p style={{ fontSize: '0.8rem', color: 'var(--ink-700)', marginTop: '0.2rem', marginBottom: 0 }}>
-              Konfigurasi bilah menu bawah pada perangkat layar sentuh agar membaca dokumen arsip lebih leluasa.
+              Konfigurasi bilah menu bawah pada perangkat layar sentuh agar menjelajah katalog lebih leluasa.
             </p>
           </div>
 

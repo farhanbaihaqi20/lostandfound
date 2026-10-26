@@ -58,25 +58,18 @@ export const LandingPage = () => {
       }}>
         <div className="container" style={{ textAlign: 'center', maxWidth: '860px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
           
-          {/* Refined Archival Brand Pill */}
+          {/* Natural Brand Intro Label */}
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.45rem',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.72rem',
+            fontSize: '0.825rem',
             fontWeight: 700,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
             color: 'var(--primary-indigo)',
-            backgroundColor: 'var(--primary-50)',
-            padding: '5px 14px',
-            borderRadius: 'var(--radius-full)',
-            border: '1px solid var(--primary-200)',
-            boxShadow: '0 1px 3px rgba(79, 70, 229, 0.08)'
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase'
           }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary-indigo)' }}></span>
-            SISTEM REPOSITORI RESMI &bull; UNIVERSITAS NEGERI SEMARANG
+            Portal Resmi Lost &amp; Found Kampus
           </div>
 
           {/* Fraunces Headline */}
@@ -241,10 +234,9 @@ export const LandingPage = () => {
             overflow: 'hidden'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span className="badge badge-lost" style={{ fontSize: '0.68rem', padding: '3px 8px', letterSpacing: '0.04em' }}>
-                <AlertCircle size={12} strokeWidth={2.5} /> KATEGORI 01 &bull; KEHILANGAN
+              <span className="badge badge-lost" style={{ fontSize: '0.72rem', padding: '4px 10px', fontWeight: 700 }}>
+                <AlertCircle size={13} strokeWidth={2.5} /> LAPOR KEHILANGAN
               </span>
-              <span style={{ fontSize: '0.72rem', color: 'var(--ink-500)', fontFamily: 'var(--font-mono)' }}>FORM ARSIP</span>
             </div>
 
             <div>
@@ -319,10 +311,9 @@ export const LandingPage = () => {
             overflow: 'hidden'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span className="badge badge-found" style={{ fontSize: '0.68rem', padding: '3px 8px', letterSpacing: '0.04em' }}>
-                <Sparkles size={12} strokeWidth={2.5} /> KATEGORI 02 &bull; PENEMUAN
+              <span className="badge badge-found" style={{ fontSize: '0.72rem', padding: '4px 10px', fontWeight: 700 }}>
+                <Sparkles size={13} strokeWidth={2.5} /> LAPOR TEMUAN
               </span>
-              <span style={{ fontSize: '0.72rem', color: 'var(--ink-500)', fontFamily: 'var(--font-mono)' }}>POSKO KAMPUS</span>
             </div>
 
             <div>
@@ -402,13 +393,13 @@ export const LandingPage = () => {
         }}>
           <div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              ARSIP TERBARU KAMPUS
+              LAPORAN TERBARU KAMPUS
             </div>
             <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0.2rem 0' }}>
               Barang Terbaru Dilaporkan
             </h2>
             <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', margin: 0 }}>
-              Arsip data barang yang baru saja dicatat oleh civitas UNNES hari ini.
+              Daftar barang tercecer dan temuan yang baru saja dilaporkan oleh civitas UNNES hari ini.
             </p>
           </div>
 
@@ -445,7 +436,7 @@ export const LandingPage = () => {
             borderRadius: '6px'
           }}>
             <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: 'var(--ink-700)' }}>
-              Belum ada arsip untuk kategori ini.
+              Belum ada barang untuk kategori ini.
             </p>
           </div>
         ) : (
@@ -475,7 +466,7 @@ export const LandingPage = () => {
               textTransform: 'uppercase'
             }}
           >
-            LIHAT SEMUA ARSIP DI JELAJAHI <ArrowRight size={14} />
+            LIHAT SEMUA BARANG <ArrowRight size={14} />
           </Link>
         </div>
       </section>
@@ -522,7 +513,7 @@ export const LandingPage = () => {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <CheckCircle2 size={16} color="#CA8A04" />
-                <span>Nominal imbalan tercatat resmi di arsip barang</span>
+                <span>Nominal imbalan tercatat resmi pada informasi barang</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <CheckCircle2 size={16} color="#CA8A04" />
@@ -577,7 +568,7 @@ export const LandingPage = () => {
               {(items?.length || 9) + 142}
             </div>
             <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
-              Total Arsip Tercatat
+              Total Laporan Barang
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
               Periode Tahun Akademik Ini

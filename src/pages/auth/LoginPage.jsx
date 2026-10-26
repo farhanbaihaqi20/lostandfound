@@ -127,7 +127,7 @@ export const LoginPage = () => {
             textTransform: 'uppercase',
             marginBottom: '1rem'
           }}>
-            ARSIP MASUK &bull; SSO CIVITAS
+            MASUK AKUN &bull; SSO CIVITAS
           </div>
           <h2 style={{
             fontFamily: 'var(--font-serif)',
@@ -145,13 +145,13 @@ export const LoginPage = () => {
             lineHeight: 1.65,
             margin: 0
           }}>
-            Portal arsip resmi Universitas Negeri Semarang. Masuk menggunakan akun SSO UNNES atau email mahasiswa terdaftar untuk mengklaim atau melaporkan barang.
+            Portal resmi Lost &amp; Found Universitas Negeri Semarang. Masuk menggunakan akun SSO UNNES atau email mahasiswa terdaftar untuk mengklaim atau melaporkan barang tercecer.
           </p>
         </div>
 
         {/* Bottom Bar */}
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#64748B' }}>
-          KAMPUS SEKARAN &bull; SISTEM ARSIP TERBUKA
+          KAMPUS SEKARAN &bull; UNNES LOST &amp; FOUND
         </div>
       </div>
 
@@ -339,7 +339,7 @@ export const LoginPage = () => {
                 marginTop: '0.5rem'
               }}
             >
-              {loading ? 'MEMVERIFIKASI...' : 'MASUK KE ARSIP'}
+              {loading ? 'MEMVERIFIKASI...' : 'MASUK KE AKUN'}
             </button>
           </form>
 

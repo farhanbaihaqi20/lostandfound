@@ -118,7 +118,7 @@ export const ProfilePage = () => {
                     color: isAdmin ? '#FFFFFF' : 'var(--tag-found-ink)',
                     border: `1px solid ${isAdmin ? 'var(--primary-indigo)' : 'var(--tag-found-border)'}`
                   }}>
-                    {isAdmin ? 'PETUGAS ARSIP KAMPUS' : 'MAHASISWA UNNES'}
+                    {isAdmin ? 'PETUGAS LOST & FOUND' : 'MAHASISWA UNNES'}
                   </span>
                 </div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--ink-500)', marginTop: '0.35rem' }}>

@@ -12,7 +12,8 @@ import {
   Bike,
   MessageSquare,
   Compass,
-  Home
+  Home,
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
@@ -131,7 +132,7 @@ export const Navbar = () => {
               transition: 'all 0.15s ease'
             }}
           >
-            Jelajahi Arsip
+            Jelajahi Barang
           </Link>
           <Link 
             to="/lapor/pilih" 
@@ -208,26 +209,6 @@ export const Navbar = () => {
           >
             <Plus size={15} strokeWidth={2.5} /> Buat Laporan
           </Link>
-
-          {/* Theme Toggle Button */}
-          <button 
-            onClick={toggleTheme} 
-            style={{ 
-              background: 'transparent',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: '6px',
-              padding: '0.45rem', 
-              color: 'var(--ink-700)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.15s ease'
-            }}
-            title={theme === 'dark' ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap'}
-          >
-            {theme === 'dark' ? <Sun size={17} color="#F59E0B" /> : <Moon size={17} />}
-          </button>
 
           {/* Notifications Dropdown */}
           {user && (
@@ -405,7 +386,7 @@ export const Navbar = () => {
                     </div>
                     <div style={{ marginTop: '8px' }}>
                       <span className={`badge ${isAdmin ? 'badge-admin' : 'badge-found'}`} style={{ fontSize: '0.65rem', padding: '2px 7px' }}>
-                        {isAdmin ? 'PETUGAS ARSIP KAMPUS' : 'MAHASISWA UNNES'}
+                        {isAdmin ? 'PETUGAS LOST & FOUND' : 'MAHASISWA UNNES'}
                       </span>
                     </div>
                   </div>
