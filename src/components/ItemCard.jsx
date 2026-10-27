@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Lock, ArrowRight } from 'lucide-react';
+import { Lock, ArrowRight, ImageOff } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { useAuth } from '../contexts/AuthContext';
 import { CATEGORIES } from '../data/initialData';
@@ -9,13 +9,10 @@ export const ItemCard = ({ item }) => {
   const { user } = useAuth();
   const isLocked = !user && item.type === 'temuan';
 
-  const defaultImage = item.type === 'hilang'
-    ? 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&auto=format&fit=crop&q=80'
-    : 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=600&auto=format&fit=crop&q=80';
-
-  const displayImage = item.photo_urls && item.photo_urls.length > 0
-    ? item.photo_urls[0]
-    : defaultImage;
+  // Tanpa foto asli, tampilkan placeholder polos. Foto stok dari internet
+  // terlihat seperti foto barang asli dan menyesatkan pencari.
+  const hasPhoto = item.photo_urls && item.photo_urls.length > 0;
+  const displayImage = hasPhoto ? item.photo_urls[0] : null;
 
   const formattedDate = new Date(item.date_lost_found || item.created_at).toLocaleDateString('id-ID', {
     day: 'numeric',
@@ -30,22 +27,38 @@ export const ItemCard = ({ item }) => {
     <div className="archive-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Photo Header */}
       <div style={{ position: 'relative', width: '100%', height: '190px', overflow: 'hidden', backgroundColor: 'var(--ink-100)', borderBottom: '1px solid var(--border-subtle)' }}>
-        <img 
-          src={displayImage} 
-          alt={item.title} 
-          loading="lazy"
-          style={{
+        {hasPhoto ? (
+          <img
+            src={displayImage}
+            alt={item.title}
+            loading="lazy"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              filter: isLocked ? 'blur(12px) brightness(0.65)' : 'none',
+              transform: isLocked ? 'scale(1.08)' : 'none',
+              transition: 'transform 0.3s ease'
+            }}
+          />
+        ) : (
+          <div style={{
             width: '100%',
             height: '100%',
-            objectFit: 'cover',
-            filter: isLocked ? 'blur(12px) brightness(0.65)' : 'none',
-            transform: isLocked ? 'scale(1.08)' : 'none',
-            transition: 'transform 0.3s ease'
-          }}
-        />
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.4rem',
+            color: 'var(--ink-400)'
+          }}>
+            <ImageOff size={26} />
+            <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Tidak ada foto</span>
+          </div>
+        )}
 
         {/* Censor Overlay for Guests on Found Items */}
-        {isLocked && (
+        {isLocked && hasPhoto && (
           <div style={{
             position: 'absolute',
             inset: 0,
@@ -80,7 +93,7 @@ export const ItemCard = ({ item }) => {
               letterSpacing: '0.08em',
               textTransform: 'uppercase'
             }}>
-              [FOTO DISENSOR]
+              Foto disensor untuk tamu
             </span>
             <span style={{ fontSize: '0.675rem', color: '#CBD5E1', marginTop: '2px' }}>
               Masuk untuk melihat foto asli
@@ -109,7 +122,7 @@ export const ItemCard = ({ item }) => {
           bottom: '0',
           left: '0',
           right: '0',
-          background: 'linear-gradient(to top, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.3) 70%, transparent 100%)',
+          background: 'rgba(15, 23, 42, 0.85)',
           padding: '6px 12px 6px',
           display: 'flex',
           justifyContent: 'space-between',
@@ -159,7 +172,7 @@ export const ItemCard = ({ item }) => {
           <div className="dotted-row">
             <span className="dotted-label">LOKASI</span>
             <span className="dotted-line"></span>
-            <span className="dotted-value" title={item.location_building}>
+            <span className="dotted-value" title={item.location_building} style={{ whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip' }}>
               {item.location_building}
             </span>
           </div>
@@ -180,12 +193,8 @@ export const ItemCard = ({ item }) => {
           borderTop: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'flex-end'
         }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.675rem', color: 'var(--ink-500)', textTransform: 'uppercase' }}>
-            LOST &amp; FOUND
-          </span>
-
           <Link 
             to={`/barang/${item.id}`} 
             style={{ 

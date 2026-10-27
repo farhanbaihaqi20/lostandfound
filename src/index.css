@@ -39,9 +39,13 @@
   --ink-300: #cbd5e1;
   --ink-200: #e2e8f0;
   --ink-100: #f1f5f9;
-  --bg-card: #ffffff;
   --bg-card-alt: #f8fafc;
-  --bg-canvas: #f8fafc;
+
+  /* Glass / medium tokens (dipakai BottomNav & panel) */
+  --border-glass: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --bg-glass: rgba(255, 255, 255, 0.94);
+  --trans-slow: 0.35s ease;
 
   /* Crisp Modern Borders */
   --border-color: #e2e8f0;    /* Slate-200 clean divider */
@@ -205,6 +209,8 @@
   --border-subtle: #1e293b;
   --border-light: #162032;
   --border-dark: #ffffff;
+  --border-glass: #1e293b;
+  --bg-glass: rgba(15, 23, 42, 0.94);
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 10px -1px rgba(0, 0, 0, 0.5);
@@ -333,7 +339,7 @@ input, textarea, select {
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--primary-blue);
-  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
 input::placeholder, textarea::placeholder {
@@ -604,8 +610,8 @@ img {
 }
 
 .btn-accent:hover {
-  background-color: #c2410c;
-  border-color: #c2410c;
+  background-color: #b45309;
+  border-color: #b45309;
 }
 
 .btn-danger {
@@ -740,6 +746,17 @@ img {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--ink-300);
+}
+
+/* Pemisah vertikal di search bar (pengganti kelas Bootstrap d-md-block yang tidak ada di proyek ini) */
+.search-divider {
+  width: 1px;
+  height: 32px;
+  background-color: var(--border-subtle);
+  display: none;
+}
+@media (min-width: 768px) {
+  .search-divider { display: block; }
 }
 
 /* Hide Mobile Bottom Nav Bar on Desktop Viewports */

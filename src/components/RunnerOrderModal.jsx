@@ -103,7 +103,7 @@ export const RunnerOrderModal = ({ item, isOpen, onClose, onSuccess }) => {
           color: 'var(--amber-700)',
           marginBottom: '1rem'
         }}>
-          💡 <strong>Garansi "No Find, No Fee":</strong> Jika barang tidak ditemukan di lokasi, Anda bebas biaya! Pembayaran dilakukan langsung saat serah terima barang (Cash / QRIS).
+          <strong>Garansi "No Find, No Fee":</strong> Jika barang tidak ditemukan di lokasi, Anda bebas biaya! Pembayaran dilakukan langsung saat serah terima barang (Cash / QRIS).
         </div>
 
         {/* Peringatan jika barang temuan belum lolos blind test */}

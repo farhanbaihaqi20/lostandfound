@@ -63,7 +63,7 @@ export const Footer = () => {
             UNNES Lost &amp; Found
           </span>
           <span style={{ color: 'var(--border-color)' }}>|</span>
-          <span>&copy; {new Date().getFullYear()} Universitas Negeri Semarang</span>
+          <span>&copy; {new Date().getFullYear()} UNNES Lost &amp; Found, inisiatif mahasiswa UNNES</span>
         </div>
 
         {/* Compact Right Links & System Status */}
@@ -78,21 +78,6 @@ export const Footer = () => {
             Lapor
           </Link>
           
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            padding: '2px 8px',
-            borderRadius: '4px',
-            background: '#ECFDF5',
-            color: '#059669',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.675rem',
-            fontWeight: 700
-          }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }}></span>
-            LAYANAN AKTIF
-          </div>
         </div>
       </div>
 

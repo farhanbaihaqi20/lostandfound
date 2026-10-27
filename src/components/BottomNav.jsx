@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Compass, Plus, MessageSquare, User, AlertCircle, Sparkles, X, LogIn, ChevronDown, ChevronUp } from 'lucide-react';
+import { Home, Compass, Plus, MessageSquare, User, AlertCircle, PackageCheck, X, LogIn, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 
@@ -219,7 +219,7 @@ export const BottomNav = () => {
                   justifyContent: 'center',
                   boxShadow: '0 4px 10px rgba(16, 185, 129, 0.3)'
                 }}>
-                  <Sparkles size={24} />
+                  <PackageCheck size={24} />
                 </div>
                 <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--success)' }}>
                   Barang Temuan
@@ -371,7 +371,7 @@ export const BottomNav = () => {
               background: 'var(--tag-lost-text)'
             }} />
           )}
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', fontWeight: 600 }}>Pesan</span>
+          <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>Pesan</span>
         </Link>
 
         <Link 
@@ -388,7 +388,7 @@ export const BottomNav = () => {
           }}
         >
           {user ? <User size={19} /> : <LogIn size={19} />}
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', fontWeight: 600 }}>{user ? 'Akun' : 'Masuk'}</span>
+          <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>{user ? 'Akun' : 'Masuk'}</span>
         </Link>
       </nav>
 
