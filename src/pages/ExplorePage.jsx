@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, AlertCircle, Sparkles, Award, RotateCcw, Building2, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Search, AlertCircle, PackageCheck, Award, RotateCcw, Building2, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { UNNES_BUILDINGS, CATEGORIES } from '../data/initialData';
 import { ItemCard } from '../components/ItemCard';
@@ -14,6 +14,7 @@ export const ExplorePage = () => {
   const [categoryFilter, setCategoryFilter] = useState(searchParams.get('kategori') || 'semua');
   const [buildingFilter, setBuildingFilter] = useState(searchParams.get('lokasi') || searchParams.get('gedung') || 'semua');
   const [onlyBounty, setOnlyBounty] = useState(searchParams.get('hadiah') === 'true' || searchParams.get('bounty') === 'true');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'semua');
   const [sortBy, setSortBy] = useState('terbaru');
 
   // Filter items
@@ -30,8 +31,11 @@ export const ExplorePage = () => {
     const matchesBuilding = buildingFilter === 'semua' || 
       (item.location_building && item.location_building.toLowerCase().includes(buildingFilter.toLowerCase()));
     const matchesBounty = !onlyBounty || (item.bounty_amount && item.bounty_amount > 0);
+    const matchesStatus = statusFilter === 'semua' ||
+      (statusFilter === 'aktif' && item.item_status !== 'dikembalikan') ||
+      (statusFilter === 'kembali' && item.item_status === 'dikembalikan');
 
-    return matchesQuery && matchesType && matchesCategory && matchesBuilding && matchesBounty;
+    return matchesQuery && matchesType && matchesCategory && matchesBuilding && matchesBounty && matchesStatus;
   }).sort((a, b) => {
     if (sortBy === 'terlama') {
       return new Date(a.created_at || a.date_lost_found) - new Date(b.created_at || b.date_lost_found);
@@ -54,11 +58,12 @@ export const ExplorePage = () => {
     setCategoryFilter('semua');
     setBuildingFilter('semua');
     setOnlyBounty(false);
+    setStatusFilter('semua');
     setSortBy('terbaru');
     setSearchParams({});
   };
 
-  const isFiltered = query || typeFilter !== 'semua' || categoryFilter !== 'semua' || buildingFilter !== 'semua' || onlyBounty || sortBy !== 'terbaru';
+  const isFiltered = query || typeFilter !== 'semua' || categoryFilter !== 'semua' || buildingFilter !== 'semua' || onlyBounty || statusFilter !== 'semua' || sortBy !== 'terbaru';
 
   return (
     <div className="container pb-mobile-nav" style={{ paddingTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -73,7 +78,7 @@ export const ExplorePage = () => {
           textTransform: 'uppercase',
           color: 'var(--ink-500)'
         }}>
-          KATALOG RESMI &bull; UNIVERSITAS NEGERI SEMARANG
+          KATALOG BARANG &bull; UNIVERSITAS NEGERI SEMARANG
         </div>
 
         <h1 style={{ 
@@ -166,7 +171,7 @@ export const ExplorePage = () => {
             className={`filter-chip ${typeFilter === 'temuan' ? 'active' : ''}`}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
           >
-            <Sparkles size={13} color={typeFilter === 'temuan' ? '#ffffff' : 'var(--primary-indigo)'} />
+            <PackageCheck size={13} color={typeFilter === 'temuan' ? '#ffffff' : 'var(--primary-indigo)'} />
             BARANG TEMUAN ({countTemuan})
           </button>
 
@@ -263,6 +268,31 @@ export const ExplorePage = () => {
             </select>
           </div>
 
+          {/* Status */}
+          <div>
+            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '4px' }}>
+              STATUS BARANG
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '6px 8px',
+                borderRadius: '4px',
+                border: '1px solid var(--border-subtle)',
+                backgroundColor: 'var(--bg-card-alt)',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '0.825rem',
+                color: 'var(--ink-900)'
+              }}
+            >
+              <option value="semua">Semua Status</option>
+              <option value="aktif">Masih Berlangsung</option>
+              <option value="kembali">Sudah Kembali</option>
+            </select>
+          </div>
+
           {/* Urutkan */}
           <div>
             <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '4px' }}>
@@ -306,7 +336,7 @@ export const ExplorePage = () => {
           MENAMPILKAN <strong>{filteredItems.length}</strong> BARANG
         </span>
         <span style={{ color: 'var(--ink-500)' }}>
-          STATUS: TERVERIFIKASI SISTEM
+          {statusFilter === 'kembali' ? 'ARSIP SUDAH KEMBALI' : statusFilter === 'aktif' ? 'LAPORAN MASIH BERLANGSUNG' : 'SEMUA STATUS'}
         </span>
       </div>
 

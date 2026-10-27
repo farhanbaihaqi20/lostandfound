@@ -443,7 +443,7 @@ export const DashboardPage = () => {
 
                         {/* Jenis */}
                         <td style={{ padding: '1rem' }}>
-                          <StatusBadge status={item.type === 'hilang' ? 'BARANG HILANG' : 'DITEMUKAN'} />
+                          <StatusBadge label={item.type === 'hilang' ? 'BARANG HILANG' : 'DITEMUKAN'} />
                         </td>
 
                         {/* Tanggal */}
@@ -454,11 +454,11 @@ export const DashboardPage = () => {
                         {/* Status */}
                         <td style={{ padding: '1rem' }}>
                           {isResolved ? (
-                            <StatusBadge status="SELESAI / KEMBALI" />
+                            <StatusBadge label="SELESAI / KEMBALI" />
                           ) : isPending ? (
-                            <StatusBadge status="MENUNGGU REVIEW" />
+                            <StatusBadge label="MENUNGGU REVIEW" />
                           ) : (
-                            <StatusBadge status="TERVERIFIKASI" />
+                            <StatusBadge label="TERVERIFIKASI" />
                           )}
                         </td>
 

@@ -3,13 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, 
   ArrowRight, 
-  AlertCircle, 
-  Sparkles, 
-  Award, 
-  Building2, 
-  ShieldCheck, 
-  Clock, 
-  CheckCircle2 
+  AlertCircle,
+  ClipboardCheck,
+  Award,
+  Building2,
+  CheckCircle2
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { ItemCard } from '../components/ItemCard';
@@ -31,10 +29,6 @@ export const LandingPage = () => {
     navigate(`/jelajahi?${params.toString()}`);
   };
 
-  const handleQuickSearch = (keyword) => {
-    navigate(`/jelajahi?q=${encodeURIComponent(keyword)}`);
-  };
-
   // Filter items for tab
   const filteredRecentItems = approvedItems
     .filter(item => {
@@ -46,6 +40,7 @@ export const LandingPage = () => {
 
   const countHilang = approvedItems.filter(i => i.type === 'hilang').length;
   const countTemuan = approvedItems.filter(i => i.type === 'temuan').length;
+  const countKembali = approvedItems.filter(i => i.item_status === 'dikembalikan').length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem' }} className="pb-mobile-nav">
@@ -69,7 +64,7 @@ export const LandingPage = () => {
             letterSpacing: '0.05em',
             textTransform: 'uppercase'
           }}>
-            Portal Resmi Lost &amp; Found Kampus
+            Lost &amp; Found Kampus UNNES
           </div>
 
           {/* Fraunces Headline */}
@@ -95,7 +90,7 @@ export const LandingPage = () => {
             maxWidth: '680px',
             margin: '0 0 0.5rem'
           }}>
-            Platform terbuka civitas Universitas Negeri Semarang untuk mencatat, melacak, dan mengembalikan barang tercecer dengan aman dan transparan.
+            Tempat civitas Universitas Negeri Semarang mencatat, mencari, dan mengembalikan barang yang tercecer di kampus.
           </p>
 
           {/* Search Box Bar */}
@@ -135,7 +130,7 @@ export const LandingPage = () => {
               />
             </div>
 
-            <div style={{ width: '1px', height: '32px', backgroundColor: 'var(--border-subtle)', display: 'none' }} className="d-md-block" />
+            <div className="search-divider" />
 
             <div style={{ flex: '0 1 200px', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0 0.5rem' }}>
               <Building2 size={16} color="var(--ink-500)" style={{ flexShrink: 0 }} />
@@ -178,40 +173,6 @@ export const LandingPage = () => {
             </button>
           </form>
 
-          {/* Quick Search Ticker */}
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.45rem',
-            fontSize: '0.75rem',
-            color: 'var(--ink-500)',
-            marginTop: '0.25rem'
-          }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>Pencarian populer:</span>
-            {['KTM UNNES', 'Helm KYT', 'Kunci Honda', 'Jaket Parka', 'Flashdisk Sandisk', 'Kacamata'].map(tag => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => handleQuickSearch(tag)}
-                style={{
-                  background: 'transparent',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '4px',
-                  padding: '2px 8px',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.7rem',
-                  color: 'var(--ink-700)',
-                  cursor: 'pointer',
-                  transition: 'background 0.15s ease'
-                }}
-                className="hover-tag-btn"
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
 
         </div>
       </section>
@@ -257,10 +218,10 @@ export const LandingPage = () => {
             {/* Micro Feature List */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem', color: 'var(--ink-600)', background: 'var(--bg-surface-alt)', padding: '0.75rem 1rem', borderRadius: '6px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <span style={{ color: 'var(--danger-500)', fontWeight: 700 }}>&bull;</span> Notifikasi otomatis saat ditemukan barang identik
+                <span style={{ color: 'var(--danger-500)', fontWeight: 700 }}>&bull;</span> Laporanmu tampil di katalog dan statusnya bisa dipantau
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <span style={{ color: 'var(--danger-500)', fontWeight: 700 }}>&bull;</span> Dilindungi verifikasi blind-test anti klaim fiktif
+                <span style={{ color: 'var(--danger-500)', fontWeight: 700 }}>&bull;</span> Klaim diverifikasi pakai blind test, bukan asal ambil
               </div>
             </div>
 
@@ -312,7 +273,7 @@ export const LandingPage = () => {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span className="badge badge-found" style={{ fontSize: '0.72rem', padding: '4px 10px', fontWeight: 700 }}>
-                <Sparkles size={13} strokeWidth={2.5} /> LAPOR TEMUAN
+                <ClipboardCheck size={13} strokeWidth={2.5} /> LAPOR TEMUAN
               </span>
             </div>
 
@@ -334,10 +295,10 @@ export const LandingPage = () => {
             {/* Micro Feature List */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem', color: 'var(--ink-600)', background: 'var(--bg-surface-alt)', padding: '0.75rem 1rem', borderRadius: '6px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <span style={{ color: 'var(--primary-indigo)', fontWeight: 700 }}>&bull;</span> Sensor otomatis foto dokumen untuk privasi
+                <span style={{ color: 'var(--primary-indigo)', fontWeight: 700 }}>&bull;</span> Foto dokumen disensor untuk tamu demi privasi
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <span style={{ color: 'var(--primary-indigo)', fontWeight: 700 }}>&bull;</span> Serah terima resmi dengan Digital BAST kampus
+                <span style={{ color: 'var(--primary-indigo)', fontWeight: 700 }}>&bull;</span> Serah terima dicatat dengan berita acara digital (BAST)
               </div>
             </div>
 
@@ -399,7 +360,7 @@ export const LandingPage = () => {
               Barang Terbaru Dilaporkan
             </h2>
             <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', margin: 0 }}>
-              Daftar barang tercecer dan temuan yang baru saja dilaporkan oleh civitas UNNES hari ini.
+              Laporan paling baru dari civitas UNNES. Barang yang sudah kembali tetap tercatat di katalog.
             </p>
           </div>
 
@@ -453,6 +414,9 @@ export const LandingPage = () => {
 
         {/* Link to Explore */}
         <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--ink-500)', marginBottom: '0.75rem' }}>
+            Menampilkan {filteredRecentItems.length} dari {approvedItems.length} laporan
+          </div>
           <Link 
             to="/jelajahi" 
             className="btn btn-secondary"
@@ -474,8 +438,8 @@ export const LandingPage = () => {
       {/* 4. Program Hadiah Banner (01 Beranda — Desktop) */}
       <section className="container">
         <div style={{
-          backgroundColor: '#FFFDF5',
-          border: '1px solid #FEF08A',
+          backgroundColor: 'var(--tag-bounty-bg)',
+          border: '1px solid var(--tag-bounty-border)',
           borderRadius: '6px',
           padding: '2.5rem 2rem',
           display: 'grid',
@@ -485,7 +449,7 @@ export const LandingPage = () => {
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             <span className="badge badge-bounty" style={{ width: 'fit-content' }}>
-              <Award size={12} strokeWidth={2.5} /> PROGRAM APRESIASI RESMI
+              <Award size={12} strokeWidth={2.5} /> PROGRAM APRESIASI
             </span>
             <h2 style={{ 
               fontFamily: 'var(--font-serif)', 
@@ -495,7 +459,7 @@ export const LandingPage = () => {
               margin: 0,
               lineHeight: 1.25
             }}>
-              Hargai Kejujuran dengan Imbalan Terbuka
+              Hargai kejujuran dengan imbalan terbuka
             </h2>
             <p style={{ fontSize: '0.9rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
               Beri apresiasi bagi civitas penemu yang mengembalikan barang berharga Anda. Transparan, aman, dan memicu budaya kejujuran di seluruh fakultas UNNES.
@@ -512,15 +476,15 @@ export const LandingPage = () => {
               color: 'var(--ink-700)'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <CheckCircle2 size={16} color="#CA8A04" />
-                <span>Nominal imbalan tercatat resmi pada informasi barang</span>
+                <CheckCircle2 size={16} color="var(--tag-bounty-ink)" />
+                <span>Nominal imbalan tertulis di halaman barangnya</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <CheckCircle2 size={16} color="#CA8A04" />
-                <span>Serah terima di Posko Keamanan atau Gedung Rektorat</span>
+                <CheckCircle2 size={16} color="var(--tag-bounty-ink)" />
+                <span>Serah terima di titik temu yang disepakati di area kampus</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <CheckCircle2 size={16} color="#CA8A04" />
+                <CheckCircle2 size={16} color="var(--tag-bounty-ink)" />
                 <span>Tercatat dalam Berita Acara Serah Terima digital</span>
               </div>
             </div>
@@ -565,13 +529,13 @@ export const LandingPage = () => {
               color: 'var(--ink-900)',
               lineHeight: 1
             }}>
-              {(items?.length || 9) + 142}
+              {approvedItems.length}
             </div>
             <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
               Total Laporan Barang
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
-              Periode Tahun Akademik Ini
+              Laporan yang tampil di katalog
             </div>
           </div>
 
@@ -580,16 +544,16 @@ export const LandingPage = () => {
               fontFamily: 'var(--font-mono)', 
               fontSize: '2.4rem', 
               fontWeight: 700, 
-              color: '#059669',
+              color: 'var(--danger)',
               lineHeight: 1
             }}>
-              89%
+              {countHilang}
             </div>
             <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
-              Tingkat Pengembalian
+              Barang Hilang
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
-              Berhasil Verifikasi &amp; Diambil
+              Laporan kehilangan saat ini
             </div>
           </div>
 
@@ -598,16 +562,16 @@ export const LandingPage = () => {
               fontFamily: 'var(--font-mono)', 
               fontSize: '2.4rem', 
               fontWeight: 700, 
-              color: '#2563EB',
+              color: 'var(--primary-indigo)',
               lineHeight: 1
             }}>
-              12 Posko
+              {countTemuan}
             </div>
             <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
-              Titik Pengambilan Aktif
+              Barang Temuan
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
-              Tersebar di Seluruh Fakultas
+              Laporan penemuan saat ini
             </div>
           </div>
 
@@ -616,26 +580,21 @@ export const LandingPage = () => {
               fontFamily: 'var(--font-mono)', 
               fontSize: '2.4rem', 
               fontWeight: 700, 
-              color: 'var(--ink-900)',
+              color: 'var(--success)',
               lineHeight: 1
             }}>
-              &lt; 24 Jam
+              {countKembali}
             </div>
             <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
-              Rata-rata Respon Posko
+              Sudah Kembali
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
-              Verifikasi Blind-Test Cepat
+              Selesai, kembali ke pemiliknya
             </div>
           </div>
         </div>
       </section>
 
-      <style>{`
-        .hover-tag-btn:hover {
-          background-color: var(--border-subtle) !important;
-        }
-      `}</style>
     </div>
   );
 };
