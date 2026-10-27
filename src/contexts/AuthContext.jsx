@@ -136,6 +136,17 @@ export const AuthProvider = ({ children }) => {
       if (session?.user) {
         syncUserProfile(session.user);
       } else {
+        const saved = localStorage.getItem('unnes_lf_current_user');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed && parsed.id) {
+              setUser(parsed);
+              setLoading(false);
+              return;
+            }
+          } catch (e) {}
+        }
         setUser(null);
         localStorage.removeItem('unnes_lf_current_user');
       }
@@ -147,7 +158,7 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         await syncUserProfile(session.user);
-      } else if (event === 'SIGNED_OUT' || !session) {
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setPendingGoogleUser(null);
         localStorage.removeItem('unnes_lf_current_user');

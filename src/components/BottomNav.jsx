@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Compass, Plus, MessageSquare, User, AlertCircle, PackageCheck, X, LogIn, ChevronDown, ChevronUp } from 'lucide-react';
+import { Home, Compass, Plus, MessageSquare, User, AlertCircle, PackageCheck, X, LogIn, ChevronDown, ChevronUp, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 
@@ -130,105 +130,181 @@ export const BottomNav = () => {
     <>
       {/* Action Sheet Dialog when clicking (+) FAB */}
       {showReportSheet && (
-        <div className="modal-backdrop" onClick={() => setShowReportSheet(false)} style={{ alignItems: 'flex-end', padding: 0 }}>
+        <div 
+          className="modal-backdrop" 
+          onClick={() => setShowReportSheet(false)} 
+          style={{ 
+            alignItems: 'flex-end', 
+            padding: 0,
+            zIndex: 100
+          }}
+        >
           <div 
-            className="glass-panel" 
             onClick={(e) => e.stopPropagation()}
             style={{
               width: '100%',
-              maxWidth: '500px',
+              maxWidth: '480px',
               margin: '0 auto',
-              borderTopLeftRadius: 'var(--radius-xl)',
-              borderTopRightRadius: 'var(--radius-xl)',
-              padding: '1.5rem 1.25rem 2.5rem',
+              backgroundColor: 'var(--bg-card)',
+              borderTopLeftRadius: '20px',
+              borderTopRightRadius: '20px',
+              padding: '0.85rem 1.25rem 2rem',
+              boxShadow: '0 -10px 40px rgba(15, 23, 42, 0.2)',
+              border: '1px solid var(--border-subtle)',
+              borderBottom: 'none',
               animation: 'fadeIn 0.2s ease-out'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            {/* Sheet Handle */}
+            <div style={{
+              width: '36px',
+              height: '4px',
+              backgroundColor: 'var(--border-medium)',
+              borderRadius: '99px',
+              margin: '0 auto 1.15rem'
+            }} />
+
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.15rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Buat Laporan Baru</h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Pilih jenis laporan yang ingin Anda ajukan ke civitas UNNES</p>
+                <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--ink-900)', margin: 0 }}>
+                  Buat Laporan Baru
+                </h3>
+                <p style={{ fontSize: '0.785rem', color: 'var(--ink-500)', margin: '2px 0 0' }}>
+                  Pilih kategori laporan barang di kampus UNNES
+                </p>
               </div>
-              <button onClick={() => setShowReportSheet(false)} style={{ color: 'var(--text-muted)' }}>
-                <X size={20} />
+              <button 
+                onClick={() => setShowReportSheet(false)} 
+                style={{ 
+                  color: 'var(--ink-500)',
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'var(--bg-surface-alt)',
+                  cursor: 'pointer',
+                  border: 'none',
+                  transition: 'all 0.15s ease'
+                }}
+                aria-label="Tutup"
+              >
+                <X size={17} />
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            {/* Options List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {/* Option 1: Kehilangan */}
               <div 
                 onClick={() => handleSelectReport('hilang')}
+                className="sheet-option-item lost"
                 style={{
-                  padding: '1.25rem 1rem',
-                  borderRadius: 'var(--radius-lg)',
-                  background: 'var(--danger-bg)',
-                  border: '1.5px solid rgba(239, 68, 68, 0.3)',
-                  cursor: 'pointer',
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
-                  textAlign: 'center',
-                  gap: '0.5rem',
-                  transition: 'transform var(--trans-fast)'
+                  gap: '0.85rem',
+                  padding: '0.9rem 1rem',
+                  borderRadius: '10px',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border-color)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 <div style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '50%',
-                  background: 'var(--danger)',
-                  color: '#fff',
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--danger-50)',
+                  color: 'var(--danger-600)',
+                  border: '1px solid var(--danger-200)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 4px 10px rgba(239, 68, 68, 0.3)'
+                  flexShrink: 0
                 }}>
-                  <AlertCircle size={24} />
+                  <AlertCircle size={20} strokeWidth={2.2} />
                 </div>
-                <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--danger)' }}>
-                  Barang Hilang
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '0.925rem', color: 'var(--ink-900)' }}>
+                      Saya Kehilangan Barang
+                    </span>
+                    <span className="badge badge-lost" style={{ fontSize: '0.62rem', padding: '1px 6px' }}>
+                      PRIBADI
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.765rem', color: 'var(--ink-600)', marginTop: '2px' }}>
+                    Barang Anda tertinggal atau tercecer di area kampus
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.725rem', color: 'var(--text-secondary)' }}>
-                  Saya kehilangan barang di kampus UNNES
-                </div>
+                <ChevronRight size={18} color="var(--ink-400)" style={{ flexShrink: 0 }} />
               </div>
 
+              {/* Option 2: Temuan */}
               <div 
                 onClick={() => handleSelectReport('temuan')}
+                className="sheet-option-item found"
                 style={{
-                  padding: '1.25rem 1rem',
-                  borderRadius: 'var(--radius-lg)',
-                  background: 'var(--success-bg)',
-                  border: '1.5px solid rgba(16, 185, 129, 0.3)',
-                  cursor: 'pointer',
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
-                  textAlign: 'center',
-                  gap: '0.5rem',
-                  transition: 'transform var(--trans-fast)'
+                  gap: '0.85rem',
+                  padding: '0.9rem 1rem',
+                  borderRadius: '10px',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border-color)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 <div style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '50%',
-                  background: 'var(--success)',
-                  color: '#fff',
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--primary-50)',
+                  color: 'var(--primary-indigo)',
+                  border: '1px solid var(--primary-200)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 4px 10px rgba(16, 185, 129, 0.3)'
+                  flexShrink: 0
                 }}>
-                  <PackageCheck size={24} />
+                  <Sparkles size={20} strokeWidth={2.2} />
                 </div>
-                <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--success)' }}>
-                  Barang Temuan
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '0.925rem', color: 'var(--ink-900)' }}>
+                      Saya Menemukan Barang
+                    </span>
+                    <span className="badge badge-found" style={{ fontSize: '0.62rem', padding: '1px 6px' }}>
+                      TEMUAN
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.765rem', color: 'var(--ink-600)', marginTop: '2px' }}>
+                    Amankan barang milik orang lain &amp; titipkan ke posko
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.725rem', color: 'var(--text-secondary)' }}>
-                  Saya menemukan barang milik orang lain
-                </div>
+                <ChevronRight size={18} color="var(--ink-400)" style={{ flexShrink: 0 }} />
               </div>
             </div>
+
+            {/* Micro Trust Note */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.4rem',
+              marginTop: '1.25rem',
+              fontSize: '0.725rem',
+              color: 'var(--ink-500)',
+              textAlign: 'center'
+            }}>
+              <ShieldCheck size={14} color="var(--primary-indigo)" style={{ flexShrink: 0 }} />
+              <span>Privasi Terjaga: Foto identitas disensor untuk umum oleh sistem</span>
+            </div>
+
           </div>
         </div>
       )}

@@ -765,3 +765,589 @@ img {
     display: none !important;
   }
 }
+
+/* ==========================================================================
+   ANTI-SLOP HERO & BALANCED LANDING PAGE COMPONENTS
+   Clean, natural, human-crafted utility styling
+   ========================================================================== */
+
+/* Hero Quick Action Dock (Replaces bulky AI-slop twin cards) */
+.hero-action-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .hero-action-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.action-dock-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.15rem 1.35rem;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.action-dock-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.action-dock-card.action-dock-lost::before {
+  background-color: var(--danger-500);
+}
+
+.action-dock-card.action-dock-found::before {
+  background-color: var(--primary-indigo);
+}
+
+.action-dock-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.action-dock-card:hover::before {
+  opacity: 1;
+}
+
+.action-dock-card.action-dock-lost:hover {
+  border-color: var(--danger-300);
+}
+
+.action-dock-card.action-dock-found:hover {
+  border-color: var(--primary-300);
+}
+
+.action-dock-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.action-dock-card:hover .action-dock-icon {
+  transform: scale(1.06);
+}
+
+.action-dock-icon.lost {
+  background-color: var(--danger-50);
+  color: var(--danger-600);
+  border: 1px solid var(--danger-200);
+}
+
+.action-dock-icon.found {
+  background-color: var(--primary-50);
+  color: var(--primary-indigo);
+  border: 1px solid var(--primary-200);
+}
+
+[data-theme='dark'] .action-dock-icon.lost {
+  background-color: rgba(244, 63, 94, 0.15);
+  color: #fda4af;
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+[data-theme='dark'] .action-dock-icon.found {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.action-dock-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.action-dock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.action-dock-title {
+  font-family: var(--font-sans);
+  font-size: 0.975rem;
+  font-weight: 700;
+  color: var(--ink-900);
+  letter-spacing: -0.01em;
+}
+
+.action-dock-arrow {
+  color: var(--ink-400);
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.action-dock-card:hover .action-dock-arrow {
+  transform: translateX(4px);
+  color: var(--ink-900);
+}
+
+.action-dock-desc {
+  font-size: 0.815rem;
+  color: var(--ink-600);
+  margin-top: 0.2rem;
+  line-height: 1.45;
+}
+
+/* Micro-Trust Bar */
+.hero-trust-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.85rem 1.5rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 0.785rem;
+  color: var(--ink-600);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.trust-icon {
+  color: var(--primary-indigo);
+  flex-shrink: 0;
+}
+
+.trust-divider {
+  width: 1px;
+  height: 16px;
+  background-color: var(--border-subtle);
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .trust-divider {
+    display: block;
+  }
+}
+
+/* Quick Search Suggestions / Popular Tags */
+.search-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.775rem;
+  color: var(--ink-500);
+  margin-top: -0.25rem;
+}
+
+.search-tag-chip {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 3px 11px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ink-700);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.search-tag-chip:hover {
+  background-color: var(--primary-50);
+  border-color: var(--primary-300);
+  color: var(--primary-indigo);
+  transform: translateY(-1px);
+}
+
+/* Compact Impact & Rewards Section */
+.impact-dual-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .impact-dual-container {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+}
+
+.stats-card-box {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.stats-grid-quad {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.stat-quad-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.stat-quad-num {
+  font-family: var(--font-mono);
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.stat-quad-label {
+  font-family: var(--font-sans);
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.stat-quad-sub {
+  font-size: 0.72rem;
+  color: var(--ink-500);
+}
+
+.bounty-card-compact {
+  background-color: var(--tag-bounty-bg);
+  border: 1px solid var(--tag-bounty-border);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   MINIMALIST REPORT PICKER & STEPPER COMPONENTS
+   Clean, focused, distraction-free reporting
+   ========================================================================== */
+
+/* Report Type Picker (Clean & Minimalist Choice Screen) */
+.report-pick-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .report-pick-container {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.report-pick-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+
+.report-pick-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.report-pick-card.lost::before {
+  background-color: var(--danger-500);
+}
+
+.report-pick-card.found::before {
+  background-color: var(--primary-indigo);
+}
+
+.report-pick-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.report-pick-card:hover::before {
+  opacity: 1;
+}
+
+.report-pick-card.lost:hover {
+  border-color: var(--danger-300);
+}
+
+.report-pick-card.found:hover {
+  border-color: var(--primary-300);
+}
+
+.report-pick-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  display: inline-block;
+  width: fit-content;
+}
+
+.report-pick-badge.lost {
+  background-color: var(--danger-50);
+  color: var(--danger-600);
+  border: 1px solid var(--danger-200);
+}
+
+.report-pick-badge.found {
+  background-color: var(--primary-50);
+  color: var(--primary-indigo);
+  border: 1px solid var(--primary-200);
+}
+
+[data-theme='dark'] .report-pick-badge.lost {
+  background-color: rgba(244, 63, 94, 0.15);
+  color: #fda4af;
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+[data-theme='dark'] .report-pick-badge.found {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Stepper Component */
+.modern-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+
+.step-node {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.785rem;
+  font-weight: 500;
+  color: var(--ink-500);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.step-node.active {
+  color: var(--primary-indigo);
+  font-weight: 700;
+}
+
+.step-node.completed {
+  color: var(--success);
+}
+
+.step-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  background-color: var(--bg-surface-alt);
+  color: var(--ink-500);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.step-node.active .step-circle {
+  background-color: var(--primary-indigo);
+  color: #ffffff;
+  border-color: var(--primary-indigo);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.step-node.completed .step-circle {
+  background-color: var(--success-bg);
+  color: var(--success);
+  border-color: #a7f3d0;
+}
+
+.step-line {
+  flex: 1;
+  height: 1.5px;
+  background-color: var(--border-subtle);
+  margin: 0 0.75rem;
+  min-width: 16px;
+}
+
+.step-line.completed {
+  background-color: var(--success);
+}
+
+/* Mobile Bottom Sheet Action Items */
+.sheet-option-item:hover {
+  background-color: var(--bg-card-alt) !important;
+  transform: translateY(-1px);
+}
+.sheet-option-item.lost:hover {
+  border-color: var(--danger-300) !important;
+}
+.sheet-option-item.found:hover {
+  border-color: var(--primary-300) !important;
+}
+
+/* ==========================================================================
+   PROFESSIONAL MESSENGER & COORDINATION CHAT (NO AI SLOP)
+   Clean, authentic, high-grade real-time messaging styles
+   ========================================================================== */
+
+.chat-bubble-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 72%;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.chat-bubble-outgoing {
+  align-self: flex-end;
+  background-color: var(--primary-indigo);
+  color: #ffffff;
+  border-radius: 16px 16px 4px 16px;
+  padding: 0.65rem 0.95rem;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.18);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.chat-bubble-incoming {
+  align-self: flex-start;
+  background-color: var(--bg-card);
+  color: var(--ink-900);
+  border: 1px solid var(--border-color);
+  border-radius: 16px 16px 16px 4px;
+  padding: 0.65rem 0.95rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.chat-bubble-time-outgoing {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.75);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  float: right;
+  margin-left: 0.75rem;
+  margin-top: 4px;
+}
+
+.chat-bubble-time-incoming {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  color: var(--ink-400);
+  float: right;
+  margin-left: 0.75rem;
+  margin-top: 4px;
+}
+
+.chat-quick-chip {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--ink-700);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.chat-quick-chip:hover {
+  background-color: var(--primary-50);
+  border-color: var(--primary-300);
+  color: var(--primary-indigo);
+}
+
+.chat-conv-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  margin: 0.25rem 0.65rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.chat-conv-item:hover {
+  background-color: var(--bg-surface-alt);
+}
+
+.chat-conv-item.active {
+  background-color: var(--bg-card);
+  border-color: var(--border-subtle);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+}

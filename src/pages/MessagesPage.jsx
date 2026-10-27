@@ -13,13 +13,26 @@ import {
   CheckCheck,
   Search,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Info,
+  ChevronLeft,
+  Check,
+  Sparkles,
+  MapPin,
+  Tag
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { RunnerOrderModal } from '../components/RunnerOrderModal';
 import { BASTModal } from '../components/BASTModal';
 import { StatusBadge } from '../components/StatusBadge';
+
+const QUICK_REPLIES = [
+  "Saya sudah di posko",
+  "Bisa ketemu di mana ya?",
+  "Barang sudah siap diserahkan",
+  "Terima kasih banyak!"
+];
 
 export const MessagesPage = () => {
   const { matchId } = useParams();
@@ -41,6 +54,7 @@ export const MessagesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showRunnerModal, setShowRunnerModal] = useState(false);
   const [showBASTModal, setShowBASTModal] = useState(false);
+  const [showDetailsPanel, setShowDetailsPanel] = useState(true);
   const [copiedScript, setCopiedScript] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -76,11 +90,15 @@ export const MessagesPage = () => {
     await sendMessage(activeMatchId, text);
   };
 
+  const handleQuickReply = (text) => {
+    setInputText(text);
+  };
+
   const handleDeleteSession = async () => {
     if (!activeMatch) return;
     const confirmDelete = window.confirm(
-      `HAPUS SESI OBROLAN #${activeMatch.item_code}?\n\n` +
-      `Seluruh riwayat percakapan pada sesi ini akan dihapus permanen.\n` +
+      `Hapus sesi obrolan #${activeMatch.item_code}?\n\n` +
+      `Seluruh riwayat percakapan pada sesi koordinasi ini akan dihapus permanen.\n` +
       `Lanjutkan?`
     );
     if (!confirmDelete) return;
@@ -100,7 +118,7 @@ export const MessagesPage = () => {
 
   const handleCopyWAScript = () => {
     if (!activeMatch) return;
-    const script = `[UNNES LOST & FOUND]\nHalo Kak @${activeMatch.owner_name} dan Kak @${activeMatch.finder_name}!\n\nKoordinasi resmi penyerahan barang #${activeMatch.item_code} (${activeMatch.item_title}).\nTitik temu yang direkomendasikan: Pos Satpam Fakultas / Kantin Pusat UNNES.\n\nButuh bantuan antar? Gunakan Layanan Jasa Runner UNNES (Tarif Rp 7.000 - Rp 10.000).`;
+    const script = `[UNNES LOST & FOUND]\nHalo Kak @${activeMatch.owner_name} dan Kak @${activeMatch.finder_name}!\n\nKoordinasi resmi penyerahan barang #${activeMatch.item_code} (${activeMatch.item_title}).\nTitik temu yang direkomendasikan: Pos Satpam Fakultas / Rektorat UNNES.\n\nButuh bantuan antar? Gunakan Layanan Jasa Runner UNNES (Tarif Rp 7.000 - Rp 10.000).`;
     navigator.clipboard.writeText(script);
     setCopiedScript(true);
     setTimeout(() => setCopiedScript(false), 2500);
@@ -125,39 +143,52 @@ export const MessagesPage = () => {
   };
 
   return (
-    <div style={{ background: 'var(--bg-canvas)', minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: 'var(--bg-canvas)', height: 'calc(100vh - 65px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
       {userMatches.length === 0 ? (
-        <div className="container" style={{ paddingTop: '5rem', paddingBottom: '5rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="archive-card" style={{ maxWidth: '520px', width: '100%', padding: '3.5rem 2rem', textAlign: 'center' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(15, 23, 42, 0.05)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-              <MessageSquare size={26} color="var(--ink-500)" />
+        /* Empty State */
+        <div className="container" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <div className="archive-card" style={{ maxWidth: '460px', width: '100%', padding: '2.5rem 2rem', textAlign: 'center' }}>
+            <div style={{ 
+              width: '52px', 
+              height: '52px', 
+              borderRadius: '50%', 
+              background: 'var(--primary-50)', 
+              color: 'var(--primary-indigo)',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              margin: '0 auto 1.25rem' 
+            }}>
+              <MessageSquare size={24} />
             </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-              RUANG KOORDINASI
-            </div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 600, color: 'var(--ink-900)', marginBottom: '0.75rem' }}>
+            
+            <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink-900)', marginBottom: '0.4rem' }}>
               Belum Ada Obrolan Aktif
             </h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', lineHeight: 1.6, marginBottom: '2rem' }}>
-              Ruang obrolan terenkripsi akan dibuka otomatis setelah klaim barang atau laporan penemuan Anda disetujui melalui <strong>verifikasi Admin Posko UNNES</strong>.
+            <p style={{ fontSize: '0.85rem', color: 'var(--ink-600)', lineHeight: 1.55, marginBottom: '1.75rem' }}>
+              Ruang koordinasi resmi akan terbuka secara otomatis setelah klaim kepemilikan barang disetujui melalui verifikasi posko UNNES.
             </p>
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link to="/jelajahi" className="btn-dark" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                JELAJAHI BARANG TEMUAN <ArrowRight size={14} />
-              </Link>
-            </div>
+            
+            <Link 
+              to="/jelajahi" 
+              className="btn btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.825rem' }}
+            >
+              Jelajahi Katalog Barang <ArrowRight size={14} />
+            </Link>
           </div>
         </div>
       ) : (
+        /* Main Chat Layout: 3 Columns (List, Active Chat, Context Panel) */
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: '320px 1fr 300px', 
-          height: 'calc(100vh - 72px)',
-          borderTop: '1px solid var(--border-subtle)' 
-        }} className="archival-chat-grid">
+          gridTemplateColumns: showDetailsPanel ? '310px 1fr 310px' : '310px 1fr', 
+          height: '100%',
+          overflow: 'hidden'
+        }} className="pro-chat-layout">
           
-          {/* ================= COLUMN 1: SIDEBAR CONVERSATIONS LIST ================= */}
+          {/* ================= COLUMN 1: SIDEBAR CONVERSATIONS ================= */}
           <div style={{ 
             borderRight: '1px solid var(--border-subtle)', 
             background: 'var(--bg-canvas)', 
@@ -165,108 +196,115 @@ export const MessagesPage = () => {
             flexDirection: 'column',
             overflow: 'hidden'
           }}>
-            {/* Header */}
-            <div style={{ padding: '1.25rem 1.25rem 0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
+            {/* Header & Search */}
+            <div style={{ padding: '1rem 1.15rem 0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 600, margin: 0, color: 'var(--ink-900)' }}>
-                  Obrolan
+                <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.1rem', fontWeight: 700, margin: 0, color: 'var(--ink-900)' }}>
+                  Pesan &amp; Koordinasi
                 </h1>
                 <span style={{ 
                   fontFamily: 'var(--font-mono)', 
                   fontSize: '0.68rem', 
-                  letterSpacing: '0.06em', 
-                  padding: '0.2rem 0.5rem', 
-                  borderRadius: '2px', 
-                  background: 'rgba(15, 23, 42, 0.06)', 
-                  color: 'var(--ink-700)',
-                  fontWeight: 600
+                  letterSpacing: '0.04em', 
+                  padding: '2px 7px', 
+                  borderRadius: 'var(--radius-full)', 
+                  background: 'var(--primary-50)', 
+                  color: 'var(--primary-indigo)',
+                  fontWeight: 700
                 }}>
                   {userMatches.length} AKTIF
                 </span>
               </div>
 
-              {/* Search */}
+              {/* Search Box */}
               <div style={{ position: 'relative' }}>
                 <input 
                   type="text"
-                  placeholder="Cari obrolan atau kode..."
+                  placeholder="Cari nama atau kode barang..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '0.55rem 0.75rem 0.55rem 2.25rem',
+                    padding: '0.55rem 0.75rem 0.55rem 2.15rem',
                     fontSize: '0.8rem',
-                    borderRadius: '2px',
-                    border: '1px solid var(--border-subtle)',
-                    background: 'var(--bg-card)',
+                    borderRadius: 'var(--radius-full)',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-surface)',
                     fontFamily: 'var(--font-sans)'
                   }}
                 />
-                <Search size={14} color="var(--ink-500)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                <Search size={14} color="var(--ink-400)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
               </div>
             </div>
 
-            {/* List */}
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              {filteredMatches.map(m => {
-                const isActive = activeMatchId === m.id;
-                const otherPartyName = user?.id === m.owner_id ? m.finder_name : m.owner_name;
-                const initials = getInitials(otherPartyName);
+            {/* Conversation List */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0.35rem 0' }}>
+              {filteredMatches.length === 0 ? (
+                <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--ink-400)', fontSize: '0.8rem' }}>
+                  Tidak ada percakapan ditemukan
+                </div>
+              ) : (
+                filteredMatches.map(m => {
+                  const isActive = activeMatchId === m.id;
+                  const otherPartyName = user?.id === m.owner_id ? m.finder_name : m.owner_name;
+                  const initials = getInitials(otherPartyName);
+                  const matchMsgs = (messages || []).filter(msg => msg.match_id === m.id);
+                  const lastMsg = matchMsgs.length > 0 ? matchMsgs[matchMsgs.length - 1] : null;
+                  const lastTime = lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
 
-                return (
-                  <div
-                    key={m.id}
-                    onClick={() => setActiveMatchId(m.id)}
-                    style={{
-                      padding: '1rem 1.25rem',
-                      borderBottom: '1px solid var(--border-subtle)',
-                      background: isActive ? 'var(--bg-card)' : 'transparent',
-                      borderLeft: isActive ? '3px solid var(--ink-900)' : '3px solid transparent',
-                      cursor: 'pointer',
-                      transition: 'background 0.15s ease',
-                      display: 'flex',
-                      gap: '0.85rem',
-                      alignItems: 'flex-start'
-                    }}
-                  >
-                    <div style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '50%',
-                      background: isActive ? 'var(--primary-indigo)' : 'var(--bg-secondary)',
-                      color: isActive ? '#FFFFFF' : 'var(--ink-900)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
-                      flexShrink: 0
-                    }}>
-                      {initials}
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => setActiveMatchId(m.id)}
+                      className={`chat-conv-item ${isActive ? 'active' : ''}`}
+                    >
+                      {/* Avatar */}
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: isActive ? 'var(--primary-indigo)' : 'var(--bg-surface-alt)',
+                        color: isActive ? '#FFFFFF' : 'var(--primary-indigo)',
+                        border: isActive ? 'none' : '1px solid var(--border-subtle)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        flexShrink: 0
+                      }}>
+                        {initials}
+                      </div>
+
+                      {/* Content */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                          <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--ink-900)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {otherPartyName}
+                          </span>
+                          <span style={{ 
+                            fontSize: '0.68rem', 
+                            color: 'var(--ink-400)',
+                            fontWeight: 500,
+                            flexShrink: 0
+                          }}>
+                            {lastTime || (m.status === 'selesai' ? 'Selesai' : 'Aktif')}
+                          </span>
+                        </div>
+
+                        <div style={{ fontSize: '0.74rem', color: 'var(--ink-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {lastMsg ? (
+                            <span>{lastMsg.sender_id === user?.id ? 'Anda: ' : ''}{lastMsg.content}</span>
+                          ) : (
+                            <span>#{m.item_code} · {m.item_title}</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
-                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--ink-900)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {otherPartyName}
-                        </span>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--ink-500)' }}>
-                          {m.status === 'selesai' ? 'SELESAI' : 'AKTIF'}
-                        </span>
-                      </div>
-
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        #{m.item_code} · {m.item_title}
-                      </div>
-
-                      <div style={{ fontSize: '0.78rem', color: 'var(--ink-700)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {m.match_type === 'found_report' ? '📍 Laporan Penemuan' : '🛡️ Klaim Terverifikasi'}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -277,13 +315,12 @@ export const MessagesPage = () => {
               display: 'flex', 
               flexDirection: 'column', 
               height: '100%', 
-              overflow: 'hidden',
-              borderRight: '1px solid var(--border-subtle)'
+              overflow: 'hidden'
             }}>
               
-              {/* Header */}
+              {/* Header Bar */}
               <div style={{
-                padding: '0.85rem 1.5rem',
+                padding: '0.75rem 1.25rem',
                 borderBottom: '1px solid var(--border-subtle)',
                 background: 'var(--bg-card)',
                 display: 'flex',
@@ -292,6 +329,7 @@ export const MessagesPage = () => {
                 flexWrap: 'wrap',
                 gap: '0.75rem'
               }}>
+                {/* Contact Info */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div style={{
                     width: '38px',
@@ -302,131 +340,161 @@ export const MessagesPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontFamily: 'var(--font-mono)',
+                    fontFamily: 'var(--font-sans)',
                     fontSize: '0.85rem',
-                    fontWeight: 700
+                    fontWeight: 700,
+                    flexShrink: 0
                   }}>
                     {getInitials(user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name)}
                   </div>
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 600, color: 'var(--ink-900)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                      <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.975rem', fontWeight: 700, color: 'var(--ink-900)' }}>
                         {user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name}
                       </span>
-                      <StatusBadge label={activeMatch.status === 'selesai' ? 'SELESAI' : 'TERVERIFIKASI'} />
+                      <span className="badge badge-verified" style={{ fontSize: '0.62rem', padding: '1px 6px' }}>
+                        TERVERIFIKASI
+                      </span>
                     </div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.04em' }}>
-                      SEPUTAR #{activeMatch.item_code} · {activeMatch.item_title.toUpperCase()}
+                    <div style={{ fontSize: '0.725rem', color: 'var(--ink-500)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <span>Seputar:</span>
+                      <strong style={{ color: 'var(--ink-800)' }}>#{activeMatch.item_code} · {activeMatch.item_title}</strong>
                     </div>
                   </div>
                 </div>
 
                 {/* Header Action Tools */}
                 <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  
+                  {/* WhatsApp Coordination Button */}
                   <button 
                     onClick={handleCopyWAScript} 
-                    className="btn-secondary"
-                    title="Salin template pengantar koordinasi WhatsApp"
-                    style={{ fontSize: '0.72rem', padding: '0.4rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'var(--bg-canvas)' }}
+                    className="btn btn-secondary btn-sm"
+                    title="Salin ringkasan koordinasi untuk dikirimkan via WhatsApp"
+                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.7rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                   >
-                    <Share2 size={13} /> {copiedScript ? 'Tersalin!' : 'Script WA'}
+                    {copiedScript ? <Check size={13} color="var(--success)" /> : <Share2 size={13} />}
+                    <span>{copiedScript ? 'Tersalin!' : 'Salin Info WA'}</span>
                   </button>
 
+                  {/* Runner Order Button */}
                   <button 
                     onClick={() => setShowRunnerModal(true)} 
-                    className="btn-secondary"
-                    style={{ fontSize: '0.72rem', padding: '0.4rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'var(--bg-canvas)' }}
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.7rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                   >
-                    <Bike size={13} /> Pesan Runner
+                    <Bike size={13} />
+                    <span>Pesan Runner</span>
                   </button>
 
+                  {/* BAST Handover Sign Button */}
                   {activeMatch.status !== 'selesai' && (
                     <button 
                       onClick={() => setShowBASTModal(true)} 
-                      className="btn-dark"
-                      style={{ fontSize: '0.72rem', padding: '0.4rem 0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                      className="btn btn-primary btn-sm"
+                      style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                     >
-                      <FileCheck size={13} /> Tanda Tangan BAST
+                      <FileCheck size={13} />
+                      <span>Tanda Tangan BAST</span>
                     </button>
                   )}
 
+                  {/* Toggle Context Sidebar */}
+                  <button 
+                    onClick={() => setShowDetailsPanel(!showDetailsPanel)} 
+                    className="btn btn-secondary btn-sm"
+                    title={showDetailsPanel ? "Tutup rincian barang" : "Lihat rincian barang"}
+                    style={{ 
+                      padding: '0.35rem 0.6rem', 
+                      backgroundColor: showDetailsPanel ? 'var(--bg-surface-alt)' : 'transparent',
+                      color: showDetailsPanel ? 'var(--primary-indigo)' : 'var(--ink-700)'
+                    }}
+                  >
+                    <Info size={14} />
+                  </button>
+
+                  {/* Delete Conversation */}
                   <button 
                     onClick={handleDeleteSession} 
-                    className="btn-secondary"
-                    title="Hapus sesi obrolan ini"
-                    style={{ fontSize: '0.72rem', padding: '0.4rem 0.6rem', color: 'var(--tag-lost-ink)', borderColor: 'var(--tag-lost-border)' }}
+                    className="btn btn-secondary btn-sm"
+                    title="Hapus sesi percakapan ini"
+                    style={{ padding: '0.35rem 0.55rem', color: 'var(--danger-500)', borderColor: 'var(--border-subtle)' }}
                   >
-                    <Trash2 size={13} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>
 
-              {/* Chat Stream */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Chat Stream Area */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 
-                {/* Security SOP Ticker */}
+                {/* Official Unified Verification Banner */}
                 <div style={{
+                  alignSelf: 'center',
+                  maxWidth: '520px',
+                  width: '100%',
                   padding: '0.75rem 1rem',
-                  borderRadius: '2px',
-                  background: 'rgba(15, 23, 42, 0.03)',
+                  borderRadius: '10px',
+                  backgroundColor: 'var(--bg-card)',
                   border: '1px solid var(--border-subtle)',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.65rem',
-                  fontSize: '0.78rem',
-                  color: 'var(--ink-700)',
-                  lineHeight: 1.45
+                  alignItems: 'flex-start',
+                  gap: '0.75rem',
+                  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)',
+                  marginBottom: '0.5rem'
                 }}>
-                  <ShieldAlert size={16} color="var(--ink-900)" style={{ flexShrink: 0 }} />
-                  <div>
-                    <strong>SOP Penyerahan UNNES:</strong> Demi keamanan, lakukan serah terima di area publik (Pos Satpam Fakultas / Rektorat) dan gunakan Berita Acara Serah Terima (BAST) digital.
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    background: 'var(--primary-50)',
+                    color: 'var(--primary-indigo)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    marginTop: '2px'
+                  }}>
+                    <ShieldCheck size={18} />
+                  </div>
+                  <div style={{ flex: 1, fontSize: '0.75rem', color: 'var(--ink-600)', lineHeight: 1.5 }}>
+                    <div style={{ fontWeight: 700, color: 'var(--ink-900)', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span>Koordinasi Resmi Terverifikasi UNNES</span>
+                      <span className="badge badge-verified" style={{ fontSize: '0.58rem', padding: '0px 5px' }}>AMAN</span>
+                    </div>
+                    Blind-test klaim kepemilikan telah disetujui. Bertemulah di area publik (Pos Satpam Fakultas / Rektorat) dan rekam serah terima dengan <strong>BAST digital</strong>.
                   </div>
                 </div>
 
                 {/* Date Divider */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', margin: '0.5rem 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', margin: '0.35rem 0' }}>
                   <div style={{ height: '1px', flex: 1, background: 'var(--border-subtle)' }} />
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--ink-400)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     HARI INI
                   </span>
                   <div style={{ height: '1px', flex: 1, background: 'var(--border-subtle)' }} />
                 </div>
 
-                {/* Verified Pill Announcement */}
-                <div style={{
-                  alignSelf: 'center',
-                  padding: '0.35rem 0.85rem',
-                  borderRadius: '2px',
-                  background: 'var(--tag-found-bg)',
-                  border: '1px solid var(--tag-found-border)',
-                  color: 'var(--tag-found-ink)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.68rem',
-                  letterSpacing: '0.06em',
-                  fontWeight: 600,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem'
-                }}>
-                  <CheckCheck size={13} /> BLIND TEST LOLOS — IDENTITAS DIVERIFIKASI ADMIN
-                </div>
-
                 {/* Messages Loop */}
-                {matchMessages.map(msg => {
+                {matchMessages.map((msg, idx) => {
                   const isMe = msg.sender_id === user?.id;
                   const isSystem = msg.type === 'system';
                   const isSenderAdmin = msg.sender_role === 'admin' || msg.sender?.role === 'admin' || (activeMatch?.approved_by && msg.sender_id === activeMatch.approved_by);
+                  const formattedTime = new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                  
+                  const prevMsg = idx > 0 ? matchMessages[idx - 1] : null;
+                  const isSameSenderAsPrev = prevMsg && prevMsg.sender_id === msg.sender_id && prevMsg.type !== 'system';
 
                   if (isSystem) {
                     return (
                       <div key={msg.id} style={{
                         alignSelf: 'center',
-                        maxWidth: '85%',
-                        padding: '0.65rem 1rem',
-                        borderRadius: '2px',
-                        background: 'rgba(15, 23, 42, 0.04)',
+                        maxWidth: '80%',
+                        padding: '0.55rem 0.95rem',
+                        borderRadius: '12px',
+                        backgroundColor: 'var(--bg-surface-alt)',
                         border: '1px solid var(--border-subtle)',
-                        fontSize: '0.78rem',
+                        fontSize: '0.765rem',
                         color: 'var(--ink-700)',
                         textAlign: 'center',
                         lineHeight: 1.45
@@ -441,66 +509,42 @@ export const MessagesPage = () => {
                       key={msg.id}
                       style={{
                         alignSelf: isMe ? 'flex-end' : 'flex-start',
-                        maxWidth: '70%',
+                        maxWidth: '68%',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '0.25rem'
+                        gap: '2px',
+                        marginTop: !isSameSenderAsPrev && idx > 0 ? '0.4rem' : '0'
                       }}
                     >
-                      {/* Sender label */}
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.4rem',
-                        alignSelf: isMe ? 'flex-end' : 'flex-start'
-                      }}>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--ink-500)' }}>
-                          {isMe ? 'Anda' : (msg.sender_name || (isSenderAdmin ? 'Admin Posko' : 'Pengguna'))}
-                        </span>
-                        {isSenderAdmin && (
-                          <span style={{
-                            fontSize: '0.6rem',
-                            fontFamily: 'var(--font-mono)',
-                            fontWeight: 700,
-                            padding: '0.05rem 0.35rem',
-                            borderRadius: '2px',
-                            background: 'var(--ink-900)',
-                            color: 'var(--tag-bounty-ink)',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.2rem'
-                          }}>
-                            <ShieldCheck size={10} /> ADMIN
+                      {/* Sender label for other parties (only when first of cluster) */}
+                      {!isMe && !isSameSenderAsPrev && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          paddingLeft: '6px',
+                          marginBottom: '2px'
+                        }}>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 600, color: isSenderAdmin ? 'var(--primary-indigo)' : 'var(--ink-700)' }}>
+                            {msg.sender_name || (isSenderAdmin ? 'Admin Posko' : 'Civitas UNNES')}
                           </span>
-                        )}
-                      </div>
+                          {isSenderAdmin && (
+                            <span className="badge badge-admin" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
+                              PETUGAS POSKO
+                            </span>
+                          )}
+                        </div>
+                      )}
 
-                      {/* Chat bubble */}
-                      <div style={{
-                        padding: '0.75rem 1rem',
-                        borderRadius: '6px',
-                        background: isSenderAdmin
-                          ? (isMe ? 'var(--primary-indigo)' : 'var(--tag-found-bg)')
-                          : (isMe ? 'var(--primary-indigo)' : 'var(--bg-card)'),
-                        color: isMe ? '#FFFFFF' : 'var(--ink-900)',
-                        border: isSenderAdmin
-                          ? (isMe ? 'none' : '1px solid var(--tag-found-border)')
-                          : (isMe ? 'none' : '1px solid var(--border-subtle)'),
-                        fontSize: '0.86rem',
-                        lineHeight: 1.5,
-                        boxShadow: 'var(--shadow-subtle)'
-                      }}>
-                        {msg.content}
-                      </div>
-
-                      <div style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.65rem',
-                        color: 'var(--ink-500)',
-                        alignSelf: isMe ? 'flex-end' : 'flex-start'
-                      }}>
-                        {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                        {isMe && ' ✓✓'}
+                      {/* Chat Bubble */}
+                      <div className={isMe ? 'chat-bubble-outgoing' : 'chat-bubble-incoming'}>
+                        <span>{msg.content}</span>
+                        
+                        {/* Inline Timestamp & Ticks */}
+                        <span className={isMe ? 'chat-bubble-time-outgoing' : 'chat-bubble-time-incoming'}>
+                          <span>{formattedTime}</span>
+                          {isMe && <CheckCheck size={13} strokeWidth={2.5} />}
+                        </span>
                       </div>
                     </div>
                   );
@@ -509,151 +553,251 @@ export const MessagesPage = () => {
               </div>
 
               {/* Chat Input Bar */}
-              <form onSubmit={handleSend} style={{
-                padding: '0.85rem 1.25rem',
+              <div style={{
                 borderTop: '1px solid var(--border-subtle)',
                 background: 'var(--bg-card)',
+                padding: '0.65rem 1.25rem 0.85rem',
                 display: 'flex',
-                gap: '0.75rem',
-                alignItems: 'center'
+                flexDirection: 'column',
+                gap: '0.5rem'
               }}>
-                <input
-                  type="text"
-                  placeholder="Tulis pesan… identitas pribadi otomatis disensor"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  style={{
-                    flex: 1,
-                    padding: '0.65rem 1rem',
-                    fontSize: '0.85rem',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: '2px',
-                    background: 'var(--bg-canvas)'
-                  }}
-                />
-                <button type="submit" className="btn-dark" style={{ padding: '0.65rem 1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <Send size={15} />
-                </button>
-              </form>
+                {/* Quick Reply Suggestions */}
+                <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none' }}>
+                  {QUICK_REPLIES.map((reply, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className="chat-quick-chip"
+                      onClick={() => handleQuickReply(reply)}
+                    >
+                      {reply}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Form Input Container */}
+                <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    placeholder="Ketik pesan koordinasi... (identitas pribadi otomatis disensor)"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '0.65rem 1rem',
+                      fontSize: '0.865rem',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-full)',
+                      background: 'var(--bg-surface)',
+                      outline: 'none',
+                      color: 'var(--ink-900)'
+                    }}
+                  />
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary"
+                    disabled={!inputText.trim()}
+                    style={{ 
+                      width: '38px', 
+                      height: '38px', 
+                      borderRadius: '50%', 
+                      padding: 0, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      opacity: inputText.trim() ? 1 : 0.5,
+                      cursor: inputText.trim() ? 'pointer' : 'default'
+                    }}
+                    title="Kirim pesan"
+                  >
+                    <Send size={15} style={{ marginLeft: '1px' }} />
+                  </button>
+                </form>
+              </div>
 
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-500)' }}>
-              Pilih percakapan untuk memulai
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-500)', fontSize: '0.9rem' }}>
+              Pilih percakapan di bilah kiri untuk membuka koordinasi
             </div>
           )}
 
-          {/* ================= COLUMN 3: CONTEXT SIDEBAR ================= */}
-          <div style={{ 
-            background: 'var(--bg-canvas)', 
-            padding: '1.25rem', 
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.5rem'
-          }} className="chat-context-col">
-            
-            <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-                KONTEKS LAPORAN
+          {/* ================= COLUMN 3: ITEM CONTEXT SIDEBAR ================= */}
+          {showDetailsPanel && activeMatch && (
+            <div style={{ 
+              background: 'var(--bg-card)', 
+              borderLeft: '1px solid var(--border-subtle)',
+              padding: '1.15rem', 
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.15rem'
+            }} className="chat-context-panel">
+              
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.65rem' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--ink-900)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Rincian Barang Terkait
+                </span>
+                <button 
+                  onClick={() => setShowDetailsPanel(false)}
+                  style={{ color: 'var(--ink-400)', cursor: 'pointer', background: 'transparent', border: 'none', padding: '2px' }}
+                  title="Tutup panel"
+                >
+                  <ChevronLeft size={16} />
+                </button>
               </div>
 
-              {activeMatch && (
-                <div className="archive-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                  {/* Item Image / Censored Badge */}
-                  <div style={{
-                    width: '100%',
-                    height: '140px',
-                    borderRadius: '2px',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    background: '#EAE3DC',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    {activeItem?.image_url ? (
-                      <img 
-                        src={activeItem.image_url} 
-                        alt={activeMatch.item_title} 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <div style={{ textAlign: 'center', color: 'var(--ink-500)' }}>
-                        <Lock size={20} style={{ margin: '0 auto 0.25rem' }} />
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.06em' }}>[FOTO DISENSOR]</span>
+              {/* Item Card */}
+              <div style={{
+                backgroundColor: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '8px',
+                padding: '0.95rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem'
+              }}>
+                
+                {/* Photo Thumbnail */}
+                <div style={{
+                  width: '100%',
+                  height: '130px',
+                  minHeight: '130px',
+                  flexShrink: 0,
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  background: 'var(--bg-surface-alt)',
+                  border: '1px solid var(--border-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {activeItem?.photo_urls && activeItem.photo_urls.length > 0 ? (
+                    <img 
+                      src={activeItem.photo_urls[0]} 
+                      alt={activeMatch.item_title} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div style={{ textAlign: 'center', color: 'var(--ink-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', padding: '0.5rem' }}>
+                      <div style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--border-subtle)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--ink-500)'
+                      }}>
+                        <Lock size={16} />
                       </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-500)', marginBottom: '0.2rem' }}>
-                      #{activeMatch.item_code}
-                    </div>
-                    <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', fontWeight: 600, color: 'var(--ink-900)', margin: '0 0 0.5rem' }}>
-                      {activeMatch.item_title}
-                    </h3>
-                    <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem' }}>
-                      <StatusBadge label={activeMatch.match_type === 'found_report' ? 'DITEMUKAN' : 'BARANG HILANG'} />
-                    </div>
-                  </div>
-
-                  {activeItem && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem' }}>
-                      <div className="dotted-row">
-                        <span className="dotted-row-label">Lokasi:</span>
-                        <span className="dotted-row-filler"></span>
-                        <span className="dotted-row-value">{activeItem.location_building}</span>
-                      </div>
-                      <div className="dotted-row">
-                        <span className="dotted-row-label">Kategori:</span>
-                        <span className="dotted-row-filler"></span>
-                        <span className="dotted-row-value">{activeItem.category}</span>
-                      </div>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--ink-700)' }}>Foto Terproteksi</span>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--ink-400)' }}>Hanya pemilik terverifikasi</span>
                     </div>
                   )}
-
-                  <Link 
-                    to={`/barang/${activeMatch.item_id}`}
-                    className="btn-secondary"
-                    style={{ 
-                      textDecoration: 'none', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      gap: '0.4rem', 
-                      fontSize: '0.75rem',
-                      padding: '0.55rem',
-                      marginTop: '0.25rem'
-                    }}
-                  >
-                    LIHAT DETAIL BARANG <ExternalLink size={13} />
-                  </Link>
                 </div>
-              )}
-            </div>
 
-            {/* Aturan Obrolan */}
-            <div style={{
-              padding: '1rem',
-              borderRadius: '2px',
-              background: 'rgba(15, 23, 42, 0.02)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '0.78rem',
-              color: 'var(--ink-700)',
-              lineHeight: 1.55
-            }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--ink-900)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                ATURAN OBROLAN
+                <div>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--primary-indigo)', fontWeight: 700 }}>
+                    #{activeMatch.item_code}
+                  </span>
+                  <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '0.975rem', fontWeight: 700, color: 'var(--ink-900)', margin: '2px 0 6px' }}>
+                    {activeMatch.item_title}
+                  </h3>
+                  <div>
+                    <span className={`badge ${activeMatch.match_type === 'found_report' ? 'badge-found' : 'badge-lost'}`} style={{ fontSize: '0.62rem' }}>
+                      {activeMatch.match_type === 'found_report' ? 'BARANG TEMUAN' : 'BARANG HILANG'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Metadata Dotted Rows */}
+                {activeItem && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.765rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.65rem' }}>
+                    <div className="dotted-row">
+                      <span className="dotted-label">LOKASI:</span>
+                      <span className="dotted-line"></span>
+                      <span className="dotted-value" title={activeItem.location_building}>
+                        {activeItem.location_building}
+                      </span>
+                    </div>
+                    <div className="dotted-row">
+                      <span className="dotted-label">KATEGORI:</span>
+                      <span className="dotted-line"></span>
+                      <span className="dotted-value">{activeItem.category}</span>
+                    </div>
+                  </div>
+                )}
+
+                <Link 
+                  to={`/barang/${activeMatch.item_id}`}
+                  className="btn btn-secondary btn-sm"
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    gap: '0.35rem', 
+                    fontSize: '0.74rem',
+                    textDecoration: 'none',
+                    marginTop: '0.25rem'
+                  }}
+                >
+                  Buka Detail Barang <ExternalLink size={12} />
+                </Link>
               </div>
-              <ul style={{ margin: 0, paddingLeft: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <li>Nomor HP & alamat tersensor otomatis demi privasi.</li>
-                <li>Bagikan kontak personal hanya setelah blind test dinyatakan cocok.</li>
-                <li>Laporan palsu dikenai sanksi penonaktifan akun UNNES.</li>
-              </ul>
-            </div>
 
-          </div>
+              {/* Handover Safety Checklist */}
+              <div style={{
+                backgroundColor: 'var(--bg-surface-alt)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '8px',
+                padding: '0.85rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.6rem'
+              }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--ink-800)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                  Protokol Serah Terima
+                </span>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.73rem', color: 'var(--ink-600)', lineHeight: 1.45 }}>
+                  <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'flex-start' }}>
+                    <span style={{ color: 'var(--primary-indigo)', fontWeight: 700 }}>1.</span>
+                    <span>Bertemu di <strong>Pos Satpam Fakultas / Rektorat</strong> yang terpantau CCTV.</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'flex-start' }}>
+                    <span style={{ color: 'var(--primary-indigo)', fontWeight: 700 }}>2.</span>
+                    <span>Cek kesesuaian ciri barang &amp; verifikasi KTM pemilik asli secara langsung.</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'flex-start' }}>
+                    <span style={{ color: 'var(--primary-indigo)', fontWeight: 700 }}>3.</span>
+                    <span>Tandatangani <strong>BAST digital</strong> di bilah atas sebagai bukti resmi sah.</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Privacy Notice */}
+              <div style={{
+                padding: '0.75rem',
+                borderRadius: '6px',
+                backgroundColor: 'var(--bg-canvas)',
+                border: '1px solid var(--border-subtle)',
+                fontSize: '0.72rem',
+                color: 'var(--ink-500)',
+                lineHeight: 1.45
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, color: 'var(--ink-700)', marginBottom: '3px' }}>
+                  <ShieldAlert size={13} color="var(--primary-indigo)" />
+                  <span>Sensor Otomatis Aktif</span>
+                </div>
+                Nomor HP, rekening, dan alamat pribadi disensor otomatis dalam obrolan demi melindungi privasi civitas UNNES.
+              </div>
+
+            </div>
+          )}
 
         </div>
       )}
@@ -675,18 +819,17 @@ export const MessagesPage = () => {
 
       <style>{`
         @media (max-width: 1024px) {
-          .archival-chat-grid {
+          .pro-chat-layout {
             grid-template-columns: 280px 1fr !important;
           }
-          .chat-context-col {
+          .chat-context-panel {
             display: none !important;
           }
         }
         @media (max-width: 768px) {
-          .archival-chat-grid {
+          .pro-chat-layout {
             grid-template-columns: 1fr !important;
-            height: auto !important;
-            min-height: calc(100vh - 120px) !important;
+            height: 100% !important;
           }
         }
       `}</style>

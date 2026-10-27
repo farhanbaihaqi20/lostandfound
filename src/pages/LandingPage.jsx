@@ -4,17 +4,23 @@ import {
   Search, 
   ArrowRight, 
   AlertCircle,
-  ClipboardCheck,
-  Award,
   Building2,
-  CheckCircle2
+  Award,
+  ShieldCheck,
+  EyeOff,
+  FileCheck2,
+  Sparkles,
+  Layers,
+  ChevronRight
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { ItemCard } from '../components/ItemCard';
 import { UNNES_BUILDINGS } from '../data/initialData';
 
+const POPULAR_TAGS = ['KTM / Dompet', 'Kunci Motor', 'Helm', 'Jaket / Hoodie', 'Flashdisk', 'Botol Minum'];
+
 export const LandingPage = () => {
-  const { approvedItems, items } = useData();
+  const { approvedItems } = useData();
   const navigate = useNavigate();
 
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -27,6 +33,12 @@ export const LandingPage = () => {
     if (searchKeyword.trim()) params.append('q', searchKeyword.trim());
     if (selectedLocation) params.append('lokasi', selectedLocation);
     navigate(`/jelajahi?${params.toString()}`);
+  };
+
+  const handleTagClick = (tag) => {
+    const cleanWord = tag.split('/')[0].trim();
+    setSearchKeyword(cleanWord);
+    navigate(`/jelajahi?q=${encodeURIComponent(cleanWord)}`);
   };
 
   // Filter items for tab
@@ -43,54 +55,66 @@ export const LandingPage = () => {
   const countKembali = approvedItems.filter(i => i.item_status === 'dikembalikan').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem' }} className="pb-mobile-nav">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }} className="pb-mobile-nav">
       
-      {/* 1. Hero Section (01 Beranda — Desktop) */}
+      {/* 1. Hero Section: Unified & Functional Campus Hub */}
       <section style={{
-        padding: '3.5rem 0 2.5rem',
+        padding: '3rem 0 2.25rem',
         borderBottom: '1px solid var(--border-subtle)',
         backgroundColor: 'var(--bg-canvas)'
       }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '860px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '880px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
           
-          {/* Natural Brand Intro Label */}
+          {/* Official Campus Pill */}
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '0.45rem',
-            fontSize: '0.825rem',
-            fontWeight: 700,
-            color: 'var(--primary-indigo)',
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase'
+            gap: '0.5rem',
+            padding: '4px 14px',
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--radius-full)',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            color: 'var(--ink-700)',
+            boxShadow: 'var(--shadow-sm)'
           }}>
-            Lost &amp; Found Kampus UNNES
+            <span style={{ 
+              width: '8px', 
+              height: '8px', 
+              borderRadius: '50%', 
+              backgroundColor: 'var(--accent-green)',
+              display: 'inline-block' 
+            }} />
+            <span>Layanan Terpadu Barang Hilang &amp; Temuan UNNES</span>
           </div>
 
-          {/* Fraunces Headline */}
+          {/* Crisp, Natural Title */}
           <h1 style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 'clamp(2.4rem, 5.5vw, 3.75rem)',
+            fontSize: 'clamp(2.1rem, 4.8vw, 3.4rem)',
             fontWeight: 700,
-            lineHeight: 1.15,
+            lineHeight: 1.18,
             letterSpacing: '-0.025em',
             color: 'var(--ink-900)',
-            margin: '0.2rem 0'
+            margin: '0.1rem 0'
           }}>
-            Hilang di kampus,<br />
-            <span style={{ fontStyle: 'italic', fontWeight: 400 }}>ditemukan di sini.</span>
+            Hilang di area kampus? <br />
+            <span style={{ fontStyle: 'italic', fontWeight: 400, color: 'var(--primary-indigo)' }}>
+              Laporkan &amp; temukan kembali di sini.
+            </span>
           </h1>
 
-          {/* Editorial Subtext */}
+          {/* Functional Subtitle */}
           <p style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: 'clamp(0.95rem, 1.8vw, 1.125rem)',
-            color: 'var(--ink-700)',
-            lineHeight: 1.6,
-            maxWidth: '680px',
+            fontSize: 'clamp(0.925rem, 1.8vw, 1.075rem)',
+            color: 'var(--ink-600)',
+            lineHeight: 1.55,
+            maxWidth: '660px',
             margin: '0 0 0.5rem'
           }}>
-            Tempat civitas Universitas Negeri Semarang mencatat, mencari, dan mengembalikan barang yang tercecer di kampus.
+            Platform pencatatan barang tertinggal civitas Universitas Negeri Semarang. Terkoneksi ke posko fakultas dengan verifikasi kepemilikan yang aman.
           </p>
 
           {/* Search Box Bar */}
@@ -110,7 +134,7 @@ export const LandingPage = () => {
               boxShadow: '0 8px 30px rgba(15, 23, 42, 0.06)'
             }}
           >
-            <div style={{ flex: '1 1 280px', display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0 0.85rem' }}>
+            <div style={{ flex: '1 1 260px', display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0 0.85rem' }}>
               <Search size={18} color="var(--ink-500)" style={{ flexShrink: 0 }} />
               <input 
                 type="text" 
@@ -132,7 +156,7 @@ export const LandingPage = () => {
 
             <div className="search-divider" />
 
-            <div style={{ flex: '0 1 200px', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0 0.5rem' }}>
+            <div style={{ flex: '0 1 210px', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0 0.5rem' }}>
               <Building2 size={16} color="var(--ink-500)" style={{ flexShrink: 0 }} />
               <select 
                 value={selectedLocation}
@@ -173,174 +197,84 @@ export const LandingPage = () => {
             </button>
           </form>
 
+          {/* Quick Popular Keywords Row */}
+          <div className="search-tags-row">
+            <span>Sering dicari:</span>
+            {POPULAR_TAGS.map(tag => (
+              <button 
+                key={tag}
+                type="button"
+                className="search-tag-chip"
+                onClick={() => handleTagClick(tag)}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+
+          {/* Quick Action Dock: Replaces bulky slop cards */}
+          <div style={{ width: '100%', maxWidth: '820px', marginTop: '0.5rem' }}>
+            <div className="hero-action-grid">
+              
+              {/* Lost Action Card */}
+              <Link to="/lapor/hilang" className="action-dock-card action-dock-lost">
+                <div className="action-dock-icon lost">
+                  <AlertCircle size={22} strokeWidth={2.2} />
+                </div>
+                <div className="action-dock-content">
+                  <div className="action-dock-header">
+                    <span className="action-dock-title">Saya Kehilangan Barang</span>
+                    <span className="action-dock-arrow"><ArrowRight size={16} /></span>
+                  </div>
+                  <p className="action-dock-desc">
+                    Catat ciri barang yang tertinggal agar civitas &amp; petugas posko bisa mencocokkan.
+                  </p>
+                </div>
+              </Link>
+
+              {/* Found Action Card */}
+              <Link to="/lapor/temuan" className="action-dock-card action-dock-found">
+                <div className="action-dock-icon found">
+                  <Sparkles size={22} strokeWidth={2.2} />
+                </div>
+                <div className="action-dock-content">
+                  <div className="action-dock-header">
+                    <span className="action-dock-title">Saya Menemukan Barang</span>
+                    <span className="action-dock-arrow"><ArrowRight size={16} /></span>
+                  </div>
+                  <p className="action-dock-desc">
+                    Amankan barang milik orang lain &amp; titipkan ke posko fakultas terdekat.
+                  </p>
+                </div>
+              </Link>
+
+            </div>
+          </div>
+
+          {/* Micro-Trust Bar */}
+          <div style={{ width: '100%', maxWidth: '820px' }}>
+            <div className="hero-trust-bar">
+              <div className="trust-item">
+                <EyeOff size={15} className="trust-icon" />
+                <span><strong>Privasi Terjaga:</strong> Foto identitas disensor untuk umum</span>
+              </div>
+              <div className="trust-divider" />
+              <div className="trust-item">
+                <ShieldCheck size={15} className="trust-icon" />
+                <span><strong>Blind-Test:</strong> Klaim kepemilikan anti asal ambil</span>
+              </div>
+              <div className="trust-divider" />
+              <div className="trust-item">
+                <FileCheck2 size={15} className="trust-icon" />
+                <span><strong>Resmi:</strong> Serah terima dengan Berita Acara (BAST)</span>
+              </div>
+            </div>
+          </div>
 
         </div>
       </section>
 
-      {/* 2. Dua Kartu Pilihan Utama (SAYA KEHILANGAN vs SAYA MENEMUKAN) */}
-      <section className="container">
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '1.5rem'
-        }}>
-          {/* Card 1: Saya Kehilangan Barang */}
-          <div className="archive-card" style={{
-            padding: '2rem',
-            borderRadius: '10px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.25rem',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span className="badge badge-lost" style={{ fontSize: '0.72rem', padding: '4px 10px', fontWeight: 700 }}>
-                <AlertCircle size={13} strokeWidth={2.5} /> LAPOR KEHILANGAN
-              </span>
-            </div>
-
-            <div>
-              <h2 style={{ 
-                fontFamily: 'var(--font-serif)', 
-                fontSize: '1.5rem', 
-                fontWeight: 700, 
-                color: 'var(--ink-900)',
-                margin: '0 0 0.5rem'
-              }}>
-                Saya Kehilangan Barang
-              </h2>
-              <p style={{ fontSize: '0.88rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
-                Barang Anda tertinggal di fakultas, perpustakaan, atau area kampus? Catat laporannya agar petugas posko &amp; civitas dapat mencocokkannya.
-              </p>
-            </div>
-
-            {/* Micro Feature List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem', color: 'var(--ink-600)', background: 'var(--bg-surface-alt)', padding: '0.75rem 1rem', borderRadius: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <span style={{ color: 'var(--danger-500)', fontWeight: 700 }}>&bull;</span> Laporanmu tampil di katalog dan statusnya bisa dipantau
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <span style={{ color: 'var(--danger-500)', fontWeight: 700 }}>&bull;</span> Klaim diverifikasi pakai blind test, bukan asal ambil
-              </div>
-            </div>
-
-            <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
-              <Link 
-                to="/lapor/hilang" 
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  width: '100%',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  color: 'var(--danger-700)',
-                  textDecoration: 'none',
-                  border: '1px solid var(--danger-300)',
-                  backgroundColor: 'var(--danger-50)',
-                  padding: '10px 16px',
-                  borderRadius: '6px',
-                  transition: 'all 0.15s ease',
-                  boxShadow: '0 1px 2px rgba(244, 63, 94, 0.05)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--danger-600)';
-                  e.currentTarget.style.color = '#ffffff';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--danger-50)';
-                  e.currentTarget.style.color = 'var(--danger-700)';
-                }}
-              >
-                BUAT LAPORAN KEHILANGAN <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
-
-          {/* Card 2: Saya Menemukan Barang */}
-          <div className="archive-card" style={{
-            padding: '2rem',
-            borderRadius: '10px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.25rem',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span className="badge badge-found" style={{ fontSize: '0.72rem', padding: '4px 10px', fontWeight: 700 }}>
-                <ClipboardCheck size={13} strokeWidth={2.5} /> LAPOR TEMUAN
-              </span>
-            </div>
-
-            <div>
-              <h2 style={{ 
-                fontFamily: 'var(--font-serif)', 
-                fontSize: '1.5rem', 
-                fontWeight: 700, 
-                color: 'var(--ink-900)',
-                margin: '0 0 0.5rem'
-              }}>
-                Saya Menemukan Barang
-              </h2>
-              <p style={{ fontSize: '0.88rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
-                Mengamankan barang milik orang lain di kampus? Catat kategori dan titipkan di posko fakultas terdekat agar dapat diambil pemilik sah.
-              </p>
-            </div>
-
-            {/* Micro Feature List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem', color: 'var(--ink-600)', background: 'var(--bg-surface-alt)', padding: '0.75rem 1rem', borderRadius: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <span style={{ color: 'var(--primary-indigo)', fontWeight: 700 }}>&bull;</span> Foto dokumen disensor untuk tamu demi privasi
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <span style={{ color: 'var(--primary-indigo)', fontWeight: 700 }}>&bull;</span> Serah terima dicatat dengan berita acara digital (BAST)
-              </div>
-            </div>
-
-            <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
-              <Link 
-                to="/lapor/temuan" 
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  width: '100%',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  color: 'var(--primary-700)',
-                  textDecoration: 'none',
-                  border: '1px solid var(--primary-300)',
-                  backgroundColor: 'var(--primary-50)',
-                  padding: '10px 16px',
-                  borderRadius: '6px',
-                  transition: 'all 0.15s ease',
-                  boxShadow: '0 1px 2px rgba(79, 70, 229, 0.05)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--primary-indigo)';
-                  e.currentTarget.style.color = '#ffffff';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--primary-50)';
-                  e.currentTarget.style.color = 'var(--primary-700)';
-                }}
-              >
-                LAPORKAN BARANG TEMUAN <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Section: Barang Terbaru Dilaporkan */}
+      {/* 2. Section: Barang Terbaru Dilaporkan (Immediate Catalog) */}
       <section className="container">
         <div style={{ 
           display: 'flex', 
@@ -354,13 +288,13 @@ export const LandingPage = () => {
         }}>
           <div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              LAPORAN TERBARU KAMPUS
+              KATALOG KAMPUS TERBARU
             </div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0.2rem 0' }}>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.65rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0.15rem 0' }}>
               Barang Terbaru Dilaporkan
             </h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--ink-700)', margin: 0 }}>
-              Laporan paling baru dari civitas UNNES. Barang yang sudah kembali tetap tercatat di katalog.
+            <p style={{ fontSize: '0.875rem', color: 'var(--ink-600)', margin: 0 }}>
+              Daftar laporan aktif dari civitas UNNES yang diverifikasi posko fakultas.
             </p>
           </div>
 
@@ -391,14 +325,19 @@ export const LandingPage = () => {
         {filteredRecentItems.length === 0 ? (
           <div style={{
             textAlign: 'center',
-            padding: '4rem 1rem',
+            padding: '3.5rem 1rem',
             backgroundColor: 'var(--bg-card)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: '6px'
+            borderRadius: '8px'
           }}>
-            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: 'var(--ink-700)' }}>
-              Belum ada barang untuk kategori ini.
+            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--ink-700)', margin: 0 }}>
+              Belum ada laporan barang untuk kategori ini.
             </p>
+            <div style={{ marginTop: '1rem' }}>
+              <Link to="/lapor/pilih" className="btn btn-secondary btn-sm">
+                Buat Laporan Baru
+              </Link>
+            </div>
           </div>
         ) : (
           <div style={{
@@ -413,9 +352,9 @@ export const LandingPage = () => {
         )}
 
         {/* Link to Explore */}
-        <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+        <div style={{ textAlign: 'center', marginTop: '2.25rem' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--ink-500)', marginBottom: '0.75rem' }}>
-            Menampilkan {filteredRecentItems.length} dari {approvedItems.length} laporan
+            Menampilkan {filteredRecentItems.length} dari {approvedItems.length} laporan aktif
           </div>
           <Link 
             to="/jelajahi" 
@@ -435,167 +374,137 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      {/* 4. Program Hadiah Banner (01 Beranda — Desktop) */}
+      {/* 3. Section: Harmonisasi Statistik & Apresiasi Kejujuran */}
       <section className="container">
-        <div style={{
-          backgroundColor: 'var(--tag-bounty-bg)',
-          border: '1px solid var(--tag-bounty-border)',
-          borderRadius: '6px',
-          padding: '2.5rem 2rem',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '2rem',
-          alignItems: 'center'
-        }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <span className="badge badge-bounty" style={{ width: 'fit-content' }}>
-              <Award size={12} strokeWidth={2.5} /> PROGRAM APRESIASI
-            </span>
-            <h2 style={{ 
-              fontFamily: 'var(--font-serif)', 
-              fontSize: '1.85rem', 
-              fontWeight: 700, 
-              color: 'var(--ink-900)', 
-              margin: 0,
-              lineHeight: 1.25
-            }}>
-              Hargai kejujuran dengan imbalan terbuka
-            </h2>
-            <p style={{ fontSize: '0.9rem', color: 'var(--ink-700)', lineHeight: 1.6, margin: 0 }}>
-              Beri apresiasi bagi civitas penemu yang mengembalikan barang berharga Anda. Transparan, aman, dan memicu budaya kejujuran di seluruh fakultas UNNES.
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'flex-start' }}>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.5rem',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.78rem',
-              color: 'var(--ink-700)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <CheckCircle2 size={16} color="var(--tag-bounty-ink)" />
-                <span>Nominal imbalan tertulis di halaman barangnya</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <CheckCircle2 size={16} color="var(--tag-bounty-ink)" />
-                <span>Serah terima di titik temu yang disepakati di area kampus</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <CheckCircle2 size={16} color="var(--tag-bounty-ink)" />
-                <span>Tercatat dalam Berita Acara Serah Terima digital</span>
-              </div>
-            </div>
-
-            <Link 
-              to="/jelajahi?hadiah=true" 
-              className="btn btn-dark btn-sm"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.78rem',
-                letterSpacing: '0.04em',
+        <div className="impact-dual-container">
+          
+          {/* Card A: Statistik Aktivitas Kampus */}
+          <div className="stats-card-box">
+            <div>
+              <div style={{ 
+                fontFamily: 'var(--font-mono)', 
+                fontSize: '0.7rem', 
+                color: 'var(--ink-500)', 
+                letterSpacing: '0.08em', 
                 textTransform: 'uppercase',
-                display: 'inline-flex',
+                display: 'flex',
                 alignItems: 'center',
-                gap: '0.4rem',
-                marginTop: '0.5rem'
-              }}
-            >
-              LIHAT BARANG DENGAN HADIAH <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
-      </section>
+                gap: '0.4rem'
+              }}>
+                <Layers size={13} color="var(--primary-indigo)" />
+                TRANSPARANSI KAMPUS
+              </div>
+              <h3 style={{ 
+                fontFamily: 'var(--font-serif)', 
+                fontSize: '1.35rem', 
+                fontWeight: 700, 
+                color: 'var(--ink-900)', 
+                margin: '0.3rem 0 0.25rem' 
+              }}>
+                Aktivitas Laporan Terkini
+              </h3>
+              <p style={{ fontSize: '0.825rem', color: 'var(--ink-600)', margin: 0, lineHeight: 1.5 }}>
+                Pencatatan terbuka dan terpantau untuk seluruh civitas fakultas di lingkungan Universitas Negeri Semarang.
+              </p>
+            </div>
 
-      {/* 5. Statistik & Metrik Arsip Kampus */}
-      <section className="container">
-        <div style={{
-          backgroundColor: 'var(--bg-card)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '6px',
-          padding: '2.5rem 1.5rem',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '2rem',
-          textAlign: 'center'
-        }}>
-          <div>
-            <div style={{ 
-              fontFamily: 'var(--font-mono)', 
-              fontSize: '2.4rem', 
-              fontWeight: 700, 
-              color: 'var(--ink-900)',
-              lineHeight: 1
-            }}>
-              {approvedItems.length}
-            </div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
-              Total Laporan Barang
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
-              Laporan yang tampil di katalog
-            </div>
-          </div>
+            <div className="stats-grid-quad">
+              <div className="stat-quad-item">
+                <div className="stat-quad-num" style={{ color: 'var(--ink-900)' }}>
+                  {approvedItems.length}
+                </div>
+                <div className="stat-quad-label">Total Laporan</div>
+                <div className="stat-quad-sub">Barang di katalog</div>
+              </div>
 
-          <div>
-            <div style={{ 
-              fontFamily: 'var(--font-mono)', 
-              fontSize: '2.4rem', 
-              fontWeight: 700, 
-              color: 'var(--danger)',
-              lineHeight: 1
-            }}>
-              {countHilang}
-            </div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
-              Barang Hilang
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
-              Laporan kehilangan saat ini
+              <div className="stat-quad-item">
+                <div className="stat-quad-num" style={{ color: 'var(--danger-500)' }}>
+                  {countHilang}
+                </div>
+                <div className="stat-quad-label">Barang Hilang</div>
+                <div className="stat-quad-sub">Sedang dicari</div>
+              </div>
+
+              <div className="stat-quad-item">
+                <div className="stat-quad-num" style={{ color: 'var(--primary-indigo)' }}>
+                  {countTemuan}
+                </div>
+                <div className="stat-quad-label">Barang Temuan</div>
+                <div className="stat-quad-sub">Diamankan di posko</div>
+              </div>
+
+              <div className="stat-quad-item">
+                <div className="stat-quad-num" style={{ color: 'var(--accent-green)' }}>
+                  {countKembali}
+                </div>
+                <div className="stat-quad-label">Sudah Kembali</div>
+                <div className="stat-quad-sub">Sukses diserahterimakan</div>
+              </div>
             </div>
           </div>
 
-          <div>
-            <div style={{ 
-              fontFamily: 'var(--font-mono)', 
-              fontSize: '2.4rem', 
-              fontWeight: 700, 
-              color: 'var(--primary-indigo)',
-              lineHeight: 1
-            }}>
-              {countTemuan}
+          {/* Card B: Program Apresiasi Kejujuran */}
+          <div className="bounty-card-compact">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              <span className="badge badge-bounty" style={{ width: 'fit-content' }}>
+                <Award size={12} strokeWidth={2.5} /> PROGRAM APRESIASI
+              </span>
+              <h3 style={{ 
+                fontFamily: 'var(--font-serif)', 
+                fontSize: '1.45rem', 
+                fontWeight: 700, 
+                color: 'var(--ink-900)', 
+                margin: 0,
+                lineHeight: 1.3
+              }}>
+                Hargai Kejujuran dengan Apresiasi Terbuka
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--ink-700)', lineHeight: 1.55, margin: 0 }}>
+                Pemilik barang dapat menyertakan imbalan sukarela sebagai tanda terima kasih kepada civitas yang mengembalikan barang berharga Anda.
+              </p>
+
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '0.4rem', 
+                fontFamily: 'var(--font-sans)', 
+                fontSize: '0.8rem', 
+                color: 'var(--ink-700)',
+                marginTop: '0.25rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ color: 'var(--tag-bounty-ink)', fontWeight: 800 }}>✓</span>
+                  <span>Nominal imbalan tertera transparan di halaman barang</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ color: 'var(--tag-bounty-ink)', fontWeight: 800 }}>✓</span>
+                  <span>Serah terima aman &amp; dicatat dengan BAST digital</span>
+                </div>
+              </div>
             </div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
-              Barang Temuan
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
-              Laporan penemuan saat ini
+
+            <div style={{ paddingTop: '0.5rem' }}>
+              <Link 
+                to="/jelajahi?hadiah=true" 
+                className="btn btn-dark btn-sm"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.78rem',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem'
+                }}
+              >
+                LIHAT BARANG DENGAN HADIAH <ArrowRight size={14} />
+              </Link>
             </div>
           </div>
 
-          <div>
-            <div style={{ 
-              fontFamily: 'var(--font-mono)', 
-              fontSize: '2.4rem', 
-              fontWeight: 700, 
-              color: 'var(--success)',
-              lineHeight: 1
-            }}>
-              {countKembali}
-            </div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--ink-900)', marginTop: '0.5rem' }}>
-              Sudah Kembali
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--ink-500)', marginTop: '2px' }}>
-              Selesai, kembali ke pemiliknya
-            </div>
-          </div>
         </div>
       </section>
 
     </div>
   );
 };
-
