@@ -5,7 +5,7 @@ import {
   ArrowRight,
   CheckCircle2, 
   AlertCircle, 
-  Sparkles, 
+  PackageCheck, 
   Lock, 
   Award, 
   Send,
@@ -164,7 +164,7 @@ export const ReportPage = () => {
                 <AlertCircle size={12} strokeWidth={2.5} /> KATEGORI 01 • KEHILANGAN
               </span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-500)' }}>
-                FORM RESMI
+                FORM LAPORAN
               </span>
             </div>
 
@@ -223,7 +223,7 @@ export const ReportPage = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span className="badge badge-found">
-                <Sparkles size={12} strokeWidth={2.5} /> KATEGORI 02 • PENEMUAN
+                <PackageCheck size={12} strokeWidth={2.5} /> KATEGORI 02 • PENEMUAN
               </span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-500)' }}>
                 POSKO KAMPUS
@@ -325,7 +325,7 @@ export const ReportPage = () => {
               {reportType === 'hilang' ? 'Formulir Laporan Barang Hilang' : 'Formulir Laporan Barang Temuan'}
             </h1>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.04em' }}>
-              LOST &amp; FOUND RESMI &bull; UNIVERSITAS NEGERI SEMARANG
+              LOST &amp; FOUND &bull; UNIVERSITAS NEGERI SEMARANG
             </div>
           </div>
         </div>
@@ -338,7 +338,7 @@ export const ReportPage = () => {
             </span>
           ) : (
             <span className="badge badge-found">
-              <Sparkles size={12} strokeWidth={2.5} /> SAYA MENEMUKAN
+              <PackageCheck size={12} strokeWidth={2.5} /> SAYA MENEMUKAN
             </span>
           )}
         </div>

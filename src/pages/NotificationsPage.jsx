@@ -4,7 +4,6 @@ import {
   Bell, 
   ShieldCheck, 
   Bike, 
-  Sparkles, 
   CheckCheck, 
   AlertCircle,
   Search,
@@ -30,7 +29,7 @@ export const NotificationsPage = () => {
       case 'klaim':
         return <AlertCircle size={18} color="var(--tag-lost-ink)" />;
       case 'cocok':
-        return <Sparkles size={18} color="var(--tag-bounty-ink)" />;
+        return <CheckCheck size={18} color="var(--tag-bounty-ink)" />;
       case 'laporan_temuan':
         return <Search size={18} color="var(--tag-found-ink)" />;
       case 'pesanan':

@@ -119,11 +119,17 @@ export const ModerationPage = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
                   {/* Small Thumbnail */}
-                  <img
-                    src={item.photo_urls?.[0] || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=150&auto=format&fit=crop&q=80'}
-                    alt={item.title}
-                    style={{ width: '64px', height: '64px', borderRadius: 'var(--radius-md)', objectFit: 'cover', flexShrink: 0 }}
-                  />
+                  {item.photo_urls?.[0] ? (
+                    <img
+                      src={item.photo_urls[0]}
+                      alt={item.title}
+                      style={{ width: '64px', height: '64px', borderRadius: 'var(--radius-md)', objectFit: 'cover', flexShrink: 0 }}
+                    />
+                  ) : (
+                    <div style={{ width: '64px', height: '64px', borderRadius: 'var(--radius-md)', background: 'var(--ink-100)', color: 'var(--ink-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 600, textAlign: 'center', flexShrink: 0, padding: '4px' }}>
+                      Tidak ada foto
+                    </div>
+                  )}
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary-700)' }}>

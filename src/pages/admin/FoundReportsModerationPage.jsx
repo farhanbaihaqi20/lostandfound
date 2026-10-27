@@ -12,7 +12,6 @@ import {
   User, 
   ExternalLink,
   Clock,
-  Sparkles,
   CheckCircle2
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';

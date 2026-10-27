@@ -75,11 +75,17 @@ export const ProfilePage = () => {
             <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
               {/* Avatar with Camera upload button */}
               <div style={{ position: 'relative' }}>
-                <img 
-                  src={user?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80'} 
-                  alt={user?.full_name} 
-                  style={{ width: '84px', height: '84px', borderRadius: '6px', objectFit: 'cover', border: '2px solid var(--border-subtle)', background: 'var(--ink-100)' }}
-                />
+                {user?.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={user?.full_name}
+                    style={{ width: '84px', height: '84px', borderRadius: '6px', objectFit: 'cover', border: '2px solid var(--border-subtle)', background: 'var(--ink-100)' }}
+                  />
+                ) : (
+                  <div style={{ width: '84px', height: '84px', borderRadius: '6px', border: '2px solid var(--border-subtle)', background: 'var(--primary-indigo)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 700 }}>
+                    {(user?.full_name || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <label 
                   style={{
                     position: 'absolute',
