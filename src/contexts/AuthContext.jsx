@@ -330,7 +330,7 @@ export const AuthProvider = ({ children }) => {
         email: cleanEmail,
         full_name,
         role: cleanEmail.includes('admin') ? 'admin' : 'user',
-        avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        avatar_url: '',
         bio: `Mahasiswa ${fakultas} UNNES`,
         phone: phone || '',
         nim: nim.trim(),
@@ -368,7 +368,7 @@ export const AuthProvider = ({ children }) => {
         id: 'google-user-pending',
         email: demoEmail,
         full_name: 'Farhan Baihaqi',
-        avatar_url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80'
+        avatar_url: ''
       };
       setPendingGoogleUser(pending);
       return { success: true, pending };

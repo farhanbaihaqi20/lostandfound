@@ -575,7 +575,7 @@ export const DataProvider = ({ children }) => {
         addNotification({
           user_id: item.user_id,
           type: 'moderasi',
-          title: 'Laporan Telah Disetujui! 🎉',
+          title: 'Laporan Telah Disetujui',
           body: `Laporan #${item.item_code} ("${item.title}") telah disetujui Admin dan sekarang aktif di Feed UNNES.`,
           link: `/barang/${item.id}`
         });
@@ -733,7 +733,7 @@ export const DataProvider = ({ children }) => {
     addNotification({
       user_id: targetItem.user_id,
       type: 'serah_terima',
-      title: 'Barang Telah Kembali ke Pemilik! 🎉',
+      title: 'Barang Telah Kembali ke Pemilik',
       body: `Kasus barang #${targetItem.item_code} ("${targetItem.title}") telah resmi ditandai selesai. Foto asli telah dihapus dari server demi privasi & efisiensi.`,
       link: `/barang/${targetItem.id}`
     });
@@ -1035,7 +1035,7 @@ export const DataProvider = ({ children }) => {
         id: `msg-${Date.now()}`,
         match_id: newMatch.id,
         sender_id: 'system',
-        content: `🎉 Selamat! Klaim kepemilikan barang #${claim.item_code} telah diverifikasi oleh Admin Posko. Ruang obrolan serah terima resmi dibuka. Pemohon dapat mengobrol langsung di sini atau memesan Jasa Runner Resmi UNNES untuk mengambil dan mengantarkan barang!`,
+        content: `Selamat! Klaim kepemilikan barang #${claim.item_code} telah diverifikasi oleh Admin Posko. Ruang obrolan serah terima dibuka. Pemohon dapat mengobrol langsung di sini atau memesan jasa runner untuk mengambil dan mengantarkan barang.`,
         type: 'system',
         created_at: new Date().toISOString()
       };
@@ -1433,7 +1433,7 @@ export const DataProvider = ({ children }) => {
       addNotification({
         user_id: targetItem.user_id,
         type: 'laporan_temuan',
-        title: 'Kabar Baik! Ada yang Menemukan Barang Anda 🎉',
+        title: 'Kabar Baik! Ada yang Menemukan Barang Anda',
         body: `Seorang mahasiswa melaporkan telah menemukan barang hilang #${targetItem.item_code}. Laporan sedang diverifikasi oleh Admin.`,
         link: `/barang/${targetItem.id}`
       });
@@ -1552,7 +1552,7 @@ export const DataProvider = ({ children }) => {
     // 4. Kirim pesan selamat datang dari sistem di ruang chat
     await sendMessage(
       newMatch.id,
-      `🎉 Laporan penemuan barang #${targetItem.item_code} telah diverifikasi & disetujui oleh Admin Posko! Ruang obrolan langsung antara penemu (${report.reporter_name}) dan pemilik (${targetItem.user_name || 'Pemilik'}) resmi dibuka. Silakan berkoordinasi untuk menentukan waktu dan lokasi titik temu di area kampus UNNES.`,
+      `Laporan penemuan barang #${targetItem.item_code} telah diverifikasi & disetujui oleh Admin Posko! Ruang obrolan langsung antara penemu (${report.reporter_name}) dan pemilik (${targetItem.user_name || 'Pemilik'}) dibuka. Silakan berkoordinasi untuk menentukan waktu dan lokasi titik temu di area kampus UNNES.`,
       'system'
     );
 
