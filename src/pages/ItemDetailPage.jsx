@@ -6,7 +6,7 @@ import {
   Share2, 
   Bike, 
   ArrowLeft, 
-  Sparkles, 
+  Info, 
   AlertCircle, 
   AlertTriangle,
   Award, 
@@ -16,7 +16,8 @@ import {
   Building2, 
   CheckCircle2,
   CheckCheck,
-  Trash2
+  Trash2,
+  ImageOff
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -25,6 +26,7 @@ import { BlindTestModal } from '../components/BlindTestModal';
 import { RunnerOrderModal } from '../components/RunnerOrderModal';
 import { ClaimObjectionModal } from '../components/ClaimObjectionModal';
 import { FoundReportModal } from '../components/FoundReportModal';
+import { CATEGORIES } from '../data/initialData';
 
 export const ItemDetailPage = () => {
   const { id } = useParams();
@@ -127,13 +129,24 @@ export const ItemDetailPage = () => {
     setShowBlindTestModal(true);
   };
 
-  const photos = item.photo_urls && item.photo_urls.length > 0
-    ? item.photo_urls
-    : [
-        item.type === 'hilang'
-          ? 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=800&auto=format&fit=crop&q=80'
-          : 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800&auto=format&fit=crop&q=80'
-      ];
+  // Tanpa foto asli, jangan tampilkan foto stok: terlihat seperti foto
+  // barang asli padahal bukan, dan itu menyesatkan.
+  const photos = item.photo_urls && item.photo_urls.length > 0 ? item.photo_urls : [];
+
+  const categoryObj = CATEGORIES.find(c => c.id === item.category);
+  const categoryName = categoryObj ? categoryObj.name : (item.category || 'Lain-lain');
+
+  // Nama pelapor untuk publik cukup nama depan + inisial nama belakang.
+  // Nama lengkap hanya untuk pemilik laporan sendiri dan admin.
+  const nameParts = (item.user_name || '').trim().split(/\s+/).filter(Boolean);
+  const publicReporterName = nameParts.length === 0
+    ? 'Civitas UNNES'
+    : nameParts[0] + (nameParts[1] ? ` ${nameParts[1].charAt(0)}.` : '');
+  const reporterName = (isOwner || isAdmin) && item.user_name ? item.user_name : publicReporterName;
+
+  // Deskripsi barang dokumen temuan (KTP/KTM/SIM) sering memuat nama/identitas.
+  // Untuk tamu, deskripsi disembunyikan; sensor foto saja tidak cukup.
+  const hideDescription = item.category === 'dokumen' && item.type === 'temuan' && !user;
 
   const handleShare = () => {
     const text = `🔍 *[UNNES LOST & FOUND]*\n${item.type === 'hilang' ? 'DIPERLUKAN INFORMASI: BARANG HILANG' : 'DITEMUKAN BARANG'}\n\n📌 *${item.title}*\n📍 Lokasi: ${item.location_building} (${item.location_floor || ''} ${item.location_room || ''})\n🏷️ Kode: #${item.item_code}\n\nLihat selengkapnya di platform:\n${window.location.href}`;
@@ -147,7 +160,7 @@ export const ItemDetailPage = () => {
       `Tandai laporan #${item.item_code} ("${item.title}") sebagai SUDAH KEMBALI KE PEMILIK?\n\n` +
       `⚡ Efisiensi Penyimpanan & Privasi:\n` +
       `• Foto asli akan dihapus dari server Cloudinary untuk menghemat kuota penyimpanan.\n` +
-      `• Foto digantikan oleh Banner Verifikasi Resmi UNNES (0 KB Cloudinary).\n` +
+      `• Foto digantikan oleh banner penanda selesai (0 KB Cloudinary).\n` +
       `• Status barang berubah menjadi 'Sudah Kembali' (Kasus Selesai).`
     );
     if (!confirm) return;
@@ -225,21 +238,37 @@ export const ItemDetailPage = () => {
               boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
             }}
           >
-            <img 
-              src={photos[selectedPhotoIndex]} 
-              alt={item.title} 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'cover',
-                filter: isLocked ? 'blur(16px) brightness(0.65)' : 'none',
-                transform: isLocked ? 'scale(1.08)' : 'none',
-                transition: 'filter 0.3s ease, transform var(--trans-slow)'
-              }}
-            />
+            {photos.length > 0 ? (
+              <img
+                src={photos[selectedPhotoIndex]}
+                alt={item.title}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  filter: isLocked ? 'blur(16px) brightness(0.65)' : 'none',
+                  transform: isLocked ? 'scale(1.08)' : 'none',
+                  transition: 'filter 0.3s ease, transform var(--trans-slow)'
+                }}
+              />
+            ) : (
+              <div style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                color: 'var(--ink-400)'
+              }}>
+                <ImageOff size={34} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Tidak ada foto untuk barang ini</span>
+              </div>
+            )}
 
             {/* Lock Overlay on Found Item for Guests */}
-            {isLocked && (
+            {isLocked && photos.length > 0 && (
               <div style={{
                 position: 'absolute',
                 inset: 0,
@@ -269,10 +298,10 @@ export const ItemDetailPage = () => {
                 </div>
                 <div>
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', fontWeight: 700, letterSpacing: '0.08em' }}>
-                    [FOTO DOKUMEN DISENSOR]
+                    Foto disensor untuk tamu
                   </div>
                   <p style={{ fontSize: '0.8rem', color: '#CBD5E1', maxWidth: '320px', margin: '0.35rem auto 0', lineHeight: 1.5 }}>
-                    Sesuai ketentuan keamanan UNNES Lost &amp; Found, foto barang temuan disensor untuk mencegah klaim fiktif. Masuk untuk melihat foto asli atau ajukan blind test.
+                    Foto barang temuan disembunyikan untuk tamu agar tidak dipakai untuk klaim palsu. Masuk untuk melihat foto asli.
                   </p>
                 </div>
                 <button
@@ -304,7 +333,7 @@ export const ItemDetailPage = () => {
               bottom: '0',
               left: '0',
               right: '0',
-              background: 'linear-gradient(to top, rgba(15, 23, 42, 0.85) 0%, transparent 100%)',
+              background: 'rgba(15, 23, 42, 0.85)',
               padding: '8px 12px',
               color: '#FFFFFF',
               fontFamily: 'var(--font-mono)',
@@ -379,7 +408,7 @@ export const ItemDetailPage = () => {
               gap: '0.35rem'
             }}>
               <li>Verifikasi kepemilikan dilakukan secara tertutup melalui pertanyaan blind-test.</li>
-              <li>Pengambilan fisik barang disarankan di Posko Resmi UNNES (Gedung Rektorat atau Pos Satpam Fakultas).</li>
+              <li>Pengambilan fisik barang disarankan di titik temu yang aman di kampus (misalnya pos satpam fakultas).</li>
               <li>Pelapor dan penemu wajib menandatangani Berita Acara Serah Terima digital setelah barang diterima.</li>
             </ul>
           </div>
@@ -446,7 +475,7 @@ export const ItemDetailPage = () => {
             <div className="dotted-row">
               <span className="dotted-label">KATEGORI</span>
               <span className="dotted-line"></span>
-              <span className="dotted-value">{item.category}</span>
+              <span className="dotted-value">{categoryName}</span>
             </div>
 
             <div className="dotted-row">
@@ -480,9 +509,9 @@ export const ItemDetailPage = () => {
             </div>
 
             <div className="dotted-row">
-              <span className="dotted-label">PELAPOR RESMI</span>
+              <span className="dotted-label">PELAPOR</span>
               <span className="dotted-line"></span>
-              <span className="dotted-value">{item.user_name || 'Civitas UNNES'}</span>
+              <span className="dotted-value">{reporterName}</span>
             </div>
 
             {item.bounty_amount > 0 && (
@@ -516,7 +545,9 @@ export const ItemDetailPage = () => {
               CATATAN &amp; CIRI FISIK BARANG:
             </h3>
             <p style={{ fontSize: '0.88rem', color: 'var(--ink-900)', lineHeight: 1.65, whiteSpace: 'pre-line', margin: 0 }}>
-              {item.description}
+              {hideDescription
+                ? 'Catatan barang dokumen disembunyikan untuk tamu karena bisa memuat data pribadi pemilik dokumen. Masuk dengan akun UNNES untuk melihatnya.'
+                : item.description}
             </p>
           </div>
 
@@ -533,7 +564,7 @@ export const ItemDetailPage = () => {
             color: 'var(--ink-700)'
           }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
-              ID PELAPOR: <strong>{item.user_name}</strong>
+              PELAPOR: <strong>{reporterName}</strong>
             </div>
             <button 
               onClick={handleShare}
@@ -701,7 +732,7 @@ export const ItemDetailPage = () => {
                 </div>
                 <div>
                   <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--success)', marginBottom: '0.35rem' }}>
-                    Barang Berhasil Dikembalikan! 🎉
+                    Barang Berhasil Dikembalikan!
                   </div>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '460px', margin: '0 auto', lineHeight: 1.5 }}>
                     Laporan ini telah selesai dan ditutup. Barang telah diverifikasi melalui Blind Test dan diserahkan kepada pemilik yang sah. <strong>Barang tidak dapat diklaim lagi.</strong>
@@ -804,7 +835,7 @@ export const ItemDetailPage = () => {
                     <Bike size={18} /> Pesan Jasa Runner UNNES (Antar ke Kelas/Gedung Anda)
                   </button>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-                    💡 Runner resmi UNNES siap mengambil barang dari penemu/posko dan mengantarkan ke lokasi Anda.
+                    Runner siap mengambil barang dari penemu/posko dan mengantarkan ke lokasi Anda.
                   </div>
                 </>
               ) : isClaimPending ? (
@@ -869,7 +900,7 @@ export const ItemDetailPage = () => {
                       Catatan Admin: <strong>{userClaim.admin_notes || 'Jawaban ciri khusus belum cocok dengan data penemu.'}</strong>
                     </p>
                     <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.2rem', lineHeight: 1.45 }}>
-                      💡 Takut ada ciri tersembunyi yang belum sempat Anda jelaskan? Anda dapat <strong>mengajukan klaim ulang</strong> dengan memberikan rincian ciri fisik barang yang lebih detail agar Admin dapat mencocokkannya kembali.
+                      Takut ada ciri tersembunyi yang belum sempat Anda jelaskan? Anda dapat <strong>mengajukan klaim ulang</strong> dengan memberikan rincian ciri fisik barang yang lebih detail agar Admin dapat mencocokkannya kembali.
                     </div>
                   </div>
 
@@ -1096,7 +1127,7 @@ export const ItemDetailPage = () => {
                     alignItems: 'center',
                     gap: '0.6rem'
                   }}>
-                    <Sparkles size={18} style={{ flexShrink: 0 }} />
+                    <Info size={18} style={{ flexShrink: 0 }} />
                     <span>Melihat atau menemukan barang ini di kampus? Laporkan ciri & lokasinya agar Admin dapat menghubungkan Anda ke pemilik.</span>
                   </div>
 

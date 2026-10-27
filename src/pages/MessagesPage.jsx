@@ -134,7 +134,7 @@ export const MessagesPage = () => {
               <MessageSquare size={26} color="var(--ink-500)" />
             </div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-              RUANG KOORDINASI RESMI
+              RUANG KOORDINASI
             </div>
             <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 600, color: 'var(--ink-900)', marginBottom: '0.75rem' }}>
               Belum Ada Obrolan Aktif
@@ -313,7 +313,7 @@ export const MessagesPage = () => {
                       <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 600, color: 'var(--ink-900)' }}>
                         {user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name}
                       </span>
-                      <StatusBadge status={activeMatch.status === 'selesai' ? 'SELESAI' : 'TERVERIFIKASI'} />
+                      <StatusBadge label={activeMatch.status === 'selesai' ? 'SELESAI' : 'TERVERIFIKASI'} />
                     </div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.04em' }}>
                       SEPUTAR #{activeMatch.item_code} · {activeMatch.item_title.toUpperCase()}
@@ -594,7 +594,7 @@ export const MessagesPage = () => {
                       {activeMatch.item_title}
                     </h3>
                     <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem' }}>
-                      <StatusBadge status={activeMatch.match_type === 'found_report' ? 'DITEMUKAN' : 'BARANG HILANG'} />
+                      <StatusBadge label={activeMatch.match_type === 'found_report' ? 'DITEMUKAN' : 'BARANG HILANG'} />
                     </div>
                   </div>
 
