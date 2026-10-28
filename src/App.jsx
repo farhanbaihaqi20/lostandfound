@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 
 import { Footer } from './components/Footer';
+import { WatermarkBackground } from './components/WatermarkBackground';
 
 // User Pages
 import { LandingPage } from './pages/LandingPage';
@@ -30,10 +31,11 @@ import { AdminUsersPage } from './pages/admin/AdminUsersPage';
 
 function App() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative' }}>
+      <WatermarkBackground />
       <Navbar />
       
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1, position: 'relative', zIndex: 1 }}>
         <Routes>
           {/* Public & Core Pages */}
           <Route path="/" element={<LandingPage />} />
@@ -49,6 +51,22 @@ function App() {
 
           {/* Protected User Pages */}
           <Route path="/lapor" element={<Navigate to="/lapor/pilih" replace />} />
+          <Route 
+            path="/Pilih-Jenis-Laporan" 
+            element={
+              <ProtectedRoute>
+                <ReportPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/pilih-jenis-laporan" 
+            element={
+              <ProtectedRoute>
+                <ReportPage />
+              </ProtectedRoute>
+            } 
+          />
           <Route 
             path="/lapor/:type" 
             element={

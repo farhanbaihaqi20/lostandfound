@@ -11,22 +11,22 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-heading: var(--font-serif);
 
-  /* Modern Minimalist Slate Palette (Clean, Fresh, Zero-Cream) */
-  --bg-app: #f8fafc;          /* Cool crisp slate-50 canvas */
-  --bg-canvas: #f8fafc;       /* Cool crisp slate-50 canvas */
+  /* Warm Archival Campus Palette (Figma Reference) */
+  --bg-app: #F5EFEB;          /* Warm archive paper canvas */
+  --bg-canvas: #F5EFEB;       /* Warm archive paper canvas */
   --bg-surface: #ffffff;      /* Pure clean white card */
   --bg-card: #ffffff;         /* Pure clean white card */
-  --bg-paper: #ffffff;        /* Pure clean white card */
-  --bg-surface-alt: #f1f5f9;  /* Elevated sub-surface / soft slate-100 */
-  --bg-secondary: #f1f5f9;    /* Secondary sub-surface */
-  --bg-muted: #e2e8f0;        /* Subtle slate-200 */
+  --bg-paper: #FAF7F2;        /* Sub-surface warm card */
+  --bg-surface-alt: #EFE8DE;  /* Elevated sub-surface / soft warm tan */
+  --bg-secondary: #EFE8DE;    /* Secondary sub-surface */
+  --bg-muted: #E6DFD5;        /* Warm muted divider/background */
   --bg-dark: #0f172a;         /* Deep slate-900 / navy ink */
   --bg-navy: #0f172a;
   --bg-dark-surface: #1e293b; /* Elevated dark card slate-800 */
 
   /* Text & Ink Colors (High Contrast, WCAG AAA) */
-  --text-primary: #0f172a;    /* Slate-900: sharp & crisp */
-  --text-secondary: #475569;  /* Slate-600: clean subtitle */
+  --text-primary: #111827;    /* Sharp & crisp ink */
+  --text-secondary: #475569;  /* Clean charcoal subtitle */
   --text-muted: #64748b;      /* Slate-500: timestamps & metadata */
   --text-subtle: #94a3b8;     /* Slate-400: placeholders & inactive */
   --text-inverse: #ffffff;
@@ -37,28 +37,28 @@
   --ink-500: #64748b;
   --ink-400: #94a3b8;
   --ink-300: #cbd5e1;
-  --ink-200: #e2e8f0;
-  --ink-100: #f1f5f9;
-  --bg-card-alt: #f8fafc;
+  --ink-200: #e2ddd5;
+  --ink-100: #f3ece2;
+  --bg-card-alt: #faf7f2;
 
-  /* Glass / medium tokens (dipakai BottomNav & panel) */
-  --border-glass: #e2e8f0;
+  /* Glass / medium tokens */
+  --border-glass: #e2ddd5;
   --border-medium: #cbd5e1;
-  --bg-glass: rgba(255, 255, 255, 0.94);
+  --bg-glass: rgba(255, 255, 255, 0.96);
   --trans-slow: 0.35s ease;
 
-  /* Crisp Modern Borders */
-  --border-color: #e2e8f0;    /* Slate-200 clean divider */
-  --border-subtle: #e2e8f0;
-  --border-light: #f1f5f9;    /* Slate-100 soft line */
+  /* Warm Archival Borders */
+  --border-color: #e2ddd5;    /* Warm divider */
+  --border-subtle: #e5dfd5;
+  --border-light: #ece7df;
   --border-dark: #0f172a;
   --border-focus: #4f46e5;    /* Electric Indigo focus ring */
 
   /* Status Tags Tokens */
-  --tag-lost-bg: #fff1f2;     /* Rose-50 */
+  --tag-lost-bg: #ffe4e6;     /* Rose-100 */
   --tag-lost-border: #fecdd3; /* Rose-200 */
-  --tag-lost-ink: #e11d48;    /* Rose-600 */
-  --tag-lost-text: #e11d48;
+  --tag-lost-ink: #dc2626;    /* Crimson Red */
+  --tag-lost-text: #dc2626;
 
   --tag-found-bg: #eef2ff;    /* Indigo-50 */
   --tag-found-border: #c7d2fe;/* Indigo-200 */
@@ -68,7 +68,7 @@
   --tag-bounty-border: #fde68a;/* Amber-200 */
   --tag-bounty-ink: #d97706;  /* Amber-600 */
 
-  --shadow-subtle: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-subtle: 0 1px 3px rgba(44, 30, 20, 0.05);
 
   /* Primary Brand: Electric Indigo */
   --primary-indigo: #4f46e5;

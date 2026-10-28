@@ -84,44 +84,69 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ padding: '1.5rem' }}>
+    <div className="modal-backdrop" onClick={onClose} style={{ backdropFilter: 'blur(5px)', backgroundColor: 'rgba(15, 23, 42, 0.6)' }}>
+      <div 
+        className="modal-content" 
+        onClick={(e) => e.stopPropagation()} 
+        style={{ 
+          padding: '1.75rem', 
+          borderRadius: '16px',
+          border: '1px solid var(--border-color)',
+          backgroundColor: '#FFFFFF',
+          boxShadow: '0 20px 45px rgba(44, 30, 20, 0.16)',
+          maxWidth: '580px'
+        }}
+      >
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.85rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ 
-              background: 'var(--primary-100)', 
-              color: 'var(--primary-800)', 
-              borderRadius: 'var(--radius-md)', 
-              padding: '0.5rem',
-              display: 'flex'
+              background: '#EEF2FF', 
+              color: 'var(--primary-indigo)', 
+              borderRadius: '10px', 
+              padding: '0.6rem',
+              display: 'flex',
+              border: '1px solid #C7D2FE'
             }}>
-              <ShieldCheck size={24} />
+              <ShieldCheck size={26} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Verifikasi Blind Test</h3>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                Klaim Kepemilikan Barang #{item.item_code}
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.35rem', fontWeight: 700, color: 'var(--ink-900)', margin: 0 }}>
+                Verifikasi Blind-Test
+              </h3>
+              <p style={{ fontSize: '0.78rem', color: 'var(--ink-500)', margin: '2px 0 0', fontFamily: 'var(--font-mono)' }}>
+                KLAIM KEPEMILIKAN #{item.item_code || 'LF-UNNES'} &bull; POSKO RESMI
               </p>
             </div>
           </div>
-          <button onClick={onClose} style={{ color: 'var(--text-muted)' }}>
+          <button 
+            onClick={onClose} 
+            style={{ 
+              color: 'var(--ink-400)', 
+              background: 'transparent', 
+              border: 'none', 
+              cursor: 'pointer',
+              padding: '4px',
+              borderRadius: '6px'
+            }}
+          >
             <X size={20} />
           </button>
         </div>
 
         {/* SOP Info Box */}
         <div style={{ 
-          background: 'var(--info-bg)', 
-          border: '1px solid rgba(2, 132, 199, 0.25)', 
-          borderRadius: 'var(--radius-md)', 
-          padding: '0.75rem', 
-          fontSize: '0.8rem', 
-          color: 'var(--info)',
-          marginBottom: '1rem',
-          lineHeight: 1.4
+          background: '#FAF7F2', 
+          border: '1px solid #E2DDD5', 
+          borderLeft: '4px solid var(--primary-indigo)',
+          borderRadius: '8px', 
+          padding: '0.85rem 1rem', 
+          fontSize: '0.825rem', 
+          color: 'var(--ink-700)',
+          marginBottom: '1.25rem',
+          lineHeight: 1.5
         }}>
-          <strong>🛡️ SOP Keamanan UNNES:</strong> Untuk mencegah klaim palsu, Anda wajib menjawab pertanyaan di bawah ini. Jawaban Anda akan langsung dicocokkan oleh <strong>Admin Posko UNNES</strong> dengan data rahasia penemu.
+          <strong>🛡️ SOP Verifikasi UNNES:</strong> Untuk mencegah klaim asal ambil, jawab pertanyaan verifikasi di bawah ini. Jawaban Anda akan langsung dicocokkan oleh <strong>Petugas Posko UNNES</strong> secara rahasia.
         </div>
 
         {/* Notifikasi Pengajuan Ulang */}
@@ -129,7 +154,7 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
           <div style={{
             background: 'var(--amber-50)',
             border: '1px solid rgba(245, 158, 11, 0.4)',
-            borderRadius: 'var(--radius-md)',
+            borderRadius: '8px',
             padding: '0.75rem 1rem',
             fontSize: '0.8rem',
             color: 'var(--amber-800)',
@@ -144,9 +169,9 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
         {/* Notifikasi Jika Barang Sudah Dikembalikan */}
         {isItemReturned && (
           <div style={{
-            background: 'var(--danger-bg)',
+            background: 'var(--danger-50)',
             border: '1px solid rgba(239, 68, 68, 0.4)',
-            borderRadius: 'var(--radius-md)',
+            borderRadius: '8px',
             padding: '0.75rem 1rem',
             fontSize: '0.8rem',
             color: 'var(--danger)',
@@ -157,10 +182,18 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
           {questions.map((q, idx) => (
-            <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+            <div key={idx} style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '0.45rem',
+              backgroundColor: '#FAF7F2',
+              border: '1px solid #E2DDD5',
+              padding: '0.85rem 1rem',
+              borderRadius: '8px'
+            }}>
+              <label style={{ fontSize: '0.835rem', fontWeight: 600, color: 'var(--ink-900)' }}>
                 Pertanyaan {idx + 1}: {q}
               </label>
               <textarea
@@ -170,14 +203,24 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
                 placeholder="Tuliskan jawaban sedetail mungkin..."
                 value={answers[idx]}
                 onChange={(e) => handleAnswerChange(idx, e.target.value)}
-                style={{ width: '100%', resize: 'vertical' }}
+                style={{ 
+                  width: '100%', 
+                  resize: 'vertical',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  backgroundColor: '#FFFFFF',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.85rem',
+                  color: 'var(--ink-900)'
+                }}
               />
             </div>
           ))}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              Pesan Tambahan untuk Penemu & Admin (Opsional):
+            <label style={{ fontSize: '0.835rem', fontWeight: 600, color: 'var(--ink-800)' }}>
+              Pesan Tambahan untuk Penemu &amp; Admin (Opsional):
             </label>
             <input
               type="text"
@@ -185,7 +228,16 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
               placeholder="Contoh: Saya bisa temui di pos satpam jam 1 siang..."
               value={additionalMessage}
               onChange={(e) => setAdditionalMessage(e.target.value)}
-              style={{ width: '100%' }}
+              style={{ 
+                width: '100%',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid #CBD5E1',
+                backgroundColor: '#FFFFFF',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '0.85rem',
+                color: 'var(--ink-900)'
+              }}
             />
           </div>
 
@@ -194,19 +246,48 @@ export const BlindTestModal = ({ item, isOpen, onClose, onSuccess }) => {
             justifyContent: 'flex-end', 
             gap: '0.75rem', 
             marginTop: '0.5rem',
-            paddingTop: '0.75rem',
-            borderTop: '1px solid var(--border-light)'
+            paddingTop: '0.85rem', 
+            borderTop: '1px solid var(--border-color)'
           }}>
-            <button type="button" onClick={onClose} className="btn btn-outline btn-sm">
+            <button 
+              type="button" 
+              onClick={onClose} 
+              style={{
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                backgroundColor: '#FFFFFF',
+                color: 'var(--ink-700)',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '0.825rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
               Batal
             </button>
             <button 
               type="submit" 
               disabled={submitting || isItemReturned}
-              className="btn btn-primary btn-sm"
-              style={{ gap: '0.4rem' }}
+              style={{ 
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '8px 18px',
+                borderRadius: '6px',
+                border: 'none',
+                backgroundColor: 'var(--primary-indigo)',
+                color: '#FFFFFF',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '0.825rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'background 0.15s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4338CA'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-indigo)'}
             >
-              <Send size={14} /> {submitting ? 'Mengirim...' : isReapplication ? 'Kirim Pembaruan Klaim ke Admin' : 'Kirim Klaim ke Admin'}
+              <Send size={14} /> {submitting ? 'Mengirim...' : isReapplication ? 'Kirim Pembaruan Klaim' : 'Kirim Klaim ke Posko'}
             </button>
           </div>
         </form>

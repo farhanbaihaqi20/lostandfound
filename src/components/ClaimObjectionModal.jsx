@@ -44,43 +44,60 @@ export const ClaimObjectionModal = ({ item, isOpen, onClose }) => {
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ padding: '1.5rem', maxWidth: '520px' }}>
+    <div className="modal-backdrop" onClick={onClose} style={{ backdropFilter: 'blur(4px)', background: 'rgba(15, 23, 42, 0.45)' }}>
+      <div 
+        className="modal-content" 
+        onClick={(e) => e.stopPropagation()} 
+        style={{ 
+          background: '#FAF7F2', 
+          border: '1px solid #E2DDD5',
+          borderRadius: '16px',
+          boxShadow: '0 20px 45px rgba(44, 30, 20, 0.15)',
+          padding: '1.75rem', 
+          maxWidth: '520px' 
+        }}
+      >
         
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', borderBottom: '1px solid #E2DDD5', paddingBottom: '0.85rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ 
-              background: 'var(--amber-100)', 
-              color: 'var(--amber-800)', 
-              borderRadius: 'var(--radius-md)', 
-              padding: '0.5rem',
-              display: 'flex'
+              background: '#FEF3C7', 
+              color: '#B45309', 
+              borderRadius: '10px', 
+              padding: '0.65rem',
+              display: 'flex',
+              border: '1px solid #FDE68A'
             }}>
               <ShieldAlert size={24} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Sanggahan Verifikasi Kepemilikan</h3>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                Laporan Barang #{item.item_code} - {item.title}
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.08em', color: '#B45309', fontWeight: 700, textTransform: 'uppercase' }}>
+                POSKO PERLINDUNGAN PEMILIK SAH
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', fontWeight: 700, color: '#0F172A', margin: '2px 0 0' }}>
+                Sanggahan Verifikasi Kepemilikan
+              </h3>
+              <p style={{ fontSize: '0.78rem', color: '#64748B', margin: '2px 0 0', fontFamily: 'var(--font-mono)' }}>
+                Barang #{item.item_code} &bull; {item.title}
               </p>
             </div>
           </div>
-          <button onClick={onClose} style={{ color: 'var(--text-muted)' }}>
+          <button onClick={onClose} style={{ color: '#94A3B8', cursor: 'pointer', padding: '4px' }}>
             <X size={20} />
           </button>
         </div>
 
         {/* Info Box */}
         <div style={{
-          background: 'var(--amber-50)',
-          border: '1px solid rgba(245, 158, 11, 0.4)',
-          borderRadius: 'var(--radius-md)',
-          padding: '0.8rem',
+          background: '#FFFBEB',
+          border: '1px solid #FCD34D',
+          borderRadius: '10px',
+          padding: '0.9rem',
           fontSize: '0.8rem',
-          color: 'var(--amber-900)',
-          marginBottom: '1rem',
-          lineHeight: 1.45
+          color: '#78350F',
+          marginBottom: '1.15rem',
+          lineHeight: 1.5
         }}>
           <strong>⚠️ Merasa barang ini adalah milik Anda yang sah?</strong><br />
           Jika Anda meyakini ada kekeliruan verifikasi oleh Admin atau pihak lain melakukan klaim palsu, silakan kirimkan bukti ciri fisik rahasia atau identitas kepemilikan Anda di bawah ini agar Admin Posko dapat membatalkan status verifikasi sebelumnya.
@@ -88,9 +105,9 @@ export const ClaimObjectionModal = ({ item, isOpen, onClose }) => {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              Penjelasan & Bukti Sanggahan Kepemilikan Anda:
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <label style={{ fontSize: '0.825rem', fontWeight: 700, color: '#334155' }}>
+              Penjelasan &amp; Bukti Sanggahan Kepemilikan Anda:
             </label>
             <textarea
               rows={4}
@@ -98,12 +115,20 @@ export const ClaimObjectionModal = ({ item, isOpen, onClose }) => {
               placeholder="Jelaskan bukti konkret bahwa barang ini milik Anda (misal: ciri khusus rahasia di dalam barang, tanda unik, isi dompet/tas yang persis, atau nomor seri)..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              style={{ width: '100%', resize: 'vertical' }}
+              style={{ 
+                width: '100%', 
+                background: '#FFFFFF',
+                border: '1px solid #CBD5E1',
+                borderRadius: '8px',
+                padding: '10px 12px',
+                fontSize: '0.88rem',
+                resize: 'vertical' 
+              }}
             />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <label style={{ fontSize: '0.825rem', fontWeight: 700, color: '#334155' }}>
               Kontak WhatsApp / No HP Anda untuk Dihubungi Admin:
             </label>
             <input
@@ -112,7 +137,14 @@ export const ClaimObjectionModal = ({ item, isOpen, onClose }) => {
               placeholder="Contoh: 081234567890 (WhatsApp Aktif)"
               value={contactInfo}
               onChange={(e) => setContactInfo(e.target.value)}
-              style={{ width: '100%' }}
+              style={{ 
+                width: '100%', 
+                background: '#FFFFFF',
+                border: '1px solid #CBD5E1',
+                borderRadius: '8px',
+                padding: '9px 12px',
+                fontSize: '0.88rem' 
+              }}
             />
           </div>
 
@@ -121,24 +153,48 @@ export const ClaimObjectionModal = ({ item, isOpen, onClose }) => {
             justifyContent: 'flex-end',
             gap: '0.75rem',
             marginTop: '0.5rem',
-            paddingTop: '0.75rem',
-            borderTop: '1px solid var(--border-light)'
+            paddingTop: '0.85rem',
+            borderTop: '1px solid #E2DDD5'
           }}>
-            <button type="button" onClick={onClose} className="btn btn-outline btn-sm">
+            <button 
+              type="button" 
+              onClick={onClose} 
+              style={{
+                background: '#FFFFFF',
+                border: '1px solid #CBD5E1',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '0.825rem',
+                fontWeight: 600,
+                color: '#475569',
+                cursor: 'pointer'
+              }}
+            >
               Batal
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="btn btn-accent btn-sm"
-              style={{ gap: '0.4rem' }}
+              style={{ 
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                background: submitting ? '#94A3B8' : '#D97706',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 18px',
+                fontSize: '0.825rem',
+                fontWeight: 700,
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                transition: 'background 0.15s ease'
+              }}
             >
               <Send size={14} /> {submitting ? 'Mengirim Sanggahan...' : 'Kirim Sanggahan ke Admin'}
             </button>
           </div>
 
         </form>
-
       </div>
     </div>
   );

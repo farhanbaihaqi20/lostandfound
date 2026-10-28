@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -19,14 +19,17 @@ import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { UNNES_BUILDINGS, CATEGORIES } from '../data/initialData';
 import { ImageUploadCompressor } from '../components/ImageUploadCompressor';
+import { LostSearchIllustration } from '../components/illustrations/LostSearchIllustration';
+import { FoundHandoverIllustration } from '../components/illustrations/FoundHandoverIllustration';
 
 export const ReportPage = () => {
   const { type: urlType } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { submitItem } = useData();
   const { user } = useAuth();
 
-  const isPickScreen = urlType === 'pilih';
+  const isPickScreen = urlType === 'pilih' || location.pathname.toLowerCase().includes('pilih-jenis-laporan') || !urlType;
 
   const [reportType, setReportType] = useState(
     urlType === 'temuan' ? 'temuan' : 'hilang'
@@ -122,223 +125,324 @@ export const ReportPage = () => {
   // -------------------------------------------------------------
   if (isPickScreen) {
     return (
-      <div className="container pb-mobile-nav" style={{ paddingTop: '2.5rem', maxWidth: '780px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div className="container pb-mobile-nav" style={{ paddingTop: '2.5rem', maxWidth: '880px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         
         {/* Navigation & Header */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '0.85rem' }}>
           
-          <Link 
-            to="/" 
-            style={{ 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              gap: '0.4rem', 
-              color: 'var(--ink-500)', 
-              fontSize: '0.8rem', 
-              fontWeight: 600,
-              textDecoration: 'none',
-              marginBottom: '0.25rem'
-            }}
-          >
-            <ArrowLeft size={14} /> Kembali ke Beranda
-          </Link>
-
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '0.45rem',
-            padding: '3px 12px',
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-full)',
-            fontSize: '0.72rem',
+            gap: '0.5rem',
+            padding: '5px 16px',
+            backgroundColor: '#EAE3D7',
+            border: '1px solid #D8CEBE',
+            borderRadius: '9999px',
+            fontSize: '0.75rem',
             fontWeight: 700,
-            color: 'var(--primary-indigo)',
+            color: '#475569',
             letterSpacing: '0.04em',
             textTransform: 'uppercase'
           }}>
-            Layanan Pelaporan Kampus UNNES
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }} />
+            <span>LAYANAN PELAPORAN KAMPUS UNNES</span>
           </div>
 
           <h1 style={{ 
             fontFamily: 'var(--font-serif)', 
-            fontSize: 'clamp(1.75rem, 3.5vw, 2.35rem)', 
-            fontWeight: 700, 
+            fontSize: 'clamp(2.2rem, 4.5vw, 3rem)', 
+            fontWeight: 800, 
             color: 'var(--ink-900)', 
-            margin: 0,
-            letterSpacing: '-0.02em'
+            margin: '0.2rem 0 0',
+            letterSpacing: '-0.01em',
+            textTransform: 'uppercase'
           }}>
-            Pilih Jenis Laporan
+            PILIH JENIS LAPORAN
           </h1>
 
-          <p style={{ fontSize: '0.9rem', color: 'var(--ink-600)', maxWidth: '520px', margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: '1rem', color: 'var(--ink-600)', maxWidth: '580px', margin: 0, lineHeight: 1.55 }}>
             Tentukan status barang yang ingin Anda laporkan untuk membuka formulir pendataan yang sesuai.
           </p>
         </div>
 
-        {/* Dual Choice Cards: Sleek & Tactile */}
-        <div className="report-pick-container">
+        {/* Dual Choice Cards: Exactly as in Reference Image 1 */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+          gap: '1.5rem',
+          width: '100%'
+        }}>
           
-          {/* Option 1: Kehilangan */}
+          {/* Card 1: Saya Kehilangan Barang */}
           <div 
             onClick={() => navigate('/lapor/hilang')}
-            className="report-pick-card lost"
+            style={{
+              backgroundColor: '#FFFFFF',
+              border: '1px solid var(--border-color)',
+              borderRadius: '16px',
+              padding: '1.75rem',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '1.25rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 20px rgba(44, 30, 20, 0.05)',
+              transition: 'all 0.2s ease',
+              textAlign: 'left'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px)';
+              e.currentTarget.style.boxShadow = '0 12px 28px rgba(44, 30, 20, 0.09)';
+              e.currentTarget.style.borderColor = '#FCA5A5';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(44, 30, 20, 0.05)';
+              e.currentTarget.style.borderColor = 'var(--border-color)';
+            }}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span className="report-pick-badge lost">
-                  <AlertCircle size={11} strokeWidth={2.5} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} />
-                  KEHILANGAN
-                </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--ink-400)', fontFamily: 'var(--font-mono)' }}>
-                  01
-                </span>
-              </div>
+            {/* Top Badge & Number */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                padding: '3px 10px',
+                borderRadius: '4px',
+                backgroundColor: '#FFE4E6',
+                color: '#DC2626',
+                border: '1px solid #FECDD3'
+              }}>
+                KEHILANGAN
+              </span>
+              <span style={{ fontSize: '0.825rem', color: 'var(--ink-400)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                01
+              </span>
+            </div>
 
-              <div>
+            {/* Middle: Text + Illustration */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+              <div style={{ flex: 1 }}>
                 <h2 style={{ 
                   fontFamily: 'var(--font-sans)', 
-                  fontSize: '1.25rem', 
+                  fontSize: '1.35rem', 
                   fontWeight: 700, 
                   color: 'var(--ink-900)', 
-                  margin: '0 0 0.35rem' 
+                  margin: '0 0 0.5rem',
+                  lineHeight: 1.3
                 }}>
                   Saya Kehilangan Barang
                 </h2>
-                <p style={{ fontSize: '0.835rem', color: 'var(--ink-600)', lineHeight: 1.5, margin: 0 }}>
+                <p style={{ fontSize: '0.85rem', color: 'var(--ink-600)', lineHeight: 1.55, margin: 0 }}>
                   Barang pribadi Anda tertinggal di area kampus? Catat ciri-cirinya agar posko fakultas dan penemu dapat mengidentifikasinya.
                 </p>
               </div>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.25rem' }}>
-                <span style={{ 
-                  fontSize: '0.72rem', 
-                  color: 'var(--ink-700)', 
-                  backgroundColor: 'var(--bg-surface-alt)', 
-                  padding: '2px 8px', 
-                  borderRadius: '4px',
-                  fontWeight: 500
-                }}>
-                  Pencocokan Otomatis
-                </span>
-                <span style={{ 
-                  fontSize: '0.72rem', 
-                  color: 'var(--ink-700)', 
-                  backgroundColor: 'var(--bg-surface-alt)', 
-                  padding: '2px 8px', 
-                  borderRadius: '4px',
-                  fontWeight: 500
-                }}>
-                  Verifikasi Blind-Test
-                </span>
+              <div style={{ flexShrink: 0 }}>
+                <LostSearchIllustration width={125} height={115} />
               </div>
             </div>
 
-            <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
-              <div 
+            {/* Mini Feature Pills */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
+              <span style={{ 
+                fontSize: '0.72rem', 
+                color: 'var(--ink-700)', 
+                backgroundColor: '#FFFFFF', 
+                border: '1px solid var(--border-color)',
+                padding: '3px 10px', 
+                borderRadius: '6px',
+                fontWeight: 500
+              }}>
+                Pencocokan Otomatis
+              </span>
+              <span style={{ 
+                fontSize: '0.72rem', 
+                color: 'var(--ink-700)', 
+                backgroundColor: '#FFFFFF', 
+                border: '1px solid var(--border-color)',
+                padding: '3px 10px', 
+                borderRadius: '6px',
+                fontWeight: 500
+              }}>
+                Verifikasi Blind-Test
+              </span>
+            </div>
+
+            {/* Solid Crimson Action Button */}
+            <div style={{ marginTop: '0.5rem' }}>
+              <button 
+                type="button"
                 style={{
+                  width: '100%',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  color: 'var(--danger-600)',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.85rem',
                   fontWeight: 700,
-                  fontSize: '0.825rem',
-                  fontFamily: 'var(--font-mono)'
+                  letterSpacing: '0.04em',
+                  padding: '12px 20px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s ease'
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B91C1C'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#DC2626'}
               >
                 <span>BUAT LAPORAN KEHILANGAN</span>
-                <ArrowRight size={15} />
-              </div>
+                <ArrowRight size={16} />
+              </button>
             </div>
           </div>
 
-          {/* Option 2: Temuan */}
+          {/* Card 2: Saya Menemukan Barang */}
           <div 
             onClick={() => navigate('/lapor/temuan')}
-            className="report-pick-card found"
+            style={{
+              backgroundColor: '#FFFFFF',
+              border: '1px solid var(--border-color)',
+              borderRadius: '16px',
+              padding: '1.75rem',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '1.25rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 20px rgba(44, 30, 20, 0.05)',
+              transition: 'all 0.2s ease',
+              textAlign: 'left'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px)';
+              e.currentTarget.style.boxShadow = '0 12px 28px rgba(44, 30, 20, 0.09)';
+              e.currentTarget.style.borderColor = '#A5B4FC';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(44, 30, 20, 0.05)';
+              e.currentTarget.style.borderColor = 'var(--border-color)';
+            }}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span className="report-pick-badge found">
-                  <PackageCheck size={11} strokeWidth={2.5} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} />
-                  TEMUAN
-                </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--ink-400)', fontFamily: 'var(--font-mono)' }}>
-                  02
-                </span>
-              </div>
+            {/* Top Badge & Number */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                padding: '3px 10px',
+                borderRadius: '4px',
+                backgroundColor: '#EEF2FF',
+                color: '#4F46E5',
+                border: '1px solid #C7D2FE'
+              }}>
+                TEMUAN
+              </span>
+              <span style={{ fontSize: '0.825rem', color: 'var(--ink-400)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                02
+              </span>
+            </div>
 
-              <div>
+            {/* Middle: Text + Illustration */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+              <div style={{ flex: 1 }}>
                 <h2 style={{ 
                   fontFamily: 'var(--font-sans)', 
-                  fontSize: '1.25rem', 
+                  fontSize: '1.35rem', 
                   fontWeight: 700, 
                   color: 'var(--ink-900)', 
-                  margin: '0 0 0.35rem' 
+                  margin: '0 0 0.5rem',
+                  lineHeight: 1.3
                 }}>
                   Saya Menemukan Barang
                 </h2>
-                <p style={{ fontSize: '0.835rem', color: 'var(--ink-600)', lineHeight: 1.5, margin: 0 }}>
+                <p style={{ fontSize: '0.85rem', color: 'var(--ink-600)', lineHeight: 1.55, margin: 0 }}>
                   Menemukan barang milik orang lain di kampus? Amankan dan catat ciri umumnya untuk diserahterimakan melalui posko fakultas.
                 </p>
               </div>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.25rem' }}>
-                <span style={{ 
-                  fontSize: '0.72rem', 
-                  color: 'var(--ink-700)', 
-                  backgroundColor: 'var(--bg-surface-alt)', 
-                  padding: '2px 8px', 
-                  borderRadius: '4px',
-                  fontWeight: 500
-                }}>
-                  Sensor Privasi Identitas
-                </span>
-                <span style={{ 
-                  fontSize: '0.72rem', 
-                  color: 'var(--ink-700)', 
-                  backgroundColor: 'var(--bg-surface-alt)', 
-                  padding: '2px 8px', 
-                  borderRadius: '4px',
-                  fontWeight: 500
-                }}>
-                  Berita Acara Digital (BAST)
-                </span>
+              <div style={{ flexShrink: 0 }}>
+                <FoundHandoverIllustration width={135} height={115} />
               </div>
             </div>
 
-            <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
-              <div 
+            {/* Mini Feature Pills */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
+              <span style={{ 
+                fontSize: '0.72rem', 
+                color: 'var(--ink-700)', 
+                backgroundColor: '#FFFFFF', 
+                border: '1px solid var(--border-color)',
+                padding: '3px 10px', 
+                borderRadius: '6px',
+                fontWeight: 500
+              }}>
+                Sensor Privasi Identitas
+              </span>
+              <span style={{ 
+                fontSize: '0.72rem', 
+                color: 'var(--ink-700)', 
+                backgroundColor: '#FFFFFF', 
+                border: '1px solid var(--border-color)',
+                padding: '3px 10px', 
+                borderRadius: '6px',
+                fontWeight: 500
+              }}>
+                Berita Acara Digital (BAST)
+              </span>
+            </div>
+
+            {/* Solid Electric Indigo Action Button */}
+            <div style={{ marginTop: '0.5rem' }}>
+              <button 
+                type="button"
                 style={{
+                  width: '100%',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  color: 'var(--primary-indigo)',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  backgroundColor: '#4F46E5',
+                  color: '#FFFFFF',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.85rem',
                   fontWeight: 700,
-                  fontSize: '0.825rem',
-                  fontFamily: 'var(--font-mono)'
+                  letterSpacing: '0.04em',
+                  padding: '12px 20px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s ease'
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4338CA'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4F46E5'}
               >
                 <span>LAPORKAN BARANG TEMUAN</span>
-                <ArrowRight size={15} />
-              </div>
+                <ArrowRight size={16} />
+              </button>
             </div>
           </div>
 
         </div>
 
-        {/* Micro Security & Trust Note */}
+        {/* Bottom Disclaimer Note */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '0.5rem',
           padding: '0.75rem 1rem',
-          fontSize: '0.785rem',
-          color: 'var(--ink-500)',
+          fontSize: '0.825rem',
+          color: 'var(--ink-600)',
           textAlign: 'center'
         }}>
-          <ShieldCheck size={16} color="var(--primary-indigo)" style={{ flexShrink: 0 }} />
+          <ShieldCheck size={16} color="var(--ink-700)" style={{ flexShrink: 0 }} />
           <span>Foto kartu identitas (KTM, KTP, ATM) otomatis disensor sistem untuk publik demi privasi pemilik sah.</span>
         </div>
 

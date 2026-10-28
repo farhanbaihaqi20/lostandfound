@@ -68,35 +68,7 @@ export const ExplorePage = () => {
   return (
     <div className="container pb-mobile-nav" style={{ paddingTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
-      {/* 1. Header (02 Jelajahi — Desktop) */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1.5rem' }}>
-        <div style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: '0.7rem',
-          fontWeight: 700,
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          color: 'var(--ink-500)'
-        }}>
-          KATALOG BARANG &bull; UNIVERSITAS NEGERI SEMARANG
-        </div>
-
-        <h1 style={{ 
-          fontFamily: 'var(--font-serif)', 
-          fontSize: 'clamp(1.85rem, 3.5vw, 2.5rem)', 
-          fontWeight: 700, 
-          color: 'var(--ink-900)',
-          margin: 0
-        }}>
-          Katalog Barang Hilang &amp; Temuan
-        </h1>
-
-        <p style={{ fontSize: '0.9rem', color: 'var(--ink-700)', maxWidth: '680px', margin: 0 }}>
-          Pencarian terbuka barang hilang maupun temuan di seluruh lingkungan kampus UNNES Sekaran.
-        </p>
-      </div>
-
-      {/* 2. Search & Filter Bar */}
+      {/* Search & Filter Bar (Image 2) */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         
         {/* Search Input Box */}
@@ -104,14 +76,15 @@ export const ExplorePage = () => {
           position: 'relative',
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: 'var(--bg-card)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '6px'
+          backgroundColor: '#FFFFFF',
+          border: '1px solid var(--border-color)',
+          borderRadius: '12px',
+          boxShadow: '0 4px 16px rgba(44, 30, 20, 0.04)'
         }}>
           <Search 
             size={18} 
             color="var(--ink-500)" 
-            style={{ position: 'absolute', left: '1rem' }} 
+            style={{ position: 'absolute', left: '1.25rem' }} 
           />
           <input
             type="text"
@@ -120,8 +93,8 @@ export const ExplorePage = () => {
             onChange={(e) => setQuery(e.target.value)}
             style={{
               width: '100%',
-              padding: '0.85rem 1rem 0.85rem 2.85rem',
-              fontSize: '0.9rem',
+              padding: '0.95rem 1rem 0.95rem 3.25rem',
+              fontSize: '0.925rem',
               border: 'none',
               outline: 'none',
               background: 'transparent',
@@ -134,13 +107,14 @@ export const ExplorePage = () => {
               onClick={() => setQuery('')}
               style={{
                 position: 'absolute',
-                right: '1rem',
+                right: '1.25rem',
                 background: 'transparent',
                 border: 'none',
                 color: 'var(--ink-500)',
                 cursor: 'pointer',
                 fontFamily: 'var(--font-mono)',
-                fontSize: '0.75rem'
+                fontSize: '0.75rem',
+                fontWeight: 700
               }}
             >
               [HAPUS]
@@ -148,19 +122,52 @@ export const ExplorePage = () => {
           )}
         </div>
 
-        {/* Primary Type Filter Tabs */}
-        <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        {/* Primary Type Filter Tabs (Image 2: Pills) */}
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <button
             onClick={() => setTypeFilter('semua')}
-            className={`filter-chip ${typeFilter === 'semua' ? 'active' : ''}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.45rem 1.1rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              borderRadius: '9999px',
+              border: typeFilter === 'semua' ? '1px solid var(--primary-indigo)' : '1px solid var(--border-color)',
+              backgroundColor: typeFilter === 'semua' ? 'var(--primary-indigo)' : '#FFFFFF',
+              color: typeFilter === 'semua' ? '#FFFFFF' : 'var(--ink-700)',
+              cursor: 'pointer',
+              boxShadow: typeFilter === 'semua' ? '0 2px 8px rgba(79, 70, 229, 0.25)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
           >
             SEMUA ({countTotal})
           </button>
 
           <button
             onClick={() => setTypeFilter('hilang')}
-            className={`filter-chip ${typeFilter === 'hilang' ? 'active' : ''}`}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.45rem 1.1rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              borderRadius: '9999px',
+              border: typeFilter === 'hilang' ? '1px solid var(--danger-500)' : '1px solid var(--border-color)',
+              backgroundColor: typeFilter === 'hilang' ? 'var(--danger-500)' : '#FFFFFF',
+              color: typeFilter === 'hilang' ? '#FFFFFF' : 'var(--ink-700)',
+              cursor: 'pointer',
+              boxShadow: typeFilter === 'hilang' ? '0 2px 8px rgba(225, 29, 72, 0.25)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
           >
             <AlertCircle size={13} color={typeFilter === 'hilang' ? '#ffffff' : 'var(--danger-500)'} />
             BARANG HILANG ({countHilang})
@@ -168,8 +175,24 @@ export const ExplorePage = () => {
 
           <button
             onClick={() => setTypeFilter('temuan')}
-            className={`filter-chip ${typeFilter === 'temuan' ? 'active' : ''}`}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.45rem 1.1rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              borderRadius: '9999px',
+              border: typeFilter === 'temuan' ? '1px solid var(--primary-indigo)' : '1px solid var(--border-color)',
+              backgroundColor: typeFilter === 'temuan' ? 'var(--primary-indigo)' : '#FFFFFF',
+              color: typeFilter === 'temuan' ? '#FFFFFF' : 'var(--ink-700)',
+              cursor: 'pointer',
+              boxShadow: typeFilter === 'temuan' ? '0 2px 8px rgba(79, 70, 229, 0.25)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
           >
             <PackageCheck size={13} color={typeFilter === 'temuan' ? '#ffffff' : 'var(--primary-indigo)'} />
             BARANG TEMUAN ({countTemuan})
@@ -177,8 +200,24 @@ export const ExplorePage = () => {
 
           <button
             onClick={() => setOnlyBounty(!onlyBounty)}
-            className={`filter-chip ${onlyBounty ? 'active' : ''}`}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.45rem 1.1rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              borderRadius: '9999px',
+              border: onlyBounty ? '1px solid var(--amber-500)' : '1px solid var(--border-color)',
+              backgroundColor: onlyBounty ? 'var(--amber-500)' : '#FFFFFF',
+              color: onlyBounty ? '#FFFFFF' : 'var(--ink-700)',
+              cursor: 'pointer',
+              boxShadow: onlyBounty ? '0 2px 8px rgba(245, 158, 11, 0.25)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
           >
             <Award size={13} color={onlyBounty ? '#ffffff' : 'var(--amber-500)'} />
             DENGAN HADIAH ({countBounty})
@@ -194,6 +233,7 @@ export const ExplorePage = () => {
                 gap: '0.35rem',
                 fontFamily: 'var(--font-mono)',
                 fontSize: '0.72rem',
+                fontWeight: 700,
                 color: 'var(--tag-lost-text)',
                 background: 'transparent',
                 border: 'none',
@@ -206,19 +246,20 @@ export const ExplorePage = () => {
           )}
         </div>
 
-        {/* Dropdowns Row (Kategori, Lokasi, Urutkan) */}
+        {/* Dropdowns Row (Kategori, Lokasi, Status, Urutkan) - Image 2 White Card */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '0.75rem',
-          backgroundColor: 'var(--bg-card)',
-          padding: '0.85rem',
-          borderRadius: '6px',
-          border: '1px solid var(--border-subtle)'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '1rem',
+          backgroundColor: '#FFFFFF',
+          padding: '1.15rem 1.25rem',
+          borderRadius: '12px',
+          border: '1px solid var(--border-color)',
+          boxShadow: '0 2px 12px rgba(44, 30, 20, 0.04)'
         }}>
           {/* Kategori */}
           <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
               KATEGORI BARANG
             </label>
             <select
@@ -226,13 +267,14 @@ export const ExplorePage = () => {
               onChange={(e) => setCategoryFilter(e.target.value)}
               style={{
                 width: '100%',
-                padding: '6px 8px',
-                borderRadius: '4px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-card-alt)',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                backgroundColor: '#FAF7F2',
                 fontFamily: 'var(--font-sans)',
-                fontSize: '0.825rem',
-                color: 'var(--ink-900)'
+                fontSize: '0.85rem',
+                color: 'var(--ink-900)',
+                cursor: 'pointer'
               }}
             >
               <option value="semua">Semua Kategori</option>
@@ -244,7 +286,7 @@ export const ExplorePage = () => {
 
           {/* Lokasi / Gedung */}
           <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
               FAKULTAS / LOKASI GEDUNG
             </label>
             <select
@@ -252,13 +294,14 @@ export const ExplorePage = () => {
               onChange={(e) => setBuildingFilter(e.target.value)}
               style={{
                 width: '100%',
-                padding: '6px 8px',
-                borderRadius: '4px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-card-alt)',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                backgroundColor: '#FAF7F2',
                 fontFamily: 'var(--font-sans)',
-                fontSize: '0.825rem',
-                color: 'var(--ink-900)'
+                fontSize: '0.85rem',
+                color: 'var(--ink-900)',
+                cursor: 'pointer'
               }}
             >
               <option value="semua">Semua Lokasi / Gedung</option>
@@ -270,7 +313,7 @@ export const ExplorePage = () => {
 
           {/* Status */}
           <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
               STATUS BARANG
             </label>
             <select
@@ -278,13 +321,14 @@ export const ExplorePage = () => {
               onChange={(e) => setStatusFilter(e.target.value)}
               style={{
                 width: '100%',
-                padding: '6px 8px',
-                borderRadius: '4px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-card-alt)',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                backgroundColor: '#FAF7F2',
                 fontFamily: 'var(--font-sans)',
-                fontSize: '0.825rem',
-                color: 'var(--ink-900)'
+                fontSize: '0.85rem',
+                color: 'var(--ink-900)',
+                cursor: 'pointer'
               }}
             >
               <option value="semua">Semua Status</option>
@@ -295,7 +339,7 @@ export const ExplorePage = () => {
 
           {/* Urutkan */}
           <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
               URUTKAN BERDASARKAN
             </label>
             <select
@@ -303,13 +347,14 @@ export const ExplorePage = () => {
               onChange={(e) => setSortBy(e.target.value)}
               style={{
                 width: '100%',
-                padding: '6px 8px',
-                borderRadius: '4px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-card-alt)',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                backgroundColor: '#FAF7F2',
                 fontFamily: 'var(--font-sans)',
-                fontSize: '0.825rem',
-                color: 'var(--ink-900)'
+                fontSize: '0.85rem',
+                color: 'var(--ink-900)',
+                cursor: 'pointer'
               }}
             >
               <option value="terbaru">Waktu Laporan (Terbaru)</option>
