@@ -334,38 +334,7 @@ export const BottomNav = () => {
           border: '1px solid var(--border-glass)'
         }}
       >
-        {/* Sleek Collapse Button at Top-Right */}
-        <button
-          onClick={() => updateCollapsed(true)}
-          title="Sembunyikan navigasi ke bawah (bisa juga geser ke bawah)"
-          aria-label="Sembunyikan navigasi"
-          style={{
-            position: 'absolute',
-            top: '-12px',
-            right: '18px',
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-glass)',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
-            borderRadius: 'var(--radius-full)',
-            padding: '2px 10px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '3px',
-            color: 'var(--text-secondary)',
-            fontSize: '0.65rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            backdropFilter: 'blur(8px)',
-            zIndex: 45,
-            transition: 'transform var(--trans-fast)'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <ChevronDown size={13} strokeWidth={2.5} />
-          <span>Sembunyi</span>
-        </button>
-
+        {/* Navigation Links */}
         <Link 
           to="/beranda"
           style={{

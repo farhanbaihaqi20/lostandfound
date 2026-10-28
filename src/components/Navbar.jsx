@@ -59,10 +59,10 @@ export const Navbar = () => {
       padding: '0.75rem 0',
       backdropFilter: 'blur(8px)'
     }}>
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.25rem' }}>
+      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
         
         {/* Brand Logo & Archival Identity */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none' }}>
           <div style={{
             width: '36px',
             height: '36px',
@@ -90,7 +90,7 @@ export const Navbar = () => {
             }}>
               UNNES Lost &amp; Found
             </div>
-            <div style={{ 
+            <div className="nav-brand-sub" style={{ 
               fontFamily: 'var(--font-mono)', 
               fontSize: '0.625rem', 
               color: 'var(--ink-500)', 
@@ -200,11 +200,11 @@ export const Navbar = () => {
         {/* Right Tools & Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           
-          {/* Buat Laporan Primary Button */}
+          {/* Buat Laporan Primary Button (Desktop only; mobile uses FAB in BottomNav) */}
           <Link 
             to="/lapor/pilih" 
+            className="nav-desktop-only"
             style={{
-              display: 'inline-flex',
               alignItems: 'center',
               gap: '0.35rem',
               backgroundColor: 'var(--primary-indigo)',
@@ -368,7 +368,7 @@ export const Navbar = () => {
                     {(user.full_name || user.email || 'U')[0].toUpperCase()}
                   </div>
                 )}
-                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', fontWeight: 600 }}>
+                <span className="nav-user-label" style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', fontWeight: 600 }}>
                   {user.full_name?.split(' ')[0] || 'Akun'}
                 </span>
                 <ChevronDown size={14} color="var(--ink-500)" style={{ marginLeft: '1px' }} />

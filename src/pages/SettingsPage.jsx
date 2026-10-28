@@ -69,7 +69,7 @@ export const SettingsPage = () => {
   }, []);
 
   return (
-    <div style={{ background: 'var(--bg-canvas)', minHeight: 'calc(100vh - 72px)', paddingTop: '2.5rem', paddingBottom: '5rem' }}>
+    <div className="pb-mobile-nav" style={{ background: 'var(--bg-canvas)', minHeight: 'calc(100vh - 72px)', paddingTop: '1.5rem' }}>
       <div className="container" style={{ maxWidth: '720px', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
         
         <div>

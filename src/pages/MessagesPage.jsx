@@ -14,8 +14,10 @@ import {
   Search,
   Lock,
   ArrowRight,
+  ArrowLeft,
   Info,
   ChevronLeft,
+  ChevronRight,
   Check,
   Sparkles,
   MapPin,
@@ -63,15 +65,47 @@ export const MessagesPage = () => {
   const [showDetailsPanel, setShowDetailsPanel] = useState(true);
   const [showConversationsList, setShowConversationsList] = useState(true);
   const [copiedScript, setCopiedScript] = useState(false);
+  // Mobile master-detail view state ('list' = conversations list, 'chat' = active conversation)
+  const [mobileView, setMobileView] = useState(() => (matchId ? 'chat' : 'list'));
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     if (matchId) {
       setActiveMatchId(matchId);
+      setMobileView('chat');
     } else if (!activeMatchId && userMatches.length > 0) {
       setActiveMatchId(userMatches[0].id);
     }
   }, [matchId, userMatches]);
+
+  // Sync mobile bottom navigation hiding when inside an active mobile chat room
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile && mobileView === 'chat') {
+      document.body.classList.add('in-mobile-chat');
+    } else {
+      document.body.classList.remove('in-mobile-chat');
+    }
+
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        document.body.classList.remove('in-mobile-chat');
+      } else if (mobileView === 'chat') {
+        document.body.classList.add('in-mobile-chat');
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      document.body.classList.remove('in-mobile-chat');
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [mobileView]);
+
+  const handleSelectConversation = (id) => {
+    setActiveMatchId(id);
+    setMobileView('chat');
+  };
 
   const activeMatch = userMatches.find(m => m.id === activeMatchId);
   const activeItem = items.find(i => i.id === activeMatch?.item_id);
@@ -150,7 +184,7 @@ export const MessagesPage = () => {
   };
 
   return (
-    <div style={{ background: 'var(--bg-canvas)', height: 'calc(100vh - 65px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="messages-page-wrapper" style={{ background: 'var(--bg-canvas)', height: 'calc(100vh - 65px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
       {userMatches.length === 0 ? (
         /* Empty State */
@@ -202,201 +236,220 @@ export const MessagesPage = () => {
         }} className="pro-chat-layout">
           
           {/* ================= COLUMN 1: SIDEBAR CONVERSATIONS ================= */}
-          {showConversationsList && (
-            <div style={{ 
+          <div 
+            className={`chat-sidebar-column ${mobileView === 'list' ? 'mobile-show' : 'mobile-hide'}`}
+            style={{ 
               borderRight: '1px solid var(--border-subtle)', 
               background: 'var(--bg-canvas)', 
-              display: 'flex', 
+              display: showConversationsList ? 'flex' : 'none', 
               flexDirection: 'column',
               overflow: 'hidden'
-            }}>
-              {/* Header & Search */}
-              <div style={{ padding: '0.85rem 1.15rem 0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                    <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--ink-900)' }}>
-                      Pesan &amp; Koordinasi
-                    </h1>
-                    <span style={{ 
-                      fontFamily: 'var(--font-mono)', 
-                      fontSize: '0.68rem', 
-                      letterSpacing: '0.04em', 
-                      padding: '2px 7px', 
-                      borderRadius: 'var(--radius-full)', 
-                      background: 'var(--primary-50)', 
-                      color: 'var(--primary-indigo)',
-                      fontWeight: 700
-                    }}>
-                      {userMatches.length} AKTIF
-                    </span>
-                  </div>
-
-                  {/* Hide Sidebar Button */}
-                  <button
-                    type="button"
-                    onClick={() => setShowConversationsList(false)}
-                    className="btn btn-secondary btn-sm"
-                    title="Sembunyikan daftar obrolan"
-                    style={{
-                      padding: '0.3rem 0.45rem',
-                      color: 'var(--ink-500)',
-                      background: 'transparent',
-                      borderColor: 'var(--border-subtle)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: '6px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <PanelLeftClose size={16} />
-                  </button>
+            }}
+          >
+            {/* Header & Search */}
+            <div style={{ padding: '0.85rem 1.15rem 0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--ink-900)' }}>
+                    Pesan &amp; Koordinasi
+                  </h1>
+                  <span style={{ 
+                    fontFamily: 'var(--font-mono)', 
+                    fontSize: '0.68rem', 
+                    letterSpacing: '0.04em', 
+                    padding: '2px 7px', 
+                    borderRadius: 'var(--radius-full)', 
+                    background: 'var(--primary-50)', 
+                    color: 'var(--primary-indigo)',
+                    fontWeight: 700
+                  }}>
+                    {userMatches.length} AKTIF
+                  </span>
                 </div>
 
-                {/* Search Box */}
-                <div style={{ position: 'relative' }}>
-                  <input 
-                    type="text"
-                    placeholder="Cari nama atau kode barang..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.55rem 0.75rem 0.55rem 2.15rem',
-                      fontSize: '0.8rem',
-                      borderRadius: 'var(--radius-full)',
-                      border: '1px solid var(--border-color)',
-                      background: 'var(--bg-surface)',
-                      fontFamily: 'var(--font-sans)'
-                    }}
-                  />
-                  <Search size={14} color="var(--ink-400)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
-                </div>
+                {/* Hide Sidebar Button (Desktop only) */}
+                <button
+                  type="button"
+                  onClick={() => setShowConversationsList(false)}
+                  className="btn btn-secondary btn-sm chat-desktop-only"
+                  title="Sembunyikan daftar obrolan"
+                  style={{
+                    padding: '0.3rem 0.45rem',
+                    color: 'var(--ink-500)',
+                    background: 'transparent',
+                    borderColor: 'var(--border-subtle)',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <PanelLeftClose size={16} />
+                </button>
               </div>
 
-              {/* Conversation List */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '0.35rem 0' }}>
-                {filteredMatches.length === 0 ? (
-                  <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--ink-400)', fontSize: '0.8rem' }}>
-                    Tidak ada percakapan ditemukan
-                  </div>
-                ) : (
-                  filteredMatches.map(m => {
-                    const isActive = activeMatchId === m.id;
-                    const otherPartyName = user?.id === m.owner_id ? m.finder_name : m.owner_name;
-                    const initials = getInitials(otherPartyName);
-                    const matchMsgs = (messages || []).filter(msg => msg.match_id === m.id);
-                    const lastMsg = matchMsgs.length > 0 ? matchMsgs[matchMsgs.length - 1] : null;
-                    const lastTime = lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
-
-                    return (
-                      <div
-                        key={m.id}
-                        onClick={() => setActiveMatchId(m.id)}
-                        className={`chat-conv-item ${isActive ? 'active' : ''}`}
-                      >
-                        {/* Avatar */}
-                        <div style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          background: isActive ? 'var(--primary-indigo)' : 'var(--bg-surface-alt)',
-                          color: isActive ? '#FFFFFF' : 'var(--primary-indigo)',
-                          border: isActive ? 'none' : '1px solid var(--border-subtle)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontFamily: 'var(--font-sans)',
-                          fontSize: '0.85rem',
-                          fontWeight: 700,
-                          flexShrink: 0
-                        }}>
-                          {initials}
-                        </div>
-
-                        {/* Content */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                            <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--ink-900)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {otherPartyName}
-                            </span>
-                            <span style={{ 
-                              fontSize: '0.68rem', 
-                              color: 'var(--ink-400)',
-                              fontWeight: 500,
-                              flexShrink: 0
-                            }}>
-                              {lastTime || (m.status === 'selesai' ? 'Selesai' : 'Aktif')}
-                            </span>
-                          </div>
-
-                          <div style={{ fontSize: '0.74rem', color: 'var(--ink-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {lastMsg ? (
-                              <span>{lastMsg.sender_id === user?.id ? 'Anda: ' : ''}{(lastMsg.content || '').replace(/<!--BAST_.*?-->/g, '').trim()}</span>
-                            ) : (
-                              <span>#{m.item_code} · {m.item_title}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+              {/* Search Box */}
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type="text"
+                  placeholder="Cari nama atau kode barang..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.55rem 0.75rem 0.55rem 2.15rem',
+                    fontSize: '0.8rem',
+                    borderRadius: 'var(--radius-full)',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-surface)',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                />
+                <Search size={14} color="var(--ink-400)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
               </div>
             </div>
-          )}
+
+            {/* Conversation List */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0.35rem 0' }}>
+              {filteredMatches.length === 0 ? (
+                <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--ink-400)', fontSize: '0.8rem' }}>
+                  Tidak ada percakapan ditemukan
+                </div>
+              ) : (
+                filteredMatches.map(m => {
+                  const isActive = activeMatchId === m.id;
+                  const otherPartyName = user?.id === m.owner_id ? m.finder_name : m.owner_name;
+                  const initials = getInitials(otherPartyName);
+                  const matchMsgs = (messages || []).filter(msg => msg.match_id === m.id);
+                  const lastMsg = matchMsgs.length > 0 ? matchMsgs[matchMsgs.length - 1] : null;
+                  const lastTime = lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
+
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => handleSelectConversation(m.id)}
+                      className={`chat-conv-item ${isActive ? 'active' : ''}`}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {/* Avatar */}
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: isActive ? 'var(--primary-indigo)' : 'var(--bg-surface-alt)',
+                        color: isActive ? '#FFFFFF' : 'var(--primary-indigo)',
+                        border: isActive ? 'none' : '1px solid var(--border-subtle)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        flexShrink: 0
+                      }}>
+                        {initials}
+                      </div>
+
+                      {/* Content */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                          <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--ink-900)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {otherPartyName}
+                          </span>
+                          <span style={{ 
+                            fontSize: '0.68rem', 
+                            color: 'var(--ink-400)',
+                            fontWeight: 500,
+                            flexShrink: 0
+                          }}>
+                            {lastTime || (m.status === 'selesai' ? 'Selesai' : 'Aktif')}
+                          </span>
+                        </div>
+
+                        <div style={{ fontSize: '0.74rem', color: 'var(--ink-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {lastMsg ? (
+                            <span>{lastMsg.sender_id === user?.id ? 'Anda: ' : ''}{(lastMsg.content || '').replace(/<!--BAST_.*?-->/g, '').trim()}</span>
+                          ) : (
+                            <span>#{m.item_code} · {m.item_title}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <ChevronRight size={15} color="var(--ink-300)" style={{ flexShrink: 0, marginLeft: '4px' }} />
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
 
           {/* ================= COLUMN 2: ACTIVE CHAT MAIN AREA ================= */}
           {activeMatch ? (
-            <div style={{ 
-              background: 'var(--bg-canvas)', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              height: '100%', 
-              overflow: 'hidden'
-            }}>
+            <div 
+              className={`chat-main-column ${mobileView === 'chat' ? 'mobile-show' : 'mobile-hide'}`}
+              style={{ 
+                background: 'var(--bg-canvas)', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                height: '100%', 
+                overflow: 'hidden'
+              }}
+            >
               
               {/* Header Bar */}
               <div style={{
-                padding: '0.75rem 1.25rem',
+                padding: '0.65rem 1rem',
                 borderBottom: '1px solid var(--border-subtle)',
                 background: 'var(--bg-card)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '0.75rem'
+                gap: '0.65rem'
               }}>
-                {/* Contact Info & Left Toggle Button */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                {/* Contact Info & Left Navigation/Toggle Button */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', minWidth: 0, flex: 1 }}>
                   
-                  {/* Toggle Sidebar Button */}
+                  {/* Mobile Back Button (Arrow only, NO TEXT!) */}
+                  <button
+                    type="button"
+                    onClick={() => setMobileView('list')}
+                    className="chat-mobile-back-btn btn btn-secondary btn-sm"
+                    title="Kembali ke daftar obrolan"
+                    aria-label="Kembali ke daftar obrolan"
+                    style={{
+                      padding: '0.35rem 0.45rem',
+                      borderRadius: '6px',
+                      color: 'var(--ink-700)',
+                      cursor: 'pointer',
+                      flexShrink: 0
+                    }}
+                  >
+                    <ArrowLeft size={18} />
+                  </button>
+
+                  {/* Desktop Toggle Sidebar Button (Icon only, NO TEXT!) */}
                   <button
                     type="button"
                     onClick={() => setShowConversationsList(!showConversationsList)}
-                    className="btn btn-secondary btn-sm"
+                    className="btn btn-secondary btn-sm chat-desktop-only"
                     title={showConversationsList ? "Sembunyikan daftar obrolan" : "Tampilkan daftar obrolan"}
                     style={{
                       padding: '0.35rem 0.55rem',
                       color: showConversationsList ? 'var(--ink-600)' : 'var(--primary-indigo)',
                       backgroundColor: showConversationsList ? 'transparent' : 'var(--primary-50)',
                       borderColor: showConversationsList ? 'var(--border-subtle)' : 'var(--primary-300)',
-                      display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '0.35rem',
                       borderRadius: '6px',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      flexShrink: 0
                     }}
                   >
                     {showConversationsList ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
-                    {!showConversationsList && (
-                      <span style={{ fontSize: '0.74rem', fontWeight: 600 }}>Daftar Obrolan</span>
-                    )}
                   </button>
 
                   <div style={{
-                    width: '38px',
-                    height: '38px',
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '50%',
                     background: 'var(--primary-indigo)',
                     color: '#FFFFFF',
@@ -410,40 +463,43 @@ export const MessagesPage = () => {
                   }}>
                     {getInitials(user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name)}
                   </div>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                      <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.975rem', fontWeight: 700, color: 'var(--ink-900)' }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'nowrap' }}>
+                      <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.925rem', fontWeight: 700, color: 'var(--ink-900)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name}
                       </span>
-                      <span className="badge badge-verified" style={{ fontSize: '0.62rem', padding: '1px 6px' }}>
+                      <span className="badge badge-verified" style={{ fontSize: '0.58rem', padding: '1px 5px', flexShrink: 0 }}>
                         TERVERIFIKASI
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.725rem', color: 'var(--ink-500)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <span>Seputar:</span>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--ink-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span>Seputar: </span>
                       <strong style={{ color: 'var(--ink-800)' }}>#{activeMatch.item_code} · {activeMatch.item_title}</strong>
                     </div>
                   </div>
                 </div>
 
                 {/* Header Action Tools */}
-                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexShrink: 0 }}>
                   
                   {/* WhatsApp Coordination Button */}
                   <button 
                     onClick={handleCopyWAScript} 
                     className="btn btn-secondary btn-sm"
-                    title="Salin ringkasan koordinasi untuk dikirimkan via WhatsApp"
-                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.7rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    title="Salin ringkasan koordinasi untuk WhatsApp"
+                    style={{ fontSize: '0.74rem', padding: '0.35rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                   >
                     {copiedScript ? <Check size={13} color="var(--success)" /> : <Share2 size={13} />}
-                    <span>{copiedScript ? 'Tersalin!' : 'Salin Info WA'}</span>
-                  </button>                  {/* Runner Order Button (only if active) */}
+                    <span className="chat-btn-label-desktop">{copiedScript ? 'Tersalin!' : 'Salin Info WA'}</span>
+                    <span className="chat-mobile-back-btn">{copiedScript ? 'Tersalin' : 'WA'}</span>
+                  </button>
+
+                  {/* Runner Order Button (only if active, desktop only) */}
                   {activeMatch.status !== 'selesai' && (
                     <button 
                       onClick={() => setShowRunnerModal(true)} 
-                      className="btn btn-secondary btn-sm"
-                      style={{ fontSize: '0.75rem', padding: '0.35rem 0.7rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                      className="btn btn-secondary btn-sm chat-desktop-only"
+                      style={{ fontSize: '0.74rem', padding: '0.35rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                     >
                       <Bike size={13} />
                       <span>Pesan Runner</span>
@@ -456,54 +512,57 @@ export const MessagesPage = () => {
                       onClick={() => setShowBASTModal(true)} 
                       className="btn btn-secondary btn-sm"
                       style={{ 
-                        fontSize: '0.75rem', 
-                        padding: '0.35rem 0.75rem', 
+                        fontSize: '0.74rem', 
+                        padding: '0.35rem 0.65rem', 
                         display: 'inline-flex', 
                         alignItems: 'center', 
-                        gap: '0.35rem', 
+                        gap: '0.3rem', 
                         color: 'var(--success, #10b981)',
                         borderColor: 'rgba(16, 185, 129, 0.3)',
                         backgroundColor: 'rgba(16, 185, 129, 0.05)'
                       }}
                     >
                       <CheckCircle2 size={13} />
-                      <span>Lihat BAST (Selesai)</span>
+                      <span className="chat-btn-label-desktop">Lihat BAST (Selesai)</span>
+                      <span className="chat-mobile-back-btn">BAST</span>
                     </button>
                   ) : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at)) ? (
                     <button 
                       onClick={() => setShowBASTModal(true)} 
                       className="btn btn-secondary btn-sm"
                       style={{ 
-                        fontSize: '0.75rem', 
-                        padding: '0.35rem 0.75rem', 
+                        fontSize: '0.74rem', 
+                        padding: '0.35rem 0.65rem', 
                         display: 'inline-flex', 
                         alignItems: 'center', 
-                        gap: '0.35rem',
+                        gap: '0.3rem',
                         color: 'var(--primary-indigo)',
                         borderColor: 'var(--primary-300)'
                       }}
                     >
                       <Check size={13} />
-                      <span>Status BAST (Sudah TTD)</span>
+                      <span className="chat-btn-label-desktop">Status BAST (Sudah TTD)</span>
+                      <span className="chat-mobile-back-btn">BAST</span>
                     </button>
                   ) : (
                     <button 
                       onClick={() => setShowBASTModal(true)} 
                       className="btn btn-primary btn-sm"
-                      style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                      style={{ fontSize: '0.74rem', padding: '0.35rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                     >
                       <FileCheck size={13} />
-                      <span>Tanda Tangan BAST</span>
+                      <span className="chat-btn-label-desktop">Tanda Tangan BAST</span>
+                      <span className="chat-mobile-back-btn">TTD BAST</span>
                     </button>
                   )}
 
-                  {/* Toggle Context Sidebar */}
+                  {/* Toggle Context Sidebar (Desktop Only) */}
                   <button 
                     onClick={() => setShowDetailsPanel(!showDetailsPanel)} 
-                    className="btn btn-secondary btn-sm"
+                    className="btn btn-secondary btn-sm chat-desktop-only"
                     title={showDetailsPanel ? "Tutup rincian barang" : "Lihat rincian barang"}
                     style={{ 
-                      padding: '0.35rem 0.6rem', 
+                      padding: '0.35rem 0.55rem', 
                       backgroundColor: showDetailsPanel ? 'var(--bg-surface-alt)' : 'transparent',
                       color: showDetailsPanel ? 'var(--primary-indigo)' : 'var(--ink-700)'
                     }}
@@ -516,9 +575,9 @@ export const MessagesPage = () => {
                     onClick={handleDeleteSession} 
                     className="btn btn-secondary btn-sm"
                     title="Hapus sesi percakapan ini"
-                    style={{ padding: '0.35rem 0.55rem', color: 'var(--danger-500)', borderColor: 'var(--border-subtle)' }}
+                    style={{ padding: '0.35rem 0.5rem', color: 'var(--danger-500)', borderColor: 'var(--border-subtle)' }}
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={13} />
                   </button>
                 </div>
               </div>
@@ -980,12 +1039,6 @@ export const MessagesPage = () => {
         @media (max-width: 1024px) {
           .chat-context-panel {
             display: none !important;
-          }
-        }
-        @media (max-width: 768px) {
-          .pro-chat-layout {
-            grid-template-columns: 1fr !important;
-            height: 100% !important;
           }
         }
       `}</style>

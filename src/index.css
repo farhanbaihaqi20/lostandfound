@@ -713,12 +713,214 @@ img {
 
 /* Bottom safe margin for mobile navigation bar */
 .pb-mobile-nav {
-  padding-bottom: 5.5rem;
+  padding-bottom: calc(6.75rem + env(safe-area-inset-bottom, 16px));
 }
 
 @media (min-width: 768px) {
   .pb-mobile-nav {
-    padding-bottom: 2rem;
+    padding-bottom: 2.5rem;
+  }
+}
+
+/* Smooth Horizontal Scroll for Category & Filter Chips on Mobile */
+.filter-pill-scroll-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.filter-pill-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+.filter-pill-scroll-row > * {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+@media (min-width: 768px) {
+  .filter-pill-scroll-row {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+}
+
+/* Responsive Navbar Utilities */
+.nav-desktop-only {
+  display: none !important;
+}
+@media (min-width: 768px) {
+  .nav-desktop-only {
+    display: inline-flex !important;
+  }
+}
+
+.nav-brand-sub {
+  display: none;
+}
+@media (min-width: 640px) {
+  .nav-brand-sub {
+    display: block;
+  }
+}
+
+.nav-user-label {
+  display: none;
+}
+@media (min-width: 480px) {
+  .nav-user-label {
+    display: inline;
+  }
+}
+
+/* Dashboard Metrics Grid (2x2 on mobile, 4-col on desktop) */
+.dashboard-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 768px) {
+  .dashboard-metrics-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+}
+
+.dashboard-search-container {
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .dashboard-search-container {
+    width: 280px;
+  }
+}
+
+/* Responsive Table Container */
+.responsive-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.responsive-table-container table {
+  min-width: 620px;
+}
+
+/* Mobile Filter Toggle Display */
+.mobile-filter-toggle-row {
+  display: block;
+}
+.explore-filter-card-wrapper {
+  display: none;
+}
+.explore-filter-card-wrapper.open {
+  display: block;
+  animation: fadeIn 0.2s ease-out;
+}
+@media (min-width: 768px) {
+  .mobile-filter-toggle-row {
+    display: none;
+  }
+  .explore-filter-card-wrapper {
+    display: block !important;
+  }
+}
+
+/* Explore Filter Grid / Responsive Card */
+.explore-filter-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  background-color: #FFFFFF;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 12px rgba(44, 30, 20, 0.04);
+}
+@media (min-width: 640px) {
+  .explore-filter-card {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 1.15rem 1.25rem;
+    gap: 1rem;
+  }
+}
+@media (min-width: 1024px) {
+  .explore-filter-card {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ==========================================================================
+   MOBILE CHAT RESPONSIVE (MASTER-DETAIL) STYLES
+   ========================================================================== */
+
+/* Hide Bottom Nav when in active mobile chat so input & BAST banner are 100% visible */
+@media (max-width: 768px) {
+  body.in-mobile-chat .mobile-bottom-nav {
+    display: none !important;
+  }
+  body.in-mobile-chat .messages-page-wrapper {
+    height: calc(100dvh - 60px) !important;
+  }
+}
+
+/* Chat desktop vs mobile utilities */
+@media (max-width: 768px) {
+  .chat-desktop-only {
+    display: none !important;
+  }
+  .chat-mobile-back-btn {
+    display: inline-flex !important;
+  }
+  .chat-btn-label-desktop {
+    display: none !important;
+  }
+}
+@media (min-width: 769px) {
+  .chat-desktop-only {
+    display: inline-flex !important;
+  }
+  .chat-mobile-back-btn {
+    display: none !important;
+  }
+  .chat-btn-label-desktop {
+    display: inline !important;
+  }
+}
+
+/* Pro Chat Layout Master-Detail on Mobile */
+@media (max-width: 768px) {
+  .pro-chat-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+  .chat-sidebar-column {
+    width: 100% !important;
+    height: 100% !important;
+    flex: 1 1 auto !important;
+    border-right: none !important;
+  }
+  .chat-sidebar-column.mobile-hide {
+    display: none !important;
+  }
+  .chat-sidebar-column.mobile-show {
+    display: flex !important;
+  }
+  .chat-main-column {
+    width: 100% !important;
+    height: 100% !important;
+    flex: 1 1 auto !important;
+  }
+  .chat-main-column.mobile-hide {
+    display: none !important;
+  }
+  .chat-main-column.mobile-show {
+    display: flex !important;
   }
 }
 

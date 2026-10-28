@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, AlertCircle, PackageCheck, Award, RotateCcw, Building2, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Search, AlertCircle, PackageCheck, Award, RotateCcw, Building2, SlidersHorizontal, ArrowUpDown, ChevronDown } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { UNNES_BUILDINGS, CATEGORIES } from '../data/initialData';
 import { ItemCard } from '../components/ItemCard';
@@ -16,6 +16,13 @@ export const ExplorePage = () => {
   const [onlyBounty, setOnlyBounty] = useState(searchParams.get('hadiah') === 'true' || searchParams.get('bounty') === 'true');
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'semua');
   const [sortBy, setSortBy] = useState('terbaru');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  // Active secondary filters count for badge
+  const activeSecondaryFiltersCount = (categoryFilter !== 'semua' ? 1 : 0) +
+    (buildingFilter !== 'semua' ? 1 : 0) +
+    (statusFilter !== 'semua' ? 1 : 0) +
+    (sortBy !== 'terbaru' ? 1 : 0);
 
   // Filter items
   const filteredItems = approvedItems.filter(item => {
@@ -66,10 +73,10 @@ export const ExplorePage = () => {
   const isFiltered = query || typeFilter !== 'semua' || categoryFilter !== 'semua' || buildingFilter !== 'semua' || onlyBounty || statusFilter !== 'semua' || sortBy !== 'terbaru';
 
   return (
-    <div className="container pb-mobile-nav" style={{ paddingTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="container pb-mobile-nav" style={{ paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       
-      {/* Search & Filter Bar (Image 2) */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {/* Search & Filter Bar */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
         
         {/* Search Input Box */}
         <div style={{
@@ -84,17 +91,17 @@ export const ExplorePage = () => {
           <Search 
             size={18} 
             color="var(--ink-500)" 
-            style={{ position: 'absolute', left: '1.25rem' }} 
+            style={{ position: 'absolute', left: '1rem' }} 
           />
           <input
             type="text"
-            placeholder="Cari berdasarkan nama barang, ciri fisik, lokasi, atau kode (#LF-UNNES-xxx)..."
+            placeholder="Cari nama barang, ciri fisik, lokasi gedung, atau kode..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             style={{
               width: '100%',
-              padding: '0.95rem 1rem 0.95rem 3.25rem',
-              fontSize: '0.925rem',
+              padding: '0.85rem 1rem 0.85rem 2.85rem',
+              fontSize: '0.9rem',
               border: 'none',
               outline: 'none',
               background: 'transparent',
@@ -107,7 +114,7 @@ export const ExplorePage = () => {
               onClick={() => setQuery('')}
               style={{
                 position: 'absolute',
-                right: '1.25rem',
+                right: '1rem',
                 background: 'transparent',
                 border: 'none',
                 color: 'var(--ink-500)',
@@ -122,8 +129,8 @@ export const ExplorePage = () => {
           )}
         </div>
 
-        {/* Primary Type Filter Tabs (Image 2: Pills) */}
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        {/* Primary Type Filter Tabs (Horizontal Scroll on Mobile) */}
+        <div className="filter-pill-scroll-row">
           <button
             onClick={() => setTypeFilter('semua')}
             style={{
@@ -227,7 +234,6 @@ export const ExplorePage = () => {
             <button
               onClick={handleReset}
               style={{
-                marginLeft: 'auto',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.35rem',
@@ -238,7 +244,8 @@ export const ExplorePage = () => {
                 background: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
-                textDecoration: 'underline'
+                textDecoration: 'underline',
+                whiteSpace: 'nowrap'
               }}
             >
               <RotateCcw size={12} /> RESET FILTER
@@ -246,121 +253,162 @@ export const ExplorePage = () => {
           )}
         </div>
 
-        {/* Dropdowns Row (Kategori, Lokasi, Status, Urutkan) - Image 2 White Card */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '1rem',
-          backgroundColor: '#FFFFFF',
-          padding: '1.15rem 1.25rem',
-          borderRadius: '12px',
-          border: '1px solid var(--border-color)',
-          boxShadow: '0 2px 12px rgba(44, 30, 20, 0.04)'
-        }}>
-          {/* Kategori */}
-          <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
-              KATEGORI BARANG
-            </label>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                backgroundColor: '#FAF7F2',
-                fontFamily: 'var(--font-sans)',
-                fontSize: '0.85rem',
-                color: 'var(--ink-900)',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="semua">Semua Kategori</option>
-              {CATEGORIES.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
+        {/* Mobile Filter Toggle Button */}
+        <div className="mobile-filter-toggle-row">
+          <button
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            className="btn btn-secondary btn-sm"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.65rem 1rem',
+              borderRadius: '10px',
+              backgroundColor: '#FFFFFF',
+              border: activeSecondaryFiltersCount > 0 ? '1.5px solid var(--primary-indigo)' : '1px solid var(--border-color)',
+              color: 'var(--ink-900)',
+              fontWeight: 600,
+              fontSize: '0.82rem',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <SlidersHorizontal size={15} color="var(--primary-indigo)" />
+              <span>Filter &amp; Urutkan {activeSecondaryFiltersCount > 0 ? `(${activeSecondaryFiltersCount} aktif)` : '(Kategori, Lokasi, Status)'}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              {activeSecondaryFiltersCount > 0 && (
+                <span style={{ 
+                  background: 'var(--primary-indigo)', 
+                  color: '#fff', 
+                  borderRadius: '9999px', 
+                  fontSize: '0.68rem', 
+                  padding: '1px 7px',
+                  fontWeight: 700
+                }}>
+                  {activeSecondaryFiltersCount}
+                </span>
+              )}
+              <ChevronDown 
+                size={16} 
+                style={{ 
+                  transform: showMobileFilters ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease' 
+                }} 
+              />
+            </div>
+          </button>
+        </div>
 
-          {/* Lokasi / Gedung */}
-          <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
-              FAKULTAS / LOKASI GEDUNG
-            </label>
-            <select
-              value={buildingFilter}
-              onChange={(e) => setBuildingFilter(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                backgroundColor: '#FAF7F2',
-                fontFamily: 'var(--font-sans)',
-                fontSize: '0.85rem',
-                color: 'var(--ink-900)',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="semua">Semua Lokasi / Gedung</option>
-              {UNNES_BUILDINGS.map(b => (
-                <option key={b.id || b.name} value={b.name}>{b.name}</option>
-              ))}
-            </select>
-          </div>
+        {/* Dropdowns Row (Kategori, Lokasi, Status, Urutkan) */}
+        <div className={`explore-filter-card-wrapper ${showMobileFilters ? 'open' : ''}`}>
+          <div className="explore-filter-card">
+            {/* Kategori */}
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                KATEGORI BARANG
+              </label>
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: '#FAF7F2',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.85rem',
+                  color: 'var(--ink-900)',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="semua">Semua Kategori</option>
+                {CATEGORIES.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
 
-          {/* Status */}
-          <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
-              STATUS BARANG
-            </label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                backgroundColor: '#FAF7F2',
-                fontFamily: 'var(--font-sans)',
-                fontSize: '0.85rem',
-                color: 'var(--ink-900)',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="semua">Semua Status</option>
-              <option value="aktif">Masih Berlangsung</option>
-              <option value="kembali">Sudah Kembali</option>
-            </select>
-          </div>
+            {/* Lokasi / Gedung */}
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                FAKULTAS / LOKASI GEDUNG
+              </label>
+              <select
+                value={buildingFilter}
+                onChange={(e) => setBuildingFilter(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: '#FAF7F2',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.85rem',
+                  color: 'var(--ink-900)',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="semua">Semua Lokasi / Gedung</option>
+                {UNNES_BUILDINGS.map(b => (
+                  <option key={b.id || b.name} value={b.name}>{b.name}</option>
+                ))}
+              </select>
+            </div>
 
-          {/* Urutkan */}
-          <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
-              URUTKAN BERDASARKAN
-            </label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                backgroundColor: '#FAF7F2',
-                fontFamily: 'var(--font-sans)',
-                fontSize: '0.85rem',
-                color: 'var(--ink-900)',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="terbaru">Waktu Laporan (Terbaru)</option>
-              <option value="terlama">Waktu Laporan (Terlama)</option>
-              <option value="hadiah">Nominal Hadiah Tertinggi</option>
-            </select>
+            {/* Status */}
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                STATUS BARANG
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: '#FAF7F2',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.85rem',
+                  color: 'var(--ink-900)',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="semua">Semua Status</option>
+                <option value="aktif">Masih Berlangsung</option>
+                <option value="kembali">Sudah Kembali</option>
+              </select>
+            </div>
+
+            {/* Urutkan */}
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                URUTKAN BERDASARKAN
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: '#FAF7F2',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.85rem',
+                  color: 'var(--ink-900)',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="terbaru">Waktu Laporan (Terbaru)</option>
+                <option value="terlama">Waktu Laporan (Terlama)</option>
+                <option value="hadiah">Nominal Hadiah Tertinggi</option>
+              </select>
+            </div>
           </div>
         </div>
 

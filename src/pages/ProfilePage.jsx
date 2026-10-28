@@ -65,11 +65,11 @@ export const ProfilePage = () => {
   };
 
   return (
-    <div style={{ background: 'var(--bg-canvas)', minHeight: 'calc(100vh - 72px)', paddingTop: '2.5rem', paddingBottom: '5rem' }}>
-      <div className="container" style={{ maxWidth: '860px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="pb-mobile-nav" style={{ background: 'var(--bg-canvas)', minHeight: 'calc(100vh - 72px)', paddingTop: '1.5rem' }}>
+      <div className="container" style={{ maxWidth: '860px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         
         {/* Profile Header Card */}
-        <div className="archive-card" style={{ padding: '2rem' }}>
+        <div className="archive-card" style={{ padding: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.25rem' }}>
             
             <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>

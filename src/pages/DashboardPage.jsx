@@ -95,118 +95,113 @@ export const DashboardPage = () => {
   };
 
   return (
-    <div style={{ background: 'var(--bg-canvas)', minHeight: 'calc(100vh - 72px)', paddingTop: '2.5rem', paddingBottom: '5rem' }}>
+    <div className="pb-mobile-nav" style={{ background: 'var(--bg-canvas)', minHeight: 'calc(100vh - 72px)', paddingTop: '1.5rem' }}>
       <div className="container">
         
         {/* ================= 1. HEADER ROW ================= */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.08em', color: 'var(--ink-500)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
               DASHBOARD LAPORAN SAYA
             </div>
-            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', fontWeight: 600, color: 'var(--ink-900)', margin: '0 0 0.35rem' }}>
+            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 600, color: 'var(--ink-900)', margin: '0 0 0.35rem' }}>
               Laporan Saya
             </h1>
-            <p style={{ fontSize: '0.9rem', color: 'var(--ink-700)', maxWidth: '640px', lineHeight: 1.5, margin: 0 }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--ink-700)', maxWidth: '640px', lineHeight: 1.5, margin: 0 }}>
               Pantau status verifikasi posko, proses blind test klaim, dan riwayat pengembalian barang milik Anda.
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
             <button 
               onClick={() => setShowRunnerModal(true)}
               className="btn btn-secondary btn-sm"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem', padding: '0.65rem 1.15rem', borderRadius: '6px' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem', padding: '0.55rem 1rem', borderRadius: '6px' }}
             >
-              <Bike size={16} /> Pesan Jasa Runner
+              <Bike size={15} /> Pesan Jasa Runner
             </button>
             <Link 
               to="/lapor/pilih" 
               className="btn btn-primary btn-sm"
-              style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem', padding: '0.65rem 1.25rem', borderRadius: '6px' }}
+              style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem', padding: '0.55rem 1.15rem', borderRadius: '6px' }}
             >
-              <Plus size={16} /> Buat Laporan Baru
+              <Plus size={15} /> Buat Laporan Baru
             </Link>
           </div>
         </div>
 
-        {/* ================= 2. METRICS TICKER BOXES ================= */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '1rem',
-          marginBottom: '2rem'
-        }}>
+        {/* ================= 2. METRICS TICKER BOXES (2x2 on Mobile, 4-col on Desktop) ================= */}
+        <div className="dashboard-metrics-grid">
           {/* Card 1: Total */}
-          <div className="archive-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', borderRadius: '8px' }}>
+          <div className="archive-card" style={{ padding: '0.9rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.45rem', borderRadius: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.06em', color: 'var(--ink-500)', textTransform: 'uppercase', fontWeight: 700 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.05em', color: 'var(--ink-500)', textTransform: 'uppercase', fontWeight: 700 }}>
                   TOTAL LAPORAN
                 </span>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '2.1rem', fontWeight: 800, color: 'var(--ink-900)', marginTop: '2px', lineHeight: 1.1 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.75rem', fontWeight: 800, color: 'var(--ink-900)', marginTop: '2px', lineHeight: 1.1 }}>
                   {totalCount}
                 </div>
               </div>
-              <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: 'var(--primary-50)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <FileText size={18} color="var(--primary-indigo)" />
+              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'var(--primary-50)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FileText size={16} color="var(--primary-indigo)" />
               </div>
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--ink-500)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem' }}>Semua kategori terdaftar</span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--ink-500)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.35rem' }}>Semua kategori</span>
           </div>
 
           {/* Card 2: Menunggu Review */}
-          <div className="archive-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', borderRadius: '8px' }}>
+          <div className="archive-card" style={{ padding: '0.9rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.45rem', borderRadius: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.06em', color: 'var(--ink-500)', textTransform: 'uppercase', fontWeight: 700 }}>
-                  MENUNGGU REVIEW
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.05em', color: 'var(--ink-500)', textTransform: 'uppercase', fontWeight: 700 }}>
+                  MENUNGGU
                 </span>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '2.1rem', fontWeight: 800, color: 'var(--ink-900)', marginTop: '2px', lineHeight: 1.1 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.75rem', fontWeight: 800, color: 'var(--ink-900)', marginTop: '2px', lineHeight: 1.1 }}>
                   {pendingCount}
                 </div>
               </div>
-              <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Clock size={18} color="#D97706" />
+              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Clock size={16} color="#D97706" />
               </div>
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--ink-500)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem' }}>Proses kurasi Admin Posko</span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--ink-500)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.35rem' }}>Kurasi Admin</span>
           </div>
 
           {/* Card 3: Terverifikasi */}
-          <div className="archive-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', borderRadius: '8px' }}>
+          <div className="archive-card" style={{ padding: '0.9rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.45rem', borderRadius: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.06em', color: 'var(--ink-500)', textTransform: 'uppercase', fontWeight: 700 }}>
-                  TERVERIFIKASI AKTIF
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.05em', color: 'var(--ink-500)', textTransform: 'uppercase', fontWeight: 700 }}>
+                  TERVERIFIKASI
                 </span>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '2.1rem', fontWeight: 800, color: 'var(--ink-900)', marginTop: '2px', lineHeight: 1.1 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.75rem', fontWeight: 800, color: 'var(--ink-900)', marginTop: '2px', lineHeight: 1.1 }}>
                   {verifiedCount}
                 </div>
               </div>
-              <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <CheckCircle2 size={18} color="#059669" />
+              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CheckCircle2 size={16} color="#059669" />
               </div>
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--ink-500)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem' }}>Tayang di katalog publik</span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--ink-500)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.35rem' }}>Tayang publik</span>
           </div>
 
           {/* Card 4: Selesai */}
-          <div className="archive-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', borderRadius: '8px' }}>
+          <div className="archive-card" style={{ padding: '0.9rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.45rem', borderRadius: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.06em', color: 'var(--ink-500)', textTransform: 'uppercase', fontWeight: 700 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.05em', color: 'var(--ink-500)', textTransform: 'uppercase', fontWeight: 700 }}>
                   SELESAI / KEMBALI
                 </span>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '2.1rem', fontWeight: 800, color: 'var(--primary-indigo)', marginTop: '2px', lineHeight: 1.1 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.75rem', fontWeight: 800, color: 'var(--primary-indigo)', marginTop: '2px', lineHeight: 1.1 }}>
                   {completedCount}
                 </div>
               </div>
-              <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: 'var(--primary-50)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <CheckCircle2 size={18} color="var(--primary-indigo)" />
+              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'var(--primary-50)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CheckCircle2 size={16} color="var(--primary-indigo)" />
               </div>
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--ink-500)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem' }}>Berhasil diserahterimakan</span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--ink-500)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.35rem' }}>Diserahterimakan</span>
           </div>
         </div>
 
@@ -216,13 +211,13 @@ export const DashboardPage = () => {
           justifyContent: 'space-between', 
           alignItems: 'center', 
           flexWrap: 'wrap', 
-          gap: '1rem',
+          gap: '0.85rem',
           borderBottom: '1px solid var(--border-subtle)',
-          paddingBottom: '1rem',
-          marginBottom: '1.5rem'
+          paddingBottom: '0.85rem',
+          marginBottom: '1.25rem'
         }}>
-          {/* Tab Buttons */}
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {/* Tab Buttons (Horizontal Scroll on Mobile) */}
+          <div className="filter-pill-scroll-row">
             {[
               { id: 'semua', label: `SEMUA (${totalCount})` },
               { id: 'hilang', label: `KEHILANGAN (${myLostItems.length})` },
@@ -233,7 +228,7 @@ export const DashboardPage = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`filter-chip ${activeTab === tab.id ? 'active' : ''}`}
-                style={{ fontSize: '0.78rem', padding: '0.45rem 0.95rem' }}
+                style={{ fontSize: '0.76rem', padding: '0.45rem 0.95rem' }}
               >
                 {tab.label}
               </button>
@@ -242,7 +237,7 @@ export const DashboardPage = () => {
 
           {/* Search Box */}
           {activeTab !== 'runner' && (
-            <div style={{ position: 'relative', width: '280px' }}>
+            <div className="dashboard-search-container" style={{ position: 'relative' }}>
               <input 
                 type="text"
                 placeholder="Cari dalam laporan saya..."
@@ -250,11 +245,12 @@ export const DashboardPage = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '0.5rem 0.75rem 0.5rem 2.25rem',
-                  fontSize: '0.8rem',
-                  borderRadius: '2px',
+                  padding: '0.55rem 0.75rem 0.55rem 2.25rem',
+                  fontSize: '0.82rem',
+                  borderRadius: '6px',
                   border: '1px solid var(--border-subtle)',
-                  background: 'var(--bg-card)'
+                  background: 'var(--bg-card)',
+                  outline: 'none'
                 }}
               />
               <Search size={14} color="var(--ink-500)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
@@ -266,7 +262,7 @@ export const DashboardPage = () => {
         {activeTab === 'runner' ? (
           /* ================= RUNNER ORDERS TAB ================= */
           myOrders.length === 0 ? (
-            <div className="archive-card" style={{ padding: '3.5rem 1.5rem', textAlign: 'center' }}>
+            <div className="archive-card" style={{ padding: '2.5rem 1.25rem', textAlign: 'center' }}>
               <Bike size={36} color="var(--ink-500)" style={{ margin: '0 auto 0.75rem' }} />
               <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 600, color: 'var(--ink-900)' }}>
                 Belum Ada Pesanan Jasa Runner
@@ -283,8 +279,8 @@ export const DashboardPage = () => {
               </button>
             </div>
           ) : (
-            <div className="archive-card" style={{ overflowX: 'auto', padding: 0 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+            <div className="archive-card responsive-table-container" style={{ padding: 0 }}>
+              <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-subtle)', background: 'rgba(15, 23, 42, 0.03)', fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.06em' }}>
                     <th style={{ padding: '0.85rem 1rem' }}>ORDER ID</th>
@@ -328,20 +324,20 @@ export const DashboardPage = () => {
         ) : (
           /* ================= ARSIP ITEMS TABLE ================= */
           filteredItems.length === 0 ? (
-            <div className="archive-card" style={{ padding: '3.5rem 2rem', textAlign: 'center', borderRadius: '10px' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: 'var(--primary-50)', color: 'var(--primary-indigo)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', boxShadow: '0 4px 12px rgba(79, 70, 229, 0.12)' }}>
-                <FileText size={28} />
+            <div className="archive-card" style={{ padding: '2.5rem 1.25rem', textAlign: 'center', borderRadius: '10px' }}>
+              <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: 'var(--primary-50)', color: 'var(--primary-indigo)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', boxShadow: '0 4px 12px rgba(79, 70, 229, 0.12)' }}>
+                <FileText size={24} />
               </div>
-              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0 0 0.5rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0 0 0.5rem' }}>
                 {searchQuery ? `Tidak ada laporan yang cocok dengan "${searchQuery}"` : 'Belum Ada Laporan Terdaftar'}
               </h3>
-              <p style={{ fontSize: '0.88rem', color: 'var(--ink-600)', maxWidth: '480px', margin: '0 auto 2rem', lineHeight: 1.6 }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--ink-600)', maxWidth: '440px', margin: '0 auto 1.5rem', lineHeight: 1.55 }}>
                 {searchQuery 
                   ? 'Coba periksa ejaan kata kunci atau ganti filter kategori laporan.' 
                   : 'Mulai laporkan barang Anda untuk memantau status pencocokan dan klaim secara cepat.'}
               </p>
 
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <Link 
                   to="/lapor/hilang" 
                   className="btn btn-sm"
@@ -349,13 +345,17 @@ export const DashboardPage = () => {
                     background: 'var(--danger-50)',
                     color: 'var(--danger-700)',
                     border: '1px solid var(--danger-300)',
-                    padding: '0.7rem 1.25rem',
+                    padding: '0.65rem 1.15rem',
                     fontWeight: 700,
                     display: 'inline-flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '0.45rem',
                     borderRadius: '6px',
-                    textDecoration: 'none'
+                    textDecoration: 'none',
+                    fontSize: '0.8rem',
+                    flex: '1 1 180px',
+                    maxWidth: '240px'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = 'var(--danger-600)';
@@ -372,13 +372,17 @@ export const DashboardPage = () => {
                   to="/lapor/temuan" 
                   className="btn btn-primary btn-sm"
                   style={{
-                    padding: '0.7rem 1.25rem',
+                    padding: '0.65rem 1.15rem',
                     fontWeight: 700,
                     display: 'inline-flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '0.45rem',
                     borderRadius: '6px',
-                    textDecoration: 'none'
+                    textDecoration: 'none',
+                    fontSize: '0.8rem',
+                    flex: '1 1 180px',
+                    maxWidth: '240px'
                   }}
                 >
                   <Plus size={15} /> Catat Barang Temuan
@@ -386,8 +390,8 @@ export const DashboardPage = () => {
               </div>
             </div>
           ) : (
-            <div className="archive-card" style={{ overflowX: 'auto', padding: 0 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+            <div className="archive-card responsive-table-container" style={{ padding: 0 }}>
+              <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-subtle)', background: 'rgba(15, 23, 42, 0.03)', fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.06em' }}>
                     <th style={{ padding: '0.85rem 1rem' }}>KODE BARANG</th>
