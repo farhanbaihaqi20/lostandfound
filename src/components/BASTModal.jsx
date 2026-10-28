@@ -9,8 +9,12 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
 
   if (!isOpen || !match) return null;
 
-  const isOwner = user?.id === match.owner_id || (user?.email && match.owner_name && match.owner_name.toLowerCase().includes(user?.full_name?.toLowerCase()));
-  const isFinder = user?.id === match.finder_id || (user?.email && match.finder_name && match.finder_name.toLowerCase().includes(user?.full_name?.toLowerCase()));
+  const normUser = (user?.full_name || '').trim().toLowerCase();
+  const normOwner = (match.owner_name || '').trim().toLowerCase();
+  const normFinder = (match.finder_name || '').trim().toLowerCase();
+
+  const isOwner = (user?.id && user.id === match.owner_id) || (normUser && normOwner && (normOwner.includes(normUser) || normUser.includes(normOwner)));
+  const isFinder = (user?.id && user.id === match.finder_id) || (normUser && normFinder && (normFinder.includes(normUser) || normUser.includes(normFinder)));
   const isAdmin = user?.role === 'admin' && !isOwner && !isFinder;
 
   const currentRole = isOwner ? 'owner' : (isFinder ? 'finder' : 'admin');
@@ -31,6 +35,14 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
   const [signerNIM, setSignerNIM] = useState(user?.nim || '');
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setSignerName(user?.full_name || (isOwner ? match.owner_name : (isFinder ? match.finder_name : '')));
+      setSignerNIM(user?.nim || '');
+      setAgreed(false);
+    }
+  }, [isOpen, match?.id, user?.id, isOwner, isFinder]);
 
   // Pernyataan khusus yang berbeda antara Pemilik vs Penemu vs Admin
   let docBadge = 'SURAT PENERIMAAN BARANG (PEMILIK SAH)';

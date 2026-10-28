@@ -44,12 +44,15 @@ export const MessagesPage = () => {
 
   // Filter matches:
   // - Admin: matches approved by admin or directly involving admin
-  // - User: matches where user is finder or owner
+  // - User: matches where user is finder or owner (by id or full name)
   const userMatches = (matches || []).filter(m => {
     if (user?.role === 'admin') {
       return !m.approved_by || m.approved_by === user?.id || m.finder_id === user?.id || m.owner_id === user?.id;
     }
-    return m.finder_id === user?.id || m.owner_id === user?.id;
+    const normUser = (user?.full_name || '').trim().toLowerCase();
+    const isFinder = m.finder_id === user?.id || (normUser && m.finder_name && m.finder_name.toLowerCase().includes(normUser));
+    const isOwner = m.owner_id === user?.id || (normUser && m.owner_name && m.owner_name.toLowerCase().includes(normUser));
+    return isFinder || isOwner;
   });
 
   const [activeMatchId, setActiveMatchId] = useState(matchId || (userMatches.length > 0 ? userMatches[0].id : null));
@@ -329,7 +332,7 @@ export const MessagesPage = () => {
 
                           <div style={{ fontSize: '0.74rem', color: 'var(--ink-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {lastMsg ? (
-                              <span>{lastMsg.sender_id === user?.id ? 'Anda: ' : ''}{lastMsg.content}</span>
+                              <span>{lastMsg.sender_id === user?.id ? 'Anda: ' : ''}{(lastMsg.content || '').replace(/<!--BAST_.*?-->/g, '').trim()}</span>
                             ) : (
                               <span>#{m.item_code} · {m.item_title}</span>
                             )}
@@ -580,6 +583,8 @@ export const MessagesPage = () => {
                   const prevMsg = idx > 0 ? matchMessages[idx - 1] : null;
                   const isSameSenderAsPrev = prevMsg && prevMsg.sender_id === msg.sender_id && prevMsg.type !== 'system';
 
+                  const displayContent = (msg.content || '').replace(/<!--BAST_.*?-->/g, '').trim();
+
                   if (isSystem) {
                     return (
                       <div key={msg.id} style={{
@@ -594,7 +599,7 @@ export const MessagesPage = () => {
                         textAlign: 'center',
                         lineHeight: 1.45
                       }}>
-                        {msg.content}
+                        {displayContent}
                       </div>
                     );
                   }
@@ -633,7 +638,7 @@ export const MessagesPage = () => {
 
                       {/* Chat Bubble */}
                       <div className={isMe ? 'chat-bubble-outgoing' : 'chat-bubble-incoming'}>
-                        <span>{msg.content}</span>
+                        <span>{displayContent}</span>
                         
                         {/* Inline Timestamp & Ticks */}
                         <span className={isMe ? 'chat-bubble-time-outgoing' : 'chat-bubble-time-incoming'}>
