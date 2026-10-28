@@ -188,8 +188,25 @@ export const DataProvider = ({ children }) => {
 
       if (!error && data) {
         setMatches(prev => {
+          const merged = data.map(dbMatch => {
+            const local = prev.find(p => p.id === dbMatch.id);
+            const isSelesai = dbMatch.status === 'selesai' || local?.status === 'selesai';
+            return {
+              ...dbMatch,
+              status: isSelesai ? 'selesai' : dbMatch.status,
+              completed_at: dbMatch.completed_at || local?.completed_at || null,
+              owner_signed_at: dbMatch.owner_signed_at || local?.owner_signed_at || null,
+              owner_signer_name: local?.owner_signer_name || null,
+              owner_signer_nim: local?.owner_signer_nim || null,
+              finder_signed_at: dbMatch.finder_signed_at || local?.finder_signed_at || null,
+              finder_signer_name: local?.finder_signer_name || null,
+              finder_signer_nim: local?.finder_signer_nim || null,
+              admin_signed_at: dbMatch.admin_signed_at || local?.admin_signed_at || null,
+              admin_signer_name: local?.admin_signer_name || null
+            };
+          });
           const localOnly = prev.filter(m => !isUuid(m.id) && !data.some(d => d.id === m.id));
-          return [...data, ...localOnly];
+          return [...merged, ...localOnly];
         });
       } else if (error) {
         console.warn('Gagal memuat matches dari Supabase:', error);
@@ -1786,30 +1803,127 @@ export const DataProvider = ({ children }) => {
     setOrders(prev => prev.filter(o => o.id !== orderId));
   };
 
-  // --- DIGITAL BAST SERAH TERIMA ---
-  const completeHandover = (matchId, evidencePhoto = null) => {
+  // --- DIGITAL BAST SERAH TERIMA DENGAN PERSETUJUAN KEDUA PIHAK ---
+  const signBAST = async ({ matchId, signerName, signerNIM, signerRole }) => {
     const match = matches.find(m => m.id === matchId);
-    if (!match) return;
+    if (!match) return { error: 'Sesi koordinasi tidak ditemukan' };
 
-    // Update match
-    setMatches(prev => prev.map(m => m.id === matchId ? {
-      ...m,
-      status: 'selesai',
-      completed_at: new Date().toISOString()
-    } : m));
+    const isOwner = signerRole === 'owner' || user?.id === match.owner_id;
+    const isFinder = signerRole === 'finder' || user?.id === match.finder_id;
+    const isAdmin = signerRole === 'admin' || (user?.role === 'admin' && !isOwner && !isFinder);
 
-    // Update item status to 'dikembalikan'
-    setItems(prev => prev.map(i => i.id === match.item_id ? {
-      ...i,
-      item_status: 'dikembalikan'
-    } : i));
+    const now = new Date().toISOString();
+    let updatedMatch = { ...match };
 
-    // Kirim pesan sistem di chat
-    sendMessage(matchId, '✅ Serah Terima Barang Resmi Selesai! Berita Acara Serah Terima (BAST) Digital telah ditandatangani oleh kedua pihak.', 'system');
+    if (isOwner) {
+      updatedMatch.owner_signed_at = now;
+      updatedMatch.owner_signer_name = signerName || user?.full_name || match.owner_name;
+      updatedMatch.owner_signer_nim = signerNIM || user?.nim || '';
+    } else if (isFinder) {
+      updatedMatch.finder_signed_at = now;
+      updatedMatch.finder_signer_name = signerName || user?.full_name || match.finder_name;
+      updatedMatch.finder_signer_nim = signerNIM || user?.nim || '';
+    } else if (isAdmin) {
+      updatedMatch.admin_signed_at = now;
+      updatedMatch.admin_signer_name = signerName || user?.full_name || 'Admin Posko';
+    }
 
-    try {
-      confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
-    } catch (e) {}
+    // Kasus otomatis terselesaikan jika:
+    // 1. Penemu DAN Pemilik keduanya telah menandatangani BAST
+    // 2. ATAU Admin posko menandatangani pengesahan
+    const bothPartiesSigned = Boolean(updatedMatch.owner_signed_at && updatedMatch.finder_signed_at);
+    const isComplete = bothPartiesSigned || Boolean(updatedMatch.admin_signed_at);
+
+    if (isComplete) {
+      updatedMatch.status = 'selesai';
+      updatedMatch.completed_at = now;
+    }
+
+    // 1. Update state matches & localStorage
+    setMatches(prev => {
+      const nextMatches = prev.map(m => m.id === matchId ? updatedMatch : m);
+      try {
+        localStorage.setItem('unnes_lf_matches', JSON.stringify(nextMatches));
+      } catch (e) {}
+      return nextMatches;
+    });
+
+    // 2. Jika selesai, update status item jadi 'dikembalikan'
+    if (isComplete) {
+      setItems(prev => {
+        const nextItems = prev.map(i => i.id === match.item_id ? {
+          ...i,
+          item_status: 'dikembalikan',
+          updated_at: now
+        } : i);
+        try {
+          localStorage.setItem('unnes_lf_items', JSON.stringify(nextItems));
+        } catch (e) {}
+        return nextItems;
+      });
+    }
+
+    // 3. Persist ke Supabase agar ketika direload status selesai tidak hilang
+    if (isSupabaseConfigured() && supabase && isUuid(matchId)) {
+      try {
+        await supabase
+          .from('matches')
+          .update({
+            status: updatedMatch.status,
+            completed_at: updatedMatch.completed_at || null
+          })
+          .eq('id', matchId);
+      } catch (err) {
+        console.warn('Gagal update status match ke Supabase:', err);
+      }
+
+      if (isComplete && isUuid(match.item_id)) {
+        try {
+          await supabase
+            .from('items')
+            .update({ item_status: 'dikembalikan', updated_at: now })
+            .eq('id', match.item_id);
+
+          await supabase
+            .from('claims')
+            .update({ status: 'selesai', updated_at: now })
+            .eq('item_id', match.item_id);
+        } catch (err) {
+          console.warn('Gagal update status item/claims ke Supabase:', err);
+        }
+      }
+    }
+
+    // 4. Kirim notifikasi pesan sistem di obrolan
+    if (isComplete) {
+      await sendMessage(
+        matchId,
+        '✅ Serah Terima Barang Resmi Selesai! Berita Acara Serah Terima (BAST) Digital telah ditandatangani sah oleh kedua pihak. Kasus ditutup secara resmi.',
+        'system'
+      );
+      try {
+        confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
+      } catch (e) {}
+    } else {
+      const roleText = isOwner ? 'Pemilik' : 'Penemu';
+      const oppositeText = isOwner ? `Penemu (${match.finder_name})` : `Pemilik (${match.owner_name})`;
+      await sendMessage(
+        matchId,
+        `📝 ${roleText} (${signerName}) telah menandatangani Berita Acara Serah Terima (BAST) Digital. Menunggu tanda tangan dari pihak ${oppositeText} untuk menyelesaikan kasus ini secara resmi.`,
+        'system'
+      );
+    }
+
+    return { success: true, isComplete, match: updatedMatch };
+  };
+
+  const completeHandover = (matchId, evidencePhoto = null) => {
+    return signBAST({
+      matchId,
+      signerName: user?.full_name || 'Civitas UNNES',
+      signerNIM: user?.nim || '',
+      signerRole: user?.role === 'admin' ? 'admin' : (user?.id === matches.find(m => m.id === matchId)?.owner_id ? 'owner' : 'finder')
+    });
   };
 
   // --- STATS CALCULATION ---
@@ -1858,6 +1972,7 @@ export const DataProvider = ({ children }) => {
       deleteOrder,
       deleteMatchSession,
       completeHandover,
+      signBAST,
       addNotification,
       markNotificationAsRead: async (id) => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));

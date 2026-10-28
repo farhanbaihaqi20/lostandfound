@@ -19,7 +19,10 @@ import {
   Check,
   Sparkles,
   MapPin,
-  Tag
+  Tag,
+  PanelLeftClose,
+  PanelLeftOpen,
+  CheckCircle2
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -55,6 +58,7 @@ export const MessagesPage = () => {
   const [showRunnerModal, setShowRunnerModal] = useState(false);
   const [showBASTModal, setShowBASTModal] = useState(false);
   const [showDetailsPanel, setShowDetailsPanel] = useState(true);
+  const [showConversationsList, setShowConversationsList] = useState(true);
   const [copiedScript, setCopiedScript] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -180,133 +184,164 @@ export const MessagesPage = () => {
           </div>
         </div>
       ) : (
-        /* Main Chat Layout: 3 Columns (List, Active Chat, Context Panel) */
+        /* Main Chat Layout: Dynamic Columns (List, Active Chat, Context Panel) */
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: showDetailsPanel ? '310px 1fr 310px' : '310px 1fr', 
+          gridTemplateColumns: (showConversationsList && showDetailsPanel) 
+            ? '310px 1fr 310px' 
+            : (showConversationsList && !showDetailsPanel) 
+            ? '310px 1fr' 
+            : (!showConversationsList && showDetailsPanel) 
+            ? '1fr 310px' 
+            : '1fr', 
           height: '100%',
           overflow: 'hidden'
         }} className="pro-chat-layout">
           
           {/* ================= COLUMN 1: SIDEBAR CONVERSATIONS ================= */}
-          <div style={{ 
-            borderRight: '1px solid var(--border-subtle)', 
-            background: 'var(--bg-canvas)', 
-            display: 'flex', 
-            flexDirection: 'column',
-            overflow: 'hidden'
-          }}>
-            {/* Header & Search */}
-            <div style={{ padding: '1rem 1.15rem 0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.1rem', fontWeight: 700, margin: 0, color: 'var(--ink-900)' }}>
-                  Pesan &amp; Koordinasi
-                </h1>
-                <span style={{ 
-                  fontFamily: 'var(--font-mono)', 
-                  fontSize: '0.68rem', 
-                  letterSpacing: '0.04em', 
-                  padding: '2px 7px', 
-                  borderRadius: 'var(--radius-full)', 
-                  background: 'var(--primary-50)', 
-                  color: 'var(--primary-indigo)',
-                  fontWeight: 700
-                }}>
-                  {userMatches.length} AKTIF
-                </span>
-              </div>
+          {showConversationsList && (
+            <div style={{ 
+              borderRight: '1px solid var(--border-subtle)', 
+              background: 'var(--bg-canvas)', 
+              display: 'flex', 
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}>
+              {/* Header & Search */}
+              <div style={{ padding: '0.85rem 1.15rem 0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--ink-900)' }}>
+                      Pesan &amp; Koordinasi
+                    </h1>
+                    <span style={{ 
+                      fontFamily: 'var(--font-mono)', 
+                      fontSize: '0.68rem', 
+                      letterSpacing: '0.04em', 
+                      padding: '2px 7px', 
+                      borderRadius: 'var(--radius-full)', 
+                      background: 'var(--primary-50)', 
+                      color: 'var(--primary-indigo)',
+                      fontWeight: 700
+                    }}>
+                      {userMatches.length} AKTIF
+                    </span>
+                  </div>
 
-              {/* Search Box */}
-              <div style={{ position: 'relative' }}>
-                <input 
-                  type="text"
-                  placeholder="Cari nama atau kode barang..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.55rem 0.75rem 0.55rem 2.15rem',
-                    fontSize: '0.8rem',
-                    borderRadius: 'var(--radius-full)',
-                    border: '1px solid var(--border-color)',
-                    background: 'var(--bg-surface)',
-                    fontFamily: 'var(--font-sans)'
-                  }}
-                />
-                <Search size={14} color="var(--ink-400)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
-              </div>
-            </div>
-
-            {/* Conversation List */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0.35rem 0' }}>
-              {filteredMatches.length === 0 ? (
-                <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--ink-400)', fontSize: '0.8rem' }}>
-                  Tidak ada percakapan ditemukan
+                  {/* Hide Sidebar Button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowConversationsList(false)}
+                    className="btn btn-secondary btn-sm"
+                    title="Sembunyikan daftar obrolan"
+                    style={{
+                      padding: '0.3rem 0.45rem',
+                      color: 'var(--ink-500)',
+                      background: 'transparent',
+                      borderColor: 'var(--border-subtle)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '6px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <PanelLeftClose size={16} />
+                  </button>
                 </div>
-              ) : (
-                filteredMatches.map(m => {
-                  const isActive = activeMatchId === m.id;
-                  const otherPartyName = user?.id === m.owner_id ? m.finder_name : m.owner_name;
-                  const initials = getInitials(otherPartyName);
-                  const matchMsgs = (messages || []).filter(msg => msg.match_id === m.id);
-                  const lastMsg = matchMsgs.length > 0 ? matchMsgs[matchMsgs.length - 1] : null;
-                  const lastTime = lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
 
-                  return (
-                    <div
-                      key={m.id}
-                      onClick={() => setActiveMatchId(m.id)}
-                      className={`chat-conv-item ${isActive ? 'active' : ''}`}
-                    >
-                      {/* Avatar */}
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        background: isActive ? 'var(--primary-indigo)' : 'var(--bg-surface-alt)',
-                        color: isActive ? '#FFFFFF' : 'var(--primary-indigo)',
-                        border: isActive ? 'none' : '1px solid var(--border-subtle)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontFamily: 'var(--font-sans)',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        flexShrink: 0
-                      }}>
-                        {initials}
-                      </div>
+                {/* Search Box */}
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type="text"
+                    placeholder="Cari nama atau kode barang..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.55rem 0.75rem 0.55rem 2.15rem',
+                      fontSize: '0.8rem',
+                      borderRadius: 'var(--radius-full)',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-surface)',
+                      fontFamily: 'var(--font-sans)'
+                    }}
+                  />
+                  <Search size={14} color="var(--ink-400)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                </div>
+              </div>
 
-                      {/* Content */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                          <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--ink-900)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {otherPartyName}
-                          </span>
-                          <span style={{ 
-                            fontSize: '0.68rem', 
-                            color: 'var(--ink-400)',
-                            fontWeight: 500,
-                            flexShrink: 0
-                          }}>
-                            {lastTime || (m.status === 'selesai' ? 'Selesai' : 'Aktif')}
-                          </span>
+              {/* Conversation List */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0.35rem 0' }}>
+                {filteredMatches.length === 0 ? (
+                  <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--ink-400)', fontSize: '0.8rem' }}>
+                    Tidak ada percakapan ditemukan
+                  </div>
+                ) : (
+                  filteredMatches.map(m => {
+                    const isActive = activeMatchId === m.id;
+                    const otherPartyName = user?.id === m.owner_id ? m.finder_name : m.owner_name;
+                    const initials = getInitials(otherPartyName);
+                    const matchMsgs = (messages || []).filter(msg => msg.match_id === m.id);
+                    const lastMsg = matchMsgs.length > 0 ? matchMsgs[matchMsgs.length - 1] : null;
+                    const lastTime = lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
+
+                    return (
+                      <div
+                        key={m.id}
+                        onClick={() => setActiveMatchId(m.id)}
+                        className={`chat-conv-item ${isActive ? 'active' : ''}`}
+                      >
+                        {/* Avatar */}
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          background: isActive ? 'var(--primary-indigo)' : 'var(--bg-surface-alt)',
+                          color: isActive ? '#FFFFFF' : 'var(--primary-indigo)',
+                          border: isActive ? 'none' : '1px solid var(--border-subtle)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '0.85rem',
+                          fontWeight: 700,
+                          flexShrink: 0
+                        }}>
+                          {initials}
                         </div>
 
-                        <div style={{ fontSize: '0.74rem', color: 'var(--ink-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {lastMsg ? (
-                            <span>{lastMsg.sender_id === user?.id ? 'Anda: ' : ''}{lastMsg.content}</span>
-                          ) : (
-                            <span>#{m.item_code} · {m.item_title}</span>
-                          )}
+                        {/* Content */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--ink-900)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {otherPartyName}
+                            </span>
+                            <span style={{ 
+                              fontSize: '0.68rem', 
+                              color: 'var(--ink-400)',
+                              fontWeight: 500,
+                              flexShrink: 0
+                            }}>
+                              {lastTime || (m.status === 'selesai' ? 'Selesai' : 'Aktif')}
+                            </span>
+                          </div>
+
+                          <div style={{ fontSize: '0.74rem', color: 'var(--ink-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {lastMsg ? (
+                              <span>{lastMsg.sender_id === user?.id ? 'Anda: ' : ''}{lastMsg.content}</span>
+                            ) : (
+                              <span>#{m.item_code} · {m.item_title}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })
-              )}
+                    );
+                  })
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* ================= COLUMN 2: ACTIVE CHAT MAIN AREA ================= */}
           {activeMatch ? (
@@ -329,8 +364,33 @@ export const MessagesPage = () => {
                 flexWrap: 'wrap',
                 gap: '0.75rem'
               }}>
-                {/* Contact Info */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                {/* Contact Info & Left Toggle Button */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  
+                  {/* Toggle Sidebar Button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowConversationsList(!showConversationsList)}
+                    className="btn btn-secondary btn-sm"
+                    title={showConversationsList ? "Sembunyikan daftar obrolan" : "Tampilkan daftar obrolan"}
+                    style={{
+                      padding: '0.35rem 0.55rem',
+                      color: showConversationsList ? 'var(--ink-600)' : 'var(--primary-indigo)',
+                      backgroundColor: showConversationsList ? 'transparent' : 'var(--primary-50)',
+                      borderColor: showConversationsList ? 'var(--border-subtle)' : 'var(--primary-300)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      borderRadius: '6px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {showConversationsList ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
+                    {!showConversationsList && (
+                      <span style={{ fontSize: '0.74rem', fontWeight: 600 }}>Daftar Obrolan</span>
+                    )}
+                  </button>
+
                   <div style={{
                     width: '38px',
                     height: '38px',
@@ -375,20 +435,55 @@ export const MessagesPage = () => {
                   >
                     {copiedScript ? <Check size={13} color="var(--success)" /> : <Share2 size={13} />}
                     <span>{copiedScript ? 'Tersalin!' : 'Salin Info WA'}</span>
-                  </button>
-
-                  {/* Runner Order Button */}
-                  <button 
-                    onClick={() => setShowRunnerModal(true)} 
-                    className="btn btn-secondary btn-sm"
-                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.7rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-                  >
-                    <Bike size={13} />
-                    <span>Pesan Runner</span>
-                  </button>
-
-                  {/* BAST Handover Sign Button */}
+                  </button>                  {/* Runner Order Button (only if active) */}
                   {activeMatch.status !== 'selesai' && (
+                    <button 
+                      onClick={() => setShowRunnerModal(true)} 
+                      className="btn btn-secondary btn-sm"
+                      style={{ fontSize: '0.75rem', padding: '0.35rem 0.7rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    >
+                      <Bike size={13} />
+                      <span>Pesan Runner</span>
+                    </button>
+                  )}
+
+                  {/* BAST Handover Sign / Status Button */}
+                  {activeMatch.status === 'selesai' ? (
+                    <button 
+                      onClick={() => setShowBASTModal(true)} 
+                      className="btn btn-secondary btn-sm"
+                      style={{ 
+                        fontSize: '0.75rem', 
+                        padding: '0.35rem 0.75rem', 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '0.35rem', 
+                        color: 'var(--success, #10b981)',
+                        borderColor: 'rgba(16, 185, 129, 0.3)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.05)'
+                      }}
+                    >
+                      <CheckCircle2 size={13} />
+                      <span>Lihat BAST (Selesai)</span>
+                    </button>
+                  ) : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at)) ? (
+                    <button 
+                      onClick={() => setShowBASTModal(true)} 
+                      className="btn btn-secondary btn-sm"
+                      style={{ 
+                        fontSize: '0.75rem', 
+                        padding: '0.35rem 0.75rem', 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '0.35rem',
+                        color: 'var(--primary-indigo)',
+                        borderColor: 'var(--primary-300)'
+                      }}
+                    >
+                      <Check size={13} />
+                      <span>Status BAST (Sudah TTD)</span>
+                    </button>
+                  ) : (
                     <button 
                       onClick={() => setShowBASTModal(true)} 
                       className="btn btn-primary btn-sm"
@@ -553,73 +648,132 @@ export const MessagesPage = () => {
               </div>
 
               {/* Chat Input Bar */}
-              <div style={{
-                borderTop: '1px solid var(--border-subtle)',
-                background: 'var(--bg-card)',
-                padding: '0.65rem 1.25rem 0.85rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.5rem'
-              }}>
-                {/* Quick Reply Suggestions */}
-                <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none' }}>
-                  {QUICK_REPLIES.map((reply, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      className="chat-quick-chip"
-                      onClick={() => handleQuickReply(reply)}
-                    >
-                      {reply}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Form Input Container */}
-                <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                  <input
-                    type="text"
-                    placeholder="Ketik pesan koordinasi... (identitas pribadi otomatis disensor)"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    style={{
-                      flex: 1,
-                      padding: '0.65rem 1rem',
-                      fontSize: '0.865rem',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-full)',
-                      background: 'var(--bg-surface)',
-                      outline: 'none',
-                      color: 'var(--ink-900)'
-                    }}
-                  />
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary"
-                    disabled={!inputText.trim()}
-                    style={{ 
-                      width: '38px', 
-                      height: '38px', 
-                      borderRadius: '50%', 
-                      padding: 0, 
-                      display: 'flex', 
-                      alignItems: 'center', 
+              {/* Chat Input or Closed Case Banner */}
+              {activeMatch.status === 'selesai' ? (
+                <div style={{
+                  borderTop: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-card)',
+                  padding: '1rem 1.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  flexWrap: 'wrap'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '50%',
+                      backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                      color: 'var(--success, #10b981)',
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'center',
-                      flexShrink: 0,
-                      opacity: inputText.trim() ? 1 : 0.5,
-                      cursor: inputText.trim() ? 'pointer' : 'default'
-                    }}
-                    title="Kirim pesan"
+                      flexShrink: 0
+                    }}>
+                      <CheckCircle2 size={20} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--ink-900)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span>Kasus Selesai &amp; Serah Terima Sah</span>
+                        <span className="badge badge-verified" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>ARSIP</span>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--ink-600)', marginTop: '2px' }}>
+                        Berita Acara Serah Terima (BAST) telah ditandatangani kedua pihak. Pengiriman pesan ditutup demi privasi dan arsip penyerahan resmi.
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowBASTModal(true)}
+                    className="btn btn-secondary btn-sm"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.775rem' }}
                   >
-                    <Send size={15} style={{ marginLeft: '1px' }} />
+                    <FileCheck size={14} />
+                    <span>Lihat Dokumen BAST</span>
                   </button>
-                </form>
-              </div>
+                </div>
+              ) : (
+                <div style={{
+                  borderTop: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-card)',
+                  padding: '0.65rem 1.25rem 0.85rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem'
+                }}>
+                  {/* Quick Reply Suggestions */}
+                  <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none' }}>
+                    {QUICK_REPLIES.map((reply, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        className="chat-quick-chip"
+                        onClick={() => handleQuickReply(reply)}
+                      >
+                        {reply}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Form Input Container */}
+                  <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      placeholder="Ketik pesan koordinasi... (identitas pribadi otomatis disensor)"
+                      value={inputText}
+                      onChange={(e) => setInputText(e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.65rem 1rem',
+                        fontSize: '0.865rem',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: 'var(--radius-full)',
+                        background: 'var(--bg-surface)',
+                        outline: 'none',
+                        color: 'var(--ink-900)'
+                      }}
+                    />
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary"
+                      disabled={!inputText.trim()}
+                      style={{ 
+                        width: '38px', 
+                        height: '38px', 
+                        borderRadius: '50%', 
+                        padding: 0, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        opacity: inputText.trim() ? 1 : 0.5,
+                        cursor: inputText.trim() ? 'pointer' : 'default'
+                      }}
+                      title="Kirim pesan"
+                    >
+                      <Send size={15} style={{ marginLeft: '1px' }} />
+                    </button>
+                  </form>
+                </div>
+              )}
 
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-500)', fontSize: '0.9rem' }}>
-              Pilih percakapan di bilah kiri untuk membuka koordinasi
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-500)', fontSize: '0.9rem', gap: '0.85rem', height: '100%', padding: '2rem' }}>
+              <span>Pilih percakapan di bilah kiri untuk membuka koordinasi</span>
+              {!showConversationsList && (
+                <button
+                  type="button"
+                  onClick={() => setShowConversationsList(true)}
+                  className="btn btn-primary btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.825rem' }}
+                >
+                  <PanelLeftOpen size={16} />
+                  <span>Buka Daftar Obrolan</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -819,9 +973,6 @@ export const MessagesPage = () => {
 
       <style>{`
         @media (max-width: 1024px) {
-          .pro-chat-layout {
-            grid-template-columns: 280px 1fr !important;
-          }
           .chat-context-panel {
             display: none !important;
           }
