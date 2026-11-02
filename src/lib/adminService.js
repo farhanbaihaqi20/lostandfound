@@ -1,7 +1,7 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 
 /**
- * Admin Service - Manajemen Role Admin
+ * Admin Service - Manajemen Role Admin & Keamanan Pengguna
  * File terpisah agar tidak mengubah logic AuthContext / DataContext
  */
 
@@ -24,7 +24,6 @@ export async function getAllUsers() {
   return { data: data || [], error: null };
 }
 
-
 /**
  * Ubah role user via Supabase RPC (set_user_role)
  * Function ini di-enforce di level database:
@@ -43,7 +42,6 @@ export async function setUserRole(targetUserId, newRole) {
   });
 
   if (error) {
-    // Parse error message dari database
     let friendlyMessage = error.message;
     if (error.message.includes('Unauthorized') || error.message.includes('admin')) {
       friendlyMessage = 'Anda tidak memiliki izin untuk mengubah role pengguna.';
@@ -51,6 +49,38 @@ export async function setUserRole(targetUserId, newRole) {
       friendlyMessage = 'Anda tidak dapat mengubah role akun sendiri.';
     } else if (error.message.includes('Super Admin')) {
       friendlyMessage = 'Super Admin tidak dapat dihapus dari role admin.';
+    }
+    return { success: false, error: friendlyMessage };
+  }
+
+  return { success: true, error: null };
+}
+
+/**
+ * Blokir atau buka blokir user via Supabase RPC (set_user_ban_status)
+ * Function ini di-enforce di level database:
+ * - Hanya admin yang bisa panggil
+ * - Tidak bisa memblokir akun sendiri
+ * - Super Admin tidak bisa diblokir
+ */
+export async function setUserBanStatus(targetUserId, banStatus) {
+  if (!isSupabaseConfigured() || !supabase) {
+    return { success: false, error: 'Supabase belum dikonfigurasi' };
+  }
+
+  const { error } = await supabase.rpc('set_user_ban_status', {
+    target_user_id: targetUserId,
+    ban_status: banStatus
+  });
+
+  if (error) {
+    let friendlyMessage = error.message;
+    if (error.message.includes('Unauthorized') || error.message.includes('admin')) {
+      friendlyMessage = 'Anda tidak memiliki izin untuk mengubah status blokir pengguna.';
+    } else if (error.message.includes('sendiri')) {
+      friendlyMessage = 'Anda tidak dapat memblokir akun sendiri.';
+    } else if (error.message.includes('Super Admin')) {
+      friendlyMessage = 'Super Admin tidak dapat diblokir.';
     }
     return { success: false, error: friendlyMessage };
   }

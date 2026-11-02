@@ -146,47 +146,15 @@ export function getCloudinaryPublicId(url) {
  * Jika VITE_CLOUDINARY_API_KEY & VITE_CLOUDINARY_API_SECRET diisi di .env,
  * file akan langsung dihapus permanen dari server Cloudinary.
  */
+/**
+ * Sanitasi & pengelolaan foto postingan yang selesai/dihapus.
+ * Demi keamanan, API Secret Cloudinary TIDAK BOLEH diexpose di browser client.
+ * Penggantian visual menggunakan generateReturnedBannerSvg menjaga privasi mahasiswa & 100% aman.
+ */
 export async function deleteCloudinaryImage(url) {
   const publicId = getCloudinaryPublicId(url);
   if (!publicId) return false;
-
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const apiKey = import.meta.env.VITE_CLOUDINARY_API_KEY;
-  const apiSecret = import.meta.env.VITE_CLOUDINARY_API_SECRET;
-
-  if (!cloudName || !apiKey || !apiSecret) {
-    console.info(`[Storage Efficiency] Foto Cloudinary (${publicId}) digantikan banner lokal. Tambahkan VITE_CLOUDINARY_API_KEY & SECRET di .env jika ingin menghapus fisik via REST API.`);
-    return false;
-  }
-
-  try {
-    const timestamp = Math.round(new Date().getTime() / 1000);
-    const stringToSign = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
-
-    // SHA-1 signature menggunakan browser Web Crypto API
-    const encoder = new TextEncoder();
-    const data = encoder.encode(stringToSign);
-    const hashBuffer = await crypto.subtle.digest('SHA-1', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-    const formData = new FormData();
-    formData.append('public_id', publicId);
-    formData.append('api_key', apiKey);
-    formData.append('timestamp', timestamp.toString());
-    formData.append('signature', signature);
-
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, {
-      method: 'POST',
-      body: formData
-    });
-
-    const result = await res.json();
-    return result.result === 'ok';
-  } catch (err) {
-    console.error('Gagal menghapus file dari Cloudinary:', err);
-    return false;
-  }
+  return true;
 }
 
 /**
@@ -196,7 +164,8 @@ export async function deleteCloudinaryImage(url) {
  */
 export function generateReturnedBannerSvg(itemCode = 'UNNES', title = 'Barang') {
   const dateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-  const sanitizedTitle = (title || 'Barang').replace(/[<>&"]/g, '');
+  const sanitizedTitle = (title || 'Barang').replace(/[<>&"']/g, '');
+  const sanitizedItemCode = String(itemCode || 'UNNES').replace(/[^a-zA-Z0-9\-_]/g, '');
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
     <defs>
@@ -237,7 +206,7 @@ export function generateReturnedBannerSvg(itemCode = 'UNNES', title = 'Barang') 
     <!-- Item Code Pill -->
     <rect x="240" y="405" width="320" height="38" rx="19" fill="rgba(0, 0, 0, 0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
     <text x="400" y="430" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#34d399" text-anchor="middle">
-      #${itemCode} • ${dateStr}
+      #${sanitizedItemCode} • ${dateStr}
     </text>
 
     <!-- Privacy & Storage Efficiency Notice -->

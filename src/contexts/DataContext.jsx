@@ -108,12 +108,13 @@ export const DataProvider = ({ children }) => {
     try {
       const { data, error } = await supabase
         .from('items')
-        .select('*, profiles:user_id(full_name, avatar_url, email)')
+        .select('*, profiles:user_id(full_name, avatar_url, email), item_secrets(hidden_details)')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
         const formatted = data.map(item => ({
           ...item,
+          hidden_details: item.item_secrets?.hidden_details || item.hidden_details || '',
           user_name: item.profiles?.full_name || 'Mahasiswa UNNES'
         }));
 
@@ -703,12 +704,13 @@ export const DataProvider = ({ children }) => {
             bounty_status: Number(itemData.bounty_amount) > 0 ? 'aktif' : 'tidak_ada',
             date_lost_found: itemData.date_lost_found ? new Date(itemData.date_lost_found).toISOString() : new Date().toISOString()
           })
-          .select('*, profiles:user_id(full_name, avatar_url, email)')
+          .select('*, profiles:user_id(full_name, avatar_url, email), item_secrets(hidden_details)')
           .single();
 
         if (!error && data) {
           const newItem = {
             ...data,
+            hidden_details: data.item_secrets?.hidden_details || itemData.hidden_details || '',
             user_name: data.profiles?.full_name || user.full_name || 'Mahasiswa UNNES'
           };
           setItems(prev => [newItem, ...prev.filter(i => i.id !== newItem.id)]);

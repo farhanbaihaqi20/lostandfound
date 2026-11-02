@@ -250,35 +250,42 @@ export const AuthProvider = ({ children }) => {
         };
       }
 
-      // 2. Validasi NIM
-      if (!nim || nim.trim().length < 5) {
+      // 2. Validasi NIM (Anti-SQLi / Sanitasi Ketat Alfanumerik)
+      const cleanNim = (nim || '').trim().replace(/[^a-zA-Z0-9]/g, '');
+      if (!cleanNim || cleanNim.length < 5) {
         return {
           success: false,
-          message: 'NIM tidak valid. Mohon isi NIM lengkap Anda.'
+          message: 'NIM tidak valid. Mohon isi NIM lengkap Anda (minimal 5 karakter alfanumerik).'
         };
       }
 
       if (isSupabaseConfigured() && supabase) {
-        // Cek apakah email atau NIM sudah ada di profiles
-        const { data: existingProfile } = await supabase
+        // Cek apakah email sudah ada di profiles (parameterized lookup)
+        const { data: existingEmail } = await supabase
           .from('profiles')
-          .select('id, email, nim')
-          .or(`email.eq.${cleanEmail},nim.eq.${nim.trim()}`)
+          .select('id, email')
+          .eq('email', cleanEmail)
           .maybeSingle();
 
-        if (existingProfile) {
-          if (existingProfile.email === cleanEmail) {
-            return {
-              success: false,
-              message: 'Email mahasiswa ini sudah terdaftar. Silakan langsung masuk ke akun Anda.'
-            };
-          }
-          if (existingProfile.nim === nim.trim()) {
-            return {
-              success: false,
-              message: 'NIM ini sudah terdaftar di sistem UNNES Lost & Found.'
-            };
-          }
+        if (existingEmail) {
+          return {
+            success: false,
+            message: 'Email mahasiswa ini sudah terdaftar. Silakan langsung masuk ke akun Anda.'
+          };
+        }
+
+        // Cek apakah NIM sudah ada di profiles (parameterized lookup)
+        const { data: existingNim } = await supabase
+          .from('profiles')
+          .select('id, nim')
+          .eq('nim', cleanNim)
+          .maybeSingle();
+
+        if (existingNim) {
+          return {
+            success: false,
+            message: 'NIM ini sudah terdaftar di sistem UNNES Lost & Found.'
+          };
         }
 
         const { data, error } = await supabase.auth.signUp({
@@ -300,7 +307,7 @@ export const AuthProvider = ({ children }) => {
           phone: phone || '',
           avatar_url: '',
           bio: `Mahasiswa ${fakultas} UNNES`,
-          role: cleanEmail.includes('admin') ? 'admin' : 'user'
+          role: 'user'
         };
 
         const { data: userCreatedProfile } = await supabase
@@ -340,7 +347,7 @@ export const AuthProvider = ({ children }) => {
         id: `user-${Date.now()}`,
         email: cleanEmail,
         full_name,
-        role: cleanEmail.includes('admin') ? 'admin' : 'user',
+        role: 'user',
         avatar_url: '',
         bio: `Mahasiswa ${fakultas} UNNES`,
         phone: phone || '',
@@ -404,8 +411,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     clearAuthError();
     try {
-      if (!nim || nim.trim().length < 5) {
-        return { success: false, message: 'NIM wajib diisi dengan benar (minimal 5 karakter).' };
+      const cleanNim = (nim || '').trim().replace(/[^a-zA-Z0-9]/g, '');
+      if (!cleanNim || cleanNim.length < 5) {
+        return { success: false, message: 'NIM wajib diisi dengan benar (minimal 5 karakter alfanumerik).' };
       }
       if (!fakultas) {
         return { success: false, message: 'Fakultas wajib dipilih.' };
@@ -439,7 +447,7 @@ export const AuthProvider = ({ children }) => {
         prodi: prodi || '',
         phone: phone || '',
         bio: `Mahasiswa ${fakultas} UNNES`,
-        role: activeEmail.includes('admin') ? 'admin' : 'user'
+        role: 'user'
       };
 
       if (isSupabaseConfigured() && supabase) {

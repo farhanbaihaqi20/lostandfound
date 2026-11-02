@@ -24,7 +24,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminNavTabs } from '../../components/AdminNavTabs';
-import { getAllUsers, setUserRole } from '../../lib/adminService';
+import { getAllUsers, setUserRole, setUserBanStatus } from '../../lib/adminService';
 
 export const AdminUsersPage = () => {
   const { user: currentUser } = useAuth();
@@ -92,32 +92,52 @@ export const AdminUsersPage = () => {
     }
   }, [successMsg]);
 
-  const handleRoleChange = async () => {
+  const handleConfirmAction = async () => {
     if (!confirmModal) return;
     setProcessing(true);
 
-    const { targetUser, newRole } = confirmModal;
-    const { success, error: roleError } = await setUserRole(targetUser.id, newRole);
+    if (confirmModal.type === 'ban') {
+      const { targetUser, newBanStatus } = confirmModal;
+      const { success, error: banError } = await setUserBanStatus(targetUser.id, newBanStatus);
 
-    if (success) {
-      setSuccessMsg(
-        newRole === 'admin'
-          ? `✅ ${targetUser.full_name} berhasil dijadikan Admin!`
-          : `✅ ${targetUser.full_name} berhasil dihapus dari Admin.`
-      );
-      // Refresh data
-      await fetchUsers();
+      if (success) {
+        setSuccessMsg(
+          newBanStatus
+            ? `🚫 Akun ${targetUser.full_name} berhasil diblokir!`
+            : `✅ Blokir akun ${targetUser.full_name} berhasil dibuka.`
+        );
+        await fetchUsers();
+      } else {
+        setError(banError || 'Gagal mengubah status blokir.');
+      }
     } else {
-      setError(roleError || 'Gagal mengubah role pengguna.');
+      const { targetUser, newRole } = confirmModal;
+      const { success, error: roleError } = await setUserRole(targetUser.id, newRole);
+
+      if (success) {
+        setSuccessMsg(
+          newRole === 'admin'
+            ? `✅ ${targetUser.full_name} berhasil dijadikan Admin!`
+            : `✅ ${targetUser.full_name} berhasil dihapus dari Admin.`
+        );
+        await fetchUsers();
+      } else {
+        setError(roleError || 'Gagal mengubah role pengguna.');
+      }
     }
 
     setProcessing(false);
     setConfirmModal(null);
   };
 
-  const openConfirm = (targetUser, newRole) => {
+  const openConfirmRole = (targetUser, newRole) => {
     setError('');
-    setConfirmModal({ targetUser, newRole });
+    setConfirmModal({ type: 'role', targetUser, newRole });
+  };
+
+  const openConfirmBan = (targetUser, newBanStatus) => {
+    setError('');
+    setConfirmModal({ type: 'ban', targetUser, newBanStatus });
   };
 
   const adminCount = users.filter(u => u.role === 'admin').length;
@@ -395,6 +415,14 @@ export const AdminUsersPage = () => {
                         borderRadius: '999px', background: 'var(--primary-600)', color: '#fff'
                       }}>
                         ADMIN
+                      </span>
+                    )}
+                    {u.is_banned && (
+                      <span style={{
+                        fontSize: '0.65rem', fontWeight: 700, padding: '1px 6px',
+                        borderRadius: '999px', background: 'var(--danger)', color: '#fff'
+                      }}>
+                        DIBLOKIR
                       </span>
                     )}
                     {isCurrentUser && (
