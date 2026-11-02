@@ -11,13 +11,29 @@ import {
   FileText,
   AlertCircle,
   HelpCircle,
-  ArrowRight
+  ArrowRight,
+  Image
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { StatusBadge } from '../components/StatusBadge';
 import { getRunnerStatusInfo } from '../data/initialData';
 import { RunnerOrderModal } from '../components/RunnerOrderModal';
+
+const getItemPhoto = (item) => {
+  if (Array.isArray(item?.photo_urls) && item.photo_urls.length > 0) {
+    return item.photo_urls[0];
+  }
+  if (typeof item?.photo_urls === 'string' && item.photo_urls.trim()) {
+    try {
+      const parsed = JSON.parse(item.photo_urls);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+    } catch (e) {
+      return item.photo_urls;
+    }
+  }
+  return item?.image_url || item?.photo_url || null;
+};
 
 export const DashboardPage = () => {
   const { user } = useAuth();
@@ -31,21 +47,21 @@ export const DashboardPage = () => {
   // User's own items
   const userItems = (items || []).filter(i => i.user_id === user?.id);
   const myLostItems = userItems.filter(i => i.type === 'hilang');
-  const myFoundItems = userItems.filter(i => i.type === 'ditemukan');
+  const myFoundItems = userItems.filter(i => i.type === 'temuan' || i.type === 'ditemukan');
   const myOrders = (orders || []).filter(o => o.requester_id === user?.id);
 
   // Metrics counters
   const totalCount = userItems.length;
   const pendingCount = userItems.filter(i => i.post_status === 'menunggu_review').length;
-  const verifiedCount = userItems.filter(i => i.post_status === 'approved' && i.status !== 'selesai').length;
-  const completedCount = userItems.filter(i => i.status === 'selesai' || i.post_status === 'selesai').length;
+  const verifiedCount = userItems.filter(i => (i.post_status === 'disetujui' || i.post_status === 'approved') && i.status !== 'selesai' && i.item_status !== 'dikembalikan').length;
+  const completedCount = userItems.filter(i => i.status === 'selesai' || i.post_status === 'selesai' || i.item_status === 'dikembalikan').length;
 
   // Filtered Items based on Tab & Search
   const getFilteredItems = () => {
     let list = userItems;
     if (activeTab === 'hilang') list = myLostItems;
     if (activeTab === 'ditemukan') list = myFoundItems;
-    if (activeTab === 'selesai') list = userItems.filter(i => i.status === 'selesai' || i.post_status === 'selesai');
+    if (activeTab === 'selesai') list = userItems.filter(i => i.status === 'selesai' || i.post_status === 'selesai' || i.item_status === 'dikembalikan');
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -404,8 +420,9 @@ export const DashboardPage = () => {
                 </thead>
                 <tbody>
                   {filteredItems.map(item => {
-                    const isResolved = item.status === 'selesai' || item.post_status === 'selesai';
+                    const isResolved = item.status === 'selesai' || item.post_status === 'selesai' || item.item_status === 'dikembalikan';
                     const isPending = item.post_status === 'menunggu_review';
+                    const photo = getItemPhoto(item);
 
                     return (
                       <tr key={item.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
@@ -416,23 +433,48 @@ export const DashboardPage = () => {
 
                         {/* Foto & Nama Barang */}
                         <td style={{ padding: '1rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                          <Link 
+                            to={`/barang/${item.id}`}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', textDecoration: 'none', color: 'inherit' }}
+                          >
                             <div style={{
-                              width: '42px',
-                              height: '42px',
-                              borderRadius: '2px',
-                              background: '#EAE3DC',
+                              width: '46px',
+                              height: '46px',
+                              borderRadius: '6px',
+                              background: 'var(--ink-100, #EAE3DC)',
+                              border: '1px solid var(--border-subtle, #E2DDD5)',
                               overflow: 'hidden',
                               flexShrink: 0,
                               display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'center'
+                              justifyContent: 'center',
+                              position: 'relative'
                             }}>
-                              {item.image_url ? (
-                                <img src={item.image_url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              ) : (
-                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--ink-500)' }}>FOTO</span>
-                              )}
+                              {photo ? (
+                                <img 
+                                  src={photo} 
+                                  alt={item.title} 
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    const fallback = e.currentTarget.parentElement?.querySelector('.photo-fallback');
+                                    if (fallback) fallback.style.display = 'flex';
+                                  }}
+                                />
+                              ) : null}
+                              <div 
+                                className="photo-fallback"
+                                style={{
+                                  display: photo ? 'none' : 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  width: '100%',
+                                  height: '100%',
+                                  color: 'var(--ink-400)'
+                                }}
+                              >
+                                <Image size={18} />
+                              </div>
                             </div>
                             <div>
                               <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, fontSize: '0.95rem', color: 'var(--ink-900)' }}>
@@ -442,7 +484,7 @@ export const DashboardPage = () => {
                                 {item.location_building} · {item.category}
                               </div>
                             </div>
-                          </div>
+                          </Link>
                         </td>
 
                         {/* Jenis */}
