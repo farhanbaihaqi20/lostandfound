@@ -91,22 +91,18 @@ export const LoginPage = () => {
       }}>
         {/* Top Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{
-            width: '36px',
-            height: '36px',
-            backgroundColor: 'var(--primary-indigo)',
-            color: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'var(--font-mono)',
-            fontWeight: 800,
-            fontSize: '0.95rem',
-            borderRadius: '6px',
-            boxShadow: '0 2px 8px rgba(79, 70, 229, 0.4)'
-          }}>
-            LF
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="Logo UNNES Lost & Found" 
+            style={{
+              width: '40px',
+              height: '40px',
+              objectFit: 'contain',
+              borderRadius: '50%',
+              flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)'
+            }}
+          />
           <div>
             <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, fontSize: '1.1rem', color: '#FFFFFF' }}>
               UNNES Lost &amp; Found

@@ -44,21 +44,17 @@ export const Footer = () => {
       }}>
         {/* Brand & Copyright */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <div style={{
-            width: '24px',
-            height: '24px',
-            background: 'var(--primary-indigo)',
-            color: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'var(--font-mono)',
-            fontWeight: 800,
-            fontSize: '0.7rem',
-            borderRadius: '4px'
-          }}>
-            LF
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="Logo UNNES Lost & Found" 
+            style={{
+              width: '26px',
+              height: '26px',
+              objectFit: 'contain',
+              borderRadius: '50%',
+              flexShrink: 0
+            }}
+          />
           <span style={{ fontWeight: 600, color: 'var(--ink-800)' }}>
             UNNES Lost &amp; Found
           </span>

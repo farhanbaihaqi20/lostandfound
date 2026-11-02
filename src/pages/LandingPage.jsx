@@ -63,7 +63,7 @@ export const LandingPage = () => {
         borderBottom: '1px solid var(--border-color)',
         backgroundColor: 'transparent'
       }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '980px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '1120px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.4rem' }}>
           
           {/* Official Campus Pill */}
           <div style={{
@@ -115,20 +115,20 @@ export const LandingPage = () => {
             onSubmit={handleSearchSubmit}
             style={{
               width: '100%',
-              maxWidth: '840px',
+              maxWidth: '1060px',
               backgroundColor: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
-              borderRadius: '12px',
-              padding: '6px',
+              borderRadius: '14px',
+              padding: '8px',
               display: 'flex',
               flexWrap: 'wrap',
               alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
+              gap: '8px',
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)'
             }}
           >
-            <div style={{ flex: '1 1 260px', display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0 0.85rem' }}>
-              <Search size={18} color="var(--ink-500)" style={{ flexShrink: 0 }} />
+            <div style={{ flex: '1 1 320px', display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 1rem' }}>
+              <Search size={19} color="var(--ink-500)" style={{ flexShrink: 0 }} />
               <input 
                 type="text" 
                 placeholder="Cari nama barang, nomor seri, atau kata kunci..."
@@ -140,7 +140,7 @@ export const LandingPage = () => {
                   width: '100%',
                   background: 'transparent',
                   fontFamily: 'var(--font-sans)',
-                  fontSize: '0.925rem',
+                  fontSize: '0.95rem',
                   color: 'var(--ink-900)',
                   padding: '10px 0'
                 }}
@@ -149,8 +149,8 @@ export const LandingPage = () => {
 
             <div className="search-divider" />
 
-            <div style={{ flex: '0 1 210px', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0 0.5rem' }}>
-              <Building2 size={16} color="var(--ink-500)" style={{ flexShrink: 0 }} />
+            <div style={{ flex: '0 1 280px', display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0 0.65rem' }}>
+              <Building2 size={17} color="var(--ink-500)" style={{ flexShrink: 0 }} />
               <select 
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
@@ -159,7 +159,7 @@ export const LandingPage = () => {
                   outline: 'none',
                   background: 'transparent',
                   fontFamily: 'var(--font-sans)',
-                  fontSize: '0.85rem',
+                  fontSize: '0.875rem',
                   color: selectedLocation ? 'var(--ink-900)' : 'var(--ink-500)',
                   width: '100%',
                   cursor: 'pointer'
@@ -176,21 +176,21 @@ export const LandingPage = () => {
               type="submit" 
               className="btn btn-primary"
               style={{ 
-                padding: '0.7rem 1.4rem', 
-                fontSize: '0.85rem',
+                padding: '0.75rem 1.6rem', 
+                fontSize: '0.875rem',
                 letterSpacing: '0.02em',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.45rem',
+                gap: '0.5rem',
                 flexShrink: 0,
-                borderRadius: '8px',
+                borderRadius: '9px',
                 backgroundColor: 'var(--primary-indigo)',
                 border: 'none',
                 color: '#FFFFFF',
                 fontWeight: 600
               }}
             >
-              <Search size={15} strokeWidth={2.5} /> Cari Barang
+              <Search size={16} strokeWidth={2.5} /> Cari Barang
             </button>
           </form>
 
@@ -210,7 +210,7 @@ export const LandingPage = () => {
           </div>
 
           {/* Quick Action Dock: Dua Tombol Aksi Utama yang Rapi & Proporsional */}
-          <div style={{ width: '100%', maxWidth: '840px', marginTop: '0.25rem' }}>
+          <div style={{ width: '100%', maxWidth: '1060px', marginTop: '0.35rem' }}>
             <div className="hero-action-grid">
               
               {/* Lost Action Card */}
@@ -219,14 +219,14 @@ export const LandingPage = () => {
                 className="action-dock-card action-dock-lost"
               >
                 <div className="action-dock-icon lost">
-                  <AlertCircle size={20} strokeWidth={2.2} />
+                  <AlertCircle size={22} strokeWidth={2.2} />
                 </div>
                 <div className="action-dock-content">
                   <div className="action-dock-header">
                     <span className="action-dock-title">
                       Saya Kehilangan Barang
                     </span>
-                    <ArrowRight size={16} className="action-dock-arrow" />
+                    <ArrowRight size={17} className="action-dock-arrow" />
                   </div>
                   <p className="action-dock-desc">
                     Catat ciri &amp; pantau barang tertinggal
@@ -240,14 +240,14 @@ export const LandingPage = () => {
                 className="action-dock-card action-dock-found"
               >
                 <div className="action-dock-icon found">
-                  <Sparkles size={20} strokeWidth={2.2} />
+                  <Sparkles size={22} strokeWidth={2.2} />
                 </div>
                 <div className="action-dock-content">
                   <div className="action-dock-header">
                     <span className="action-dock-title">
                       Saya Menemukan Barang
                     </span>
-                    <ArrowRight size={16} className="action-dock-arrow" />
+                    <ArrowRight size={17} className="action-dock-arrow" />
                   </div>
                   <p className="action-dock-desc">
                     Titipkan &amp; amankan ke posko fakultas
@@ -261,29 +261,29 @@ export const LandingPage = () => {
           {/* Jaminan Layanan & Verifikasi Terpadu */}
           <div style={{
             width: '100%',
-            maxWidth: '840px',
+            maxWidth: '1060px',
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '1.25rem',
-            padding: '0.4rem 0.5rem',
-            fontSize: '0.785rem',
+            gap: '1.75rem',
+            padding: '0.5rem 0.5rem',
+            fontSize: '0.8rem',
             color: 'var(--ink-500)',
-            marginTop: '0.25rem'
+            marginTop: '0.35rem'
           }}>
             <div className="trust-item">
-              <EyeOff size={15} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
+              <EyeOff size={16} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
               <span>Sensor Privasi Publik</span>
             </div>
             <span style={{ color: 'var(--border-color)', userSelect: 'none' }}>•</span>
             <div className="trust-item">
-              <ShieldCheck size={15} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
+              <ShieldCheck size={16} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
               <span>Verifikasi Posko Fakultas</span>
             </div>
             <span style={{ color: 'var(--border-color)', userSelect: 'none' }}>•</span>
             <div className="trust-item">
-              <FileCheck2 size={15} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
+              <FileCheck2 size={16} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
               <span>Berita Acara Digital (BAST)</span>
             </div>
           </div>

@@ -977,7 +977,7 @@ img {
 .hero-action-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
 }
 
@@ -990,11 +990,11 @@ img {
 .action-dock-card {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 1rem;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 1rem 1.25rem;
+  padding: 1.15rem 1.45rem;
   text-decoration: none;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);

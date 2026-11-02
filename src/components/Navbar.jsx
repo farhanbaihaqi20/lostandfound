@@ -63,22 +63,17 @@ export const Navbar = () => {
         
         {/* Brand Logo & Archival Identity */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none' }}>
-          <div style={{
-            width: '36px',
-            height: '36px',
-            backgroundColor: 'var(--primary-indigo)',
-            color: '#ffffff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'var(--font-mono)',
-            fontWeight: 800,
-            fontSize: '0.95rem',
-            borderRadius: '6px',
-            flexShrink: 0
-          }}>
-            LF
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="Logo UNNES Lost & Found" 
+            style={{
+              width: '38px',
+              height: '38px',
+              objectFit: 'contain',
+              borderRadius: '50%',
+              flexShrink: 0
+            }}
+          />
           <div>
             <div style={{ 
               fontFamily: 'var(--font-serif)', 
