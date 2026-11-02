@@ -16,8 +16,6 @@ import {
 import { useData } from '../contexts/DataContext';
 import { ItemCard } from '../components/ItemCard';
 import { UNNES_BUILDINGS } from '../data/initialData';
-import { LostSearchIllustration } from '../components/illustrations/LostSearchIllustration';
-import { FoundHandoverIllustration } from '../components/illustrations/FoundHandoverIllustration';
 
 const POPULAR_TAGS = ['KTM / Dompet', 'Kunci Motor', 'Helm', 'Jaket / Hoodie', 'Flashdisk', 'Botol Minum'];
 
@@ -72,73 +70,45 @@ export const LandingPage = () => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
-            padding: '4px 14px',
-            backgroundColor: '#EAE3D7',
-            border: '1px solid #D8CEBE',
+            padding: '4px 12px',
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-color)',
             borderRadius: 'var(--radius-full)',
             fontSize: '0.75rem',
-            fontWeight: 700,
-            color: '#475569',
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase'
+            fontWeight: 600,
+            color: 'var(--ink-700)',
+            letterSpacing: '0.02em',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)'
           }}>
             <span style={{ 
-              width: '8px', 
-              height: '8px', 
+              width: '7px', 
+              height: '7px', 
               borderRadius: '50%', 
               backgroundColor: '#10B981',
               display: 'inline-block' 
             }} />
-            <span>LAYANAN PELAPORAN KAMPUS UNNES</span>
+            <span>Layanan Resmi Lost &amp; Found Kampus UNNES</span>
           </div>
 
-          {/* Title Row with Flanking Illustrations (Image 3) */}
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            gap: '1.5rem',
-            width: '100%'
-          }}>
-            {/* Left illustration: Guy looking with magnifying glass */}
-            <div style={{ display: 'none', flexShrink: 0 }} className="desktop-hero-illus">
-              <LostSearchIllustration width={135} height={145} />
-            </div>
-
-            {/* Crisp, Natural Title */}
-            <h1 style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 'clamp(2.1rem, 4.8vw, 3.4rem)',
-              fontWeight: 700,
-              lineHeight: 1.18,
-              letterSpacing: '-0.025em',
-              color: 'var(--ink-900)',
-              margin: '0.1rem 0',
-              flex: 1
-            }}>
-              Hilang di area kampus? <br />
-              <span style={{ fontStyle: 'italic', fontWeight: 400, color: 'var(--primary-indigo)' }}>
-                Laporkan &amp; temukan kembali di sini.
-              </span>
-            </h1>
-
-            {/* Right illustration: People handing over found box */}
-            <div style={{ display: 'none', flexShrink: 0 }} className="desktop-hero-illus">
-              <FoundHandoverIllustration width={145} height={145} />
-            </div>
-          </div>
-
-          {/* Functional Subtitle */}
-          <p style={{
+          {/* Proper, Harmonious Title */}
+          <h1 style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: 'clamp(0.925rem, 1.8vw, 1.075rem)',
-            color: 'var(--ink-600)',
-            lineHeight: 1.55,
-            maxWidth: '680px',
-            margin: '0 0 0.5rem'
+            fontSize: 'clamp(2.2rem, 4.5vw, 3.3rem)',
+            fontWeight: 800,
+            lineHeight: 1.18,
+            letterSpacing: '-0.035em',
+            color: 'var(--ink-900)',
+            margin: '0.2rem 0 0.5rem',
+            textAlign: 'center'
           }}>
-            Platform pencatatan barang tertinggal civitas Universitas Negeri Semarang. Terkoneksi ke posko fakultas dengan verifikasi kepemilikan yang aman.
-          </p>
+            Hilang di area kampus? <br />
+            <span style={{ 
+              color: 'var(--primary-indigo)',
+              fontWeight: 800
+            }}>
+              Laporkan &amp; temukan kembali di sini.
+            </span>
+          </h1>
 
           {/* Search Box Bar */}
           <form 
@@ -146,7 +116,7 @@ export const LandingPage = () => {
             style={{
               width: '100%',
               maxWidth: '840px',
-              backgroundColor: '#FFFFFF',
+              backgroundColor: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
               borderRadius: '12px',
               padding: '6px',
@@ -154,7 +124,7 @@ export const LandingPage = () => {
               flexWrap: 'wrap',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: '0 8px 30px rgba(44, 30, 20, 0.06)'
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
             }}
           >
             <div style={{ flex: '1 1 260px', display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0 0.85rem' }}>
@@ -206,22 +176,21 @@ export const LandingPage = () => {
               type="submit" 
               className="btn btn-primary"
               style={{ 
-                padding: '0.7rem 1.5rem', 
-                fontSize: '0.825rem',
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
+                padding: '0.7rem 1.4rem', 
+                fontSize: '0.85rem',
+                letterSpacing: '0.02em',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.4rem',
+                gap: '0.45rem',
                 flexShrink: 0,
                 borderRadius: '8px',
                 backgroundColor: 'var(--primary-indigo)',
                 border: 'none',
                 color: '#FFFFFF',
-                fontWeight: 700
+                fontWeight: 600
               }}
             >
-              <Search size={15} strokeWidth={2.5} /> CARI BARANG
+              <Search size={15} strokeWidth={2.5} /> Cari Barang
             </button>
           </form>
 
@@ -240,157 +209,82 @@ export const LandingPage = () => {
             ))}
           </div>
 
-          {/* Quick Action Dock: Two styled action cards (Image 3) */}
-          <div style={{ width: '100%', maxWidth: '840px', marginTop: '0.5rem' }}>
+          {/* Quick Action Dock: Dua Tombol Aksi Utama yang Rapi & Proporsional */}
+          <div style={{ width: '100%', maxWidth: '840px', marginTop: '0.25rem' }}>
             <div className="hero-action-grid">
               
-              {/* Lost Action Card (Soft Rose Tint) */}
+              {/* Lost Action Card */}
               <Link 
                 to="/lapor/hilang" 
-                className="action-dock-card"
-                style={{
-                  backgroundColor: '#FFF1F2',
-                  border: '1px solid #FECDD3',
-                  borderRadius: '14px',
-                  padding: '1.25rem 1.4rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  textDecoration: 'none',
-                  textAlign: 'left',
-                  boxShadow: '0 2px 10px rgba(225, 29, 72, 0.05)',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(225, 29, 72, 0.12)';
-                  e.currentTarget.style.borderColor = '#FCA5A5';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 10px rgba(225, 29, 72, 0.05)';
-                  e.currentTarget.style.borderColor = '#FECDD3';
-                }}
+                className="action-dock-card action-dock-lost"
               >
-                <div style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '8px',
-                  backgroundColor: '#FFE4E6',
-                  color: '#DC2626',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <AlertCircle size={22} strokeWidth={2.2} />
+                <div className="action-dock-icon lost">
+                  <AlertCircle size={20} strokeWidth={2.2} />
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '1rem', fontWeight: 700, color: 'var(--ink-900)' }}>
+                <div className="action-dock-content">
+                  <div className="action-dock-header">
+                    <span className="action-dock-title">
                       Saya Kehilangan Barang
                     </span>
-                    <ArrowRight size={16} color="var(--ink-400)" />
+                    <ArrowRight size={16} className="action-dock-arrow" />
                   </div>
-                  <p style={{ fontSize: '0.815rem', color: 'var(--ink-600)', margin: '0.2rem 0 0', lineHeight: 1.45 }}>
-                    Catat ciri barang yang tertinggal agar civitas &amp; petugas posko bisa mencocokkan.
+                  <p className="action-dock-desc">
+                    Catat ciri &amp; pantau barang tertinggal
                   </p>
-                </div>
-                <div style={{ display: 'none', flexShrink: 0 }} className="desktop-card-thumb">
-                  <LostSearchIllustration width={60} height={55} />
                 </div>
               </Link>
 
-              {/* Found Action Card (Soft Blue Tint) */}
+              {/* Found Action Card */}
               <Link 
                 to="/lapor/temuan" 
-                className="action-dock-card"
-                style={{
-                  backgroundColor: '#EFF6FF',
-                  border: '1px solid #BFDBFE',
-                  borderRadius: '14px',
-                  padding: '1.25rem 1.4rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  textDecoration: 'none',
-                  textAlign: 'left',
-                  boxShadow: '0 2px 10px rgba(59, 130, 246, 0.05)',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(59, 130, 246, 0.12)';
-                  e.currentTarget.style.borderColor = '#93C5FD';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 10px rgba(59, 130, 246, 0.05)';
-                  e.currentTarget.style.borderColor = '#BFDBFE';
-                }}
+                className="action-dock-card action-dock-found"
               >
-                <div style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '8px',
-                  backgroundColor: '#DBEAFE',
-                  color: '#2563EB',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <Sparkles size={22} strokeWidth={2.2} />
+                <div className="action-dock-icon found">
+                  <Sparkles size={20} strokeWidth={2.2} />
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '1rem', fontWeight: 700, color: 'var(--ink-900)' }}>
+                <div className="action-dock-content">
+                  <div className="action-dock-header">
+                    <span className="action-dock-title">
                       Saya Menemukan Barang
                     </span>
-                    <ArrowRight size={16} color="var(--ink-400)" />
+                    <ArrowRight size={16} className="action-dock-arrow" />
                   </div>
-                  <p style={{ fontSize: '0.815rem', color: 'var(--ink-600)', margin: '0.2rem 0 0', lineHeight: 1.45 }}>
-                    Amankan barang milik orang lain &amp; titipkan ke posko fakultas terdekat.
+                  <p className="action-dock-desc">
+                    Titipkan &amp; amankan ke posko fakultas
                   </p>
-                </div>
-                <div style={{ display: 'none', flexShrink: 0 }} className="desktop-card-thumb">
-                  <FoundHandoverIllustration width={65} height={55} />
                 </div>
               </Link>
 
             </div>
           </div>
 
-          {/* Micro-Trust Bar (Image 3) */}
-          <div style={{ width: '100%', maxWidth: '840px' }}>
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '1.25rem',
-              padding: '0.85rem 1.5rem',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid var(--border-color)',
-              borderRadius: '10px',
-              fontSize: '0.8rem',
-              color: 'var(--ink-600)',
-              boxShadow: '0 2px 10px rgba(44, 30, 20, 0.03)'
-            }}>
-              <div className="trust-item">
-                <EyeOff size={16} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
-                <span><strong>Privasi Terjaga:</strong> Foto identitas disensor untuk umum</span>
-              </div>
-              <div className="trust-divider" />
-              <div className="trust-item">
-                <ShieldCheck size={16} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
-                <span><strong>Blind-Test:</strong> Klaim kepemilikan anti asal ambil</span>
-              </div>
-              <div className="trust-divider" />
-              <div className="trust-item">
-                <FileCheck2 size={16} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
-                <span><strong>Resmi:</strong> Serah terima dengan Berita Acara (BAST)</span>
-              </div>
+          {/* Jaminan Layanan & Verifikasi Terpadu */}
+          <div style={{
+            width: '100%',
+            maxWidth: '840px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1.25rem',
+            padding: '0.4rem 0.5rem',
+            fontSize: '0.785rem',
+            color: 'var(--ink-500)',
+            marginTop: '0.25rem'
+          }}>
+            <div className="trust-item">
+              <EyeOff size={15} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
+              <span>Sensor Privasi Publik</span>
+            </div>
+            <span style={{ color: 'var(--border-color)', userSelect: 'none' }}>•</span>
+            <div className="trust-item">
+              <ShieldCheck size={15} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
+              <span>Verifikasi Posko Fakultas</span>
+            </div>
+            <span style={{ color: 'var(--border-color)', userSelect: 'none' }}>•</span>
+            <div className="trust-item">
+              <FileCheck2 size={15} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
+              <span>Berita Acara Digital (BAST)</span>
             </div>
           </div>
 

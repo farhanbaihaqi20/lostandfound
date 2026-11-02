@@ -25,7 +25,7 @@ export const WatermarkBackground = () => {
           position: 'absolute',
           top: '90px',
           left: '28px',
-          opacity: 0.28,
+          opacity: 0.08,
           transform: 'rotate(-25deg)'
         }}
       >
@@ -44,7 +44,7 @@ export const WatermarkBackground = () => {
           position: 'absolute',
           top: '95px',
           right: '50px',
-          opacity: 0.26,
+          opacity: 0.08,
           transform: 'rotate(22deg)'
         }}
       >
@@ -83,7 +83,7 @@ export const WatermarkBackground = () => {
           position: 'absolute',
           top: '46%',
           right: '42px',
-          opacity: 0.24,
+          opacity: 0.08,
           transform: 'rotate(45deg)'
         }}
       >
@@ -104,7 +104,7 @@ export const WatermarkBackground = () => {
           position: 'absolute',
           bottom: '120px',
           left: '35px',
-          opacity: 0.25,
+          opacity: 0.08,
           transform: 'rotate(-18deg)'
         }}
       >
@@ -141,7 +141,7 @@ export const WatermarkBackground = () => {
           position: 'absolute',
           bottom: '70px',
           right: '55px',
-          opacity: 0.25,
+          opacity: 0.08,
           transform: 'rotate(-6deg)'
         }}
       >
