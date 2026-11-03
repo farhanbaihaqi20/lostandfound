@@ -336,13 +336,13 @@ export const BottomNav = () => {
       >
         {/* Navigation Links */}
         <Link 
-          to="/beranda"
+          to="/"
           style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '2px',
-            color: isActive('/beranda') ? 'var(--primary-600)' : 'var(--text-muted)',
+            color: (isActive('/') || isActive('/beranda')) ? 'var(--primary-600)' : 'var(--text-muted)',
             flex: 1,
             padding: '4px 0'
           }}

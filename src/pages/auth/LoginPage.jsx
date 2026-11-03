@@ -15,7 +15,7 @@ export const LoginPage = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [isNotRegistered, setIsNotRegistered] = useState(false);
 
-  const from = location.state?.from?.pathname || '/beranda';
+  const from = location.state?.from?.pathname || '/';
 
   useEffect(() => {
     if (user) {

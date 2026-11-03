@@ -228,22 +228,39 @@ export const ProfilePage = () => {
         </div>
 
         {/* Tabs: Laporan Saya vs Pesanan Runner */}
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button
-            onClick={() => setActiveTab('laporan')}
-            className={`filter-chip ${activeTab === 'laporan' ? 'active' : ''}`}
-            style={{ fontSize: '0.8rem' }}
-          >
-            LAPORAN SAYA ({myReports.length})
-          </button>
+        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => setActiveTab('laporan')}
+              className={`filter-chip ${activeTab === 'laporan' ? 'active' : ''}`}
+              style={{ fontSize: '0.8rem' }}
+            >
+              LAPORAN SAYA ({myReports.length})
+            </button>
 
-          <button
-            onClick={() => setActiveTab('pesanan')}
-            className={`filter-chip ${activeTab === 'pesanan' ? 'active' : ''}`}
-            style={{ fontSize: '0.8rem' }}
+            <button
+              onClick={() => setActiveTab('pesanan')}
+              className={`filter-chip ${activeTab === 'pesanan' ? 'active' : ''}`}
+              style={{ fontSize: '0.8rem' }}
+            >
+              PESANAN RUNNER ({myOrders.length})
+            </button>
+          </div>
+
+          <Link
+            to="/laporan-saya"
+            style={{
+              fontSize: '0.78rem',
+              color: 'var(--primary-indigo)',
+              textDecoration: 'none',
+              fontWeight: 600,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
           >
-            PESANAN RUNNER ({myOrders.length})
-          </button>
+            Dashboard Laporan <ArrowRight size={14} />
+          </Link>
         </div>
 
         {/* Content Tab 1: My Reports */}

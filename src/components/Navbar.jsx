@@ -460,7 +460,7 @@ export const Navbar = () => {
                   {/* Links */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', position: 'relative', zIndex: 1 }}>
                     <Link 
-                      to="/beranda" 
+                      to="/laporan-saya" 
                       onClick={() => setShowUserDropdown(false)}
                       style={{
                         display: 'flex',

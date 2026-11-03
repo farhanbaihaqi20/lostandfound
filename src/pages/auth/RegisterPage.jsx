@@ -19,7 +19,7 @@ export const RegisterPage = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/beranda', { replace: true });
+      navigate('/', { replace: true });
     }
   }, [user, navigate]);
 
@@ -95,7 +95,7 @@ export const RegisterPage = () => {
 
     if (res.success) {
       alert('Selamat! Pendaftaran akun mahasiswa UNNES berhasil diselesaikan.');
-      navigate('/beranda', { replace: true });
+      navigate('/', { replace: true });
     } else {
       setErrorMsg(res.message || 'Gagal melengkapi data mahasiswa');
     }
@@ -139,7 +139,7 @@ export const RegisterPage = () => {
 
     if (res.success) {
       alert('Pendaftaran akun UNNES berhasil! Selamat datang.');
-      navigate('/beranda', { replace: true });
+      navigate('/', { replace: true });
     } else {
       setErrorMsg(res.message || 'Gagal mendaftar');
     }

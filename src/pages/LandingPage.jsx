@@ -57,13 +57,9 @@ export const LandingPage = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }} className="pb-mobile-nav">
       
-      {/* 1. Hero Section: Unified & Functional Campus Hub (Image 3) */}
-      <section style={{
-        padding: '3rem 0 2.25rem',
-        borderBottom: '1px solid var(--border-color)',
-        backgroundColor: 'transparent'
-      }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '1120px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.4rem' }}>
+      {/* 1. Hero Section: Unified & Functional Campus Hub */}
+      <section className="hero-section">
+        <div className="container hero-container">
           
           {/* Official Campus Pill */}
           <div style={{
@@ -93,12 +89,12 @@ export const LandingPage = () => {
           {/* Proper, Harmonious Title */}
           <h1 style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: 'clamp(2.2rem, 4.5vw, 3.3rem)',
+            fontSize: 'clamp(1.75rem, 4.5vw, 3.2rem)',
             fontWeight: 800,
-            lineHeight: 1.18,
+            lineHeight: 1.2,
             letterSpacing: '-0.035em',
             color: 'var(--ink-900)',
-            margin: '0.2rem 0 0.5rem',
+            margin: '0.1rem 0 0.35rem',
             textAlign: 'center'
           }}>
             Hilang di area kampus? <br />
@@ -113,21 +109,9 @@ export const LandingPage = () => {
           {/* Search Box Bar */}
           <form 
             onSubmit={handleSearchSubmit}
-            style={{
-              width: '100%',
-              maxWidth: '1060px',
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '14px',
-              padding: '8px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)'
-            }}
+            className="hero-search-form"
           >
-            <div style={{ flex: '1 1 320px', display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 1rem' }}>
+            <div className="hero-search-input-wrap">
               <Search size={19} color="var(--ink-500)" style={{ flexShrink: 0 }} />
               <input 
                 type="text" 
@@ -149,7 +133,7 @@ export const LandingPage = () => {
 
             <div className="search-divider" />
 
-            <div style={{ flex: '0 1 280px', display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0 0.65rem' }}>
+            <div className="hero-search-select-wrap">
               <Building2 size={17} color="var(--ink-500)" style={{ flexShrink: 0 }} />
               <select 
                 value={selectedLocation}
@@ -174,21 +158,7 @@ export const LandingPage = () => {
 
             <button 
               type="submit" 
-              className="btn btn-primary"
-              style={{ 
-                padding: '0.75rem 1.6rem', 
-                fontSize: '0.875rem',
-                letterSpacing: '0.02em',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                flexShrink: 0,
-                borderRadius: '9px',
-                backgroundColor: 'var(--primary-indigo)',
-                border: 'none',
-                color: '#FFFFFF',
-                fontWeight: 600
-              }}
+              className="btn btn-primary hero-search-btn"
             >
               <Search size={16} strokeWidth={2.5} /> Cari Barang
             </button>
@@ -196,7 +166,7 @@ export const LandingPage = () => {
 
           {/* Quick Popular Keywords Row */}
           <div className="search-tags-row">
-            <span>Sering dicari:</span>
+            <span className="search-tags-label">Sering dicari:</span>
             {POPULAR_TAGS.map(tag => (
               <button 
                 key={tag}
@@ -210,7 +180,7 @@ export const LandingPage = () => {
           </div>
 
           {/* Quick Action Dock: Dua Tombol Aksi Utama yang Rapi & Proporsional */}
-          <div style={{ width: '100%', maxWidth: '1060px', marginTop: '0.35rem' }}>
+          <div style={{ width: '100%', maxWidth: '1060px', marginTop: '0.15rem' }}>
             <div className="hero-action-grid">
               
               {/* Lost Action Card */}
@@ -219,7 +189,7 @@ export const LandingPage = () => {
                 className="action-dock-card action-dock-lost"
               >
                 <div className="action-dock-icon lost">
-                  <AlertCircle size={22} strokeWidth={2.2} />
+                  <AlertCircle size={20} strokeWidth={2.2} />
                 </div>
                 <div className="action-dock-content">
                   <div className="action-dock-header">
@@ -240,7 +210,7 @@ export const LandingPage = () => {
                 className="action-dock-card action-dock-found"
               >
                 <div className="action-dock-icon found">
-                  <Sparkles size={22} strokeWidth={2.2} />
+                  <Sparkles size={20} strokeWidth={2.2} />
                 </div>
                 <div className="action-dock-content">
                   <div className="action-dock-header">
@@ -259,31 +229,19 @@ export const LandingPage = () => {
           </div>
 
           {/* Jaminan Layanan & Verifikasi Terpadu */}
-          <div style={{
-            width: '100%',
-            maxWidth: '1060px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '1.75rem',
-            padding: '0.5rem 0.5rem',
-            fontSize: '0.8rem',
-            color: 'var(--ink-500)',
-            marginTop: '0.35rem'
-          }}>
+          <div className="hero-trust-bar">
             <div className="trust-item">
-              <EyeOff size={16} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
+              <EyeOff size={16} className="trust-icon" />
               <span>Sensor Privasi Publik</span>
             </div>
-            <span style={{ color: 'var(--border-color)', userSelect: 'none' }}>•</span>
+            <div className="trust-divider" />
             <div className="trust-item">
-              <ShieldCheck size={16} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
+              <ShieldCheck size={16} className="trust-icon" />
               <span>Verifikasi Posko Fakultas</span>
             </div>
-            <span style={{ color: 'var(--border-color)', userSelect: 'none' }}>•</span>
+            <div className="trust-divider" />
             <div className="trust-item">
-              <FileCheck2 size={16} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
+              <FileCheck2 size={16} className="trust-icon" />
               <span>Berita Acara Digital (BAST)</span>
             </div>
           </div>

@@ -11,7 +11,6 @@ export const Footer = () => {
     '/lapor',
     '/masuk',
     '/daftar',
-    '/beranda',
     '/laporan-saya',
     '/pengaturan',
     '/notifikasi',

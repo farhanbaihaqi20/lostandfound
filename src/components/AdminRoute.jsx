@@ -14,7 +14,7 @@ export const AdminRoute = ({ children }) => {
   }
 
   if (!user || !isAdmin) {
-    return <Navigate to="/beranda" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;

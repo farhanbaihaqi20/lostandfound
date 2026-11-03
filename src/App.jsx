@@ -39,7 +39,7 @@ function App() {
         <Routes>
           {/* Public & Core Pages */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/beranda" element={<DashboardPage />} />
+          <Route path="/beranda" element={<Navigate to="/" replace />} />
           <Route path="/laporan-saya" element={<DashboardPage />} />
           <Route path="/jelajahi" element={<ExplorePage />} />
           <Route path="/barang/:id" element={<ItemDetailPage />} />
@@ -159,7 +159,7 @@ function App() {
           />
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/beranda" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
