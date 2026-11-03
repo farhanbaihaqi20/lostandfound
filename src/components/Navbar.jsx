@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Plus, 
@@ -13,7 +14,9 @@ import {
   MessageSquare,
   Compass,
   Home,
-  ChevronDown
+  ChevronDown,
+  ChevronRight,
+  X
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
@@ -26,8 +29,16 @@ export const Navbar = () => {
 
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
   const notifRef = useRef(null);
   const userRef = useRef(null);
+  const sheetRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const userNotifs = notifications.filter(n => 
     isAdmin ? true : n.user_id === user?.id
@@ -39,6 +50,16 @@ export const Navbar = () => {
       if (notifRef.current && !notifRef.current.contains(event.target)) {
         setShowNotifDropdown(false);
       }
+      // If clicking inside mobile bottom sheet or mobile backdrop, do not dismiss on mousedown
+      if (
+        (sheetRef.current && sheetRef.current.contains(event.target)) ||
+        (event.target.closest && (
+          event.target.closest('.user-menu-sheet-mobile') || 
+          event.target.closest('.user-menu-backdrop-mobile')
+        ))
+      ) {
+        return;
+      }
       if (userRef.current && !userRef.current.contains(event.target)) {
         setShowUserDropdown(false);
       }
@@ -48,6 +69,200 @@ export const Navbar = () => {
   }, []);
 
   const isActive = (path) => location.pathname === path;
+
+  const handleUserMenuNav = (path) => {
+    setShowUserDropdown(false);
+    navigate(path);
+  };
+
+  const handleLogout = () => {
+    setShowUserDropdown(false);
+    logout();
+    navigate('/masuk');
+  };
+
+  const renderUserMenuContent = (isMobileSheet) => (
+    <>
+      {/* User Profile Header */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        padding: isMobileSheet ? '0.2rem 0 0.75rem' : '0.2rem 0.2rem 0.6rem',
+        borderBottom: '1px solid var(--border-subtle)',
+        marginBottom: '0.4rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0, flex: 1 }}>
+          {user.avatar_url ? (
+            <img 
+              src={user.avatar_url} 
+              alt={user.full_name || 'User'} 
+              style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
+            />
+          ) : (
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: 'var(--primary-indigo)',
+              color: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '1rem',
+              fontWeight: 700,
+              flexShrink: 0
+            }}>
+              {(user.full_name || user.email || 'U')[0].toUpperCase()}
+            </div>
+          )}
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ 
+              fontWeight: 700, 
+              fontSize: '0.925rem', 
+              color: 'var(--ink-900)', 
+              textTransform: 'uppercase', 
+              letterSpacing: '-0.01em', 
+              lineHeight: 1.25,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
+              {user.full_name || 'DANIEL KRISTIAWAN'}
+            </div>
+            <div style={{ 
+              fontSize: '0.75rem', 
+              color: 'var(--ink-500)', 
+              marginTop: '1px', 
+              whiteSpace: 'nowrap', 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis' 
+            }}>
+              {user.email}
+            </div>
+            <div style={{ marginTop: '4px' }}>
+              <span style={{
+                display: 'inline-block',
+                backgroundColor: isAdmin ? '#EEF2FF' : 'var(--bg-surface-alt)',
+                border: isAdmin ? '1px solid #C7D2FE' : '1px solid var(--border-subtle)',
+                color: isAdmin ? 'var(--primary-indigo)' : 'var(--ink-700)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.62rem',
+                fontWeight: 700,
+                letterSpacing: '0.06em',
+                padding: '2px 7px',
+                borderRadius: '4px',
+                textTransform: 'uppercase'
+              }}>
+                {isAdmin ? 'PETUGAS LOST & FOUND' : 'MAHASISWA UNNES'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {isMobileSheet && (
+          <button 
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowUserDropdown(false);
+            }} 
+            style={{ 
+              color: 'var(--ink-500)',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'var(--bg-surface-alt)',
+              cursor: 'pointer',
+              border: 'none',
+              flexShrink: 0,
+              marginLeft: '0.5rem'
+            }}
+            aria-label="Tutup"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
+
+      {/* Navigation Links */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+        <button 
+          type="button"
+          onClick={() => handleUserMenuNav('/laporan-saya')}
+          className="user-menu-item"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div className="user-menu-item-icon">
+              <User size={16} />
+            </div>
+            <span style={{ fontWeight: 600 }}>Laporan Saya</span>
+          </div>
+          <ChevronRight size={16} className="user-menu-item-arrow" />
+        </button>
+
+        {isAdmin && (
+          <>
+            <button 
+              type="button"
+              onClick={() => handleUserMenuNav('/admin')}
+              className="user-menu-item admin"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div className="user-menu-item-icon admin">
+                  <ShieldCheck size={16} />
+                </div>
+                <span style={{ fontWeight: 600 }}>Panel Moderasi Posko</span>
+              </div>
+              <ChevronRight size={16} className="user-menu-item-arrow" />
+            </button>
+            <button 
+              type="button"
+              onClick={() => handleUserMenuNav('/admin/pesanan')}
+              className="user-menu-item"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div className="user-menu-item-icon">
+                  <Bike size={16} />
+                </div>
+                <span style={{ fontWeight: 600 }}>Layanan Runner</span>
+              </div>
+              <ChevronRight size={16} className="user-menu-item-arrow" />
+            </button>
+          </>
+        )}
+
+        <button 
+          type="button"
+          onClick={() => handleUserMenuNav('/pengaturan')}
+          className="user-menu-item"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div className="user-menu-item-icon">
+              <Settings size={16} />
+            </div>
+            <span style={{ fontWeight: 600 }}>Pengaturan</span>
+          </div>
+          <ChevronRight size={16} className="user-menu-item-arrow" />
+        </button>
+      </div>
+
+      <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.3rem 0' }} />
+
+      {/* Keluar Akun Button */}
+      <button 
+        type="button"
+        onClick={handleLogout}
+        className="user-menu-logout-btn"
+      >
+        <LogOut size={15} /> <span>Keluar Akun</span>
+      </button>
+    </>
+  );
 
   return (
     <header style={{
@@ -369,218 +584,29 @@ export const Navbar = () => {
                 <ChevronDown size={14} color="var(--ink-500)" style={{ marginLeft: '1px' }} />
               </button>
 
-              {showUserDropdown && (
-                <div style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 10px)',
-                  right: 0,
-                  width: '300px',
-                  backgroundColor: '#F6F1E8',
-                  borderRadius: '18px',
-                  border: '1px solid #E6DFD5',
-                  padding: '1.25rem 1rem',
-                  boxShadow: '0 16px 36px rgba(44, 30, 20, 0.12)',
-                  zIndex: 60,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.35rem',
-                  overflow: 'hidden'
-                }}>
-                  {/* Watermark footprint top-left */}
-                  <svg 
-                    width="45" 
-                    height="55" 
-                    viewBox="0 0 80 110" 
-                    fill="none" 
-                    style={{ position: 'absolute', top: '8px', left: '8px', opacity: 0.16, pointerEvents: 'none' }}
-                  >
-                    <path d="M24 38 C16 38 12 48 12 60 C12 70 17 76 22 76 C28 76 34 70 34 60 C34 48 30 38 24 38 Z" stroke="#A89F91" strokeWidth="2.5" strokeDasharray="3 3" />
-                    <circle cx="23" cy="28" r="4" fill="#A89F91" />
-                    <circle cx="17" cy="30" r="3" fill="#A89F91" />
-                    <circle cx="30" cy="31" r="3" fill="#A89F91" />
-                  </svg>
-
-                  {/* Watermark footprint bottom-left */}
-                  <svg 
-                    width="45" 
-                    height="55" 
-                    viewBox="0 0 80 110" 
-                    fill="none" 
-                    style={{ position: 'absolute', bottom: '8px', left: '8px', opacity: 0.16, pointerEvents: 'none' }}
-                  >
-                    <path d="M24 38 C16 38 12 48 12 60 C12 70 17 76 22 76 C28 76 34 70 34 60 C34 48 30 38 24 38 Z" stroke="#A89F91" strokeWidth="2.5" strokeDasharray="3 3" />
-                    <circle cx="23" cy="28" r="4" fill="#A89F91" />
-                    <circle cx="17" cy="30" r="3" fill="#A89F91" />
-                    <circle cx="30" cy="31" r="3" fill="#A89F91" />
-                  </svg>
-
-                  {/* Watermark magnifying glass bottom-right */}
-                  <svg 
-                    width="50" 
-                    height="50" 
-                    viewBox="0 0 100 100" 
-                    fill="none" 
-                    stroke="#A89F91" 
-                    strokeWidth="2.5"
-                    style={{ position: 'absolute', bottom: '8px', right: '8px', opacity: 0.18, pointerEvents: 'none', transform: 'rotate(-25deg)' }}
-                  >
-                    <circle cx="60" cy="40" r="22" />
-                    <line x1="43" y1="57" x2="16" y2="84" strokeWidth="4" strokeLinecap="round" />
-                  </svg>
-
-                  {/* User Profile Header (Figma Image 4) */}
-                  <div style={{ padding: '0.2rem 0.4rem 0.75rem', position: 'relative', zIndex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '-0.01em', lineHeight: 1.25 }}>
-                      {user.full_name || 'DANIEL KRISTIAWAN'}
-                    </div>
-                    <div style={{ fontSize: '0.825rem', color: '#475569', marginTop: '4px', wordBreak: 'break-all', lineHeight: 1.35 }}>
-                      {user.email}
-                    </div>
-                    <div style={{ marginTop: '10px' }}>
-                      <span style={{
-                        display: 'inline-block',
-                        backgroundColor: '#E0E7FF',
-                        border: '1px solid #C7D2FE',
-                        color: '#1E1B4B',
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        letterSpacing: '0.08em',
-                        padding: '4px 10px',
-                        borderRadius: '6px',
-                        textTransform: 'uppercase'
-                      }}>
-                        {isAdmin ? 'PETUGAS LOST & FOUND' : 'MAHASISWA UNNES'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{ height: '1px', background: '#E6DFD5', margin: '0.35rem 0' }} />
-
-                  {/* Links */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', position: 'relative', zIndex: 1 }}>
-                    <Link 
-                      to="/laporan-saya" 
-                      onClick={() => setShowUserDropdown(false)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem',
-                        padding: '0.55rem 0.75rem',
-                        fontSize: '0.875rem',
-                        fontWeight: 500,
-                        color: '#1E293B',
-                        textDecoration: 'none',
-                        borderRadius: '8px',
-                        transition: 'background 0.15s ease'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#EFE8DE'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <User size={17} color="#475569" /> <span>Laporan Saya</span>
-                    </Link>
-
-                    {isAdmin && (
-                      <>
-                        <Link 
-                          to="/admin" 
-                          onClick={() => setShowUserDropdown(false)}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.75rem',
-                            padding: '0.55rem 0.75rem',
-                            fontSize: '0.875rem',
-                            fontWeight: 600,
-                            color: '#4338CA',
-                            textDecoration: 'none',
-                            borderRadius: '8px',
-                            backgroundColor: '#E0E7FF',
-                            transition: 'background 0.15s ease'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#C7D2FE'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#E0E7FF'}
-                        >
-                          <ShieldCheck size={17} color="#4338CA" /> <span>Panel Moderasi Posko</span>
-                        </Link>
-                        <Link 
-                          to="/admin/pesanan" 
-                          onClick={() => setShowUserDropdown(false)}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.75rem',
-                            padding: '0.55rem 0.75rem',
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            color: '#1E293B',
-                            textDecoration: 'none',
-                            borderRadius: '8px',
-                            transition: 'background 0.15s ease'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = '#EFE8DE'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                        >
-                          <Bike size={17} color="#475569" /> <span>Layanan Runner</span>
-                        </Link>
-                      </>
-                    )}
-
-                    <Link 
-                      to="/pengaturan" 
-                      onClick={() => setShowUserDropdown(false)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem',
-                        padding: '0.55rem 0.75rem',
-                        fontSize: '0.875rem',
-                        fontWeight: 500,
-                        color: '#1E293B',
-                        textDecoration: 'none',
-                        borderRadius: '8px',
-                        transition: 'background 0.15s ease'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#EFE8DE'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <Settings size={17} color="#475569" /> <span>Pengaturan</span>
-                    </Link>
-                  </div>
-
-                  <div style={{ height: '1px', background: '#E6DFD5', margin: '0.35rem 0' }} />
-
-                  {/* Keluar Akun Button (Image 4) */}
-                  <button 
-                    onClick={() => {
-                      setShowUserDropdown(false);
-                      logout();
-                      navigate('/masuk');
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.65rem',
-                      padding: '0.6rem 0.85rem',
-                      fontSize: '0.875rem',
-                      fontWeight: 700,
-                      color: '#B91C1C',
-                      border: 'none',
-                      backgroundColor: '#FEE2E2',
-                      borderRadius: '8px',
-                      width: '100%',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'background 0.15s ease',
-                      position: 'relative',
-                      zIndex: 1
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FECDD3'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FEE2E2'}
-                  >
-                    <LogOut size={16} color="#DC2626" /> <span>Keluar Akun</span>
-                  </button>
+              {/* Desktop User Dropdown */}
+              {showUserDropdown && !isMobile && (
+                <div className="user-dropdown-desktop">
+                  {renderUserMenuContent(false)}
                 </div>
+              )}
+
+              {/* Mobile User Bottom Sheet via Portal */}
+              {showUserDropdown && isMobile && typeof document !== 'undefined' && createPortal(
+                <div 
+                  className="user-menu-backdrop-mobile"
+                  onClick={() => setShowUserDropdown(false)}
+                >
+                  <div 
+                    ref={sheetRef}
+                    className="user-menu-sheet-mobile"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="user-sheet-handle" />
+                    {renderUserMenuContent(true)}
+                  </div>
+                </div>,
+                document.body
               )}
             </div>
           ) : (

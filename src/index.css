@@ -1355,6 +1355,171 @@ img {
   transform: translateY(-1px);
 }
 
+/* ==========================================================================
+   USER PROFILE MENU & BOTTOM SHEET (DESKTOP & MOBILE RESPONSIVE)
+   ========================================================================== */
+
+/* Desktop Dropdown */
+.user-dropdown-desktop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 275px;
+  background-color: var(--bg-card);
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  padding: 0.75rem;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* Mobile Bottom Sheet Backdrop (Rendered via Portal to body) */
+.user-menu-backdrop-mobile {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Mobile Bottom Sheet Container */
+.user-menu-sheet-mobile {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: var(--bg-card);
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  border: 1px solid var(--border-subtle);
+  border-bottom: none;
+  padding: 0.75rem 1.25rem calc(1.75rem + env(safe-area-inset-bottom, 16px));
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.25);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  animation: slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.user-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background-color: var(--border-medium);
+  border-radius: 99px;
+  margin: 0 auto 0.75rem;
+  display: block;
+}
+
+@keyframes slideUpSheet {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.user-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--ink-800);
+  text-decoration: none;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.user-menu-item:hover,
+.user-menu-item:active {
+  background-color: var(--bg-surface-alt);
+  color: var(--ink-900);
+}
+
+.user-menu-item.admin {
+  color: var(--primary-indigo);
+  background-color: var(--primary-50);
+}
+
+.user-menu-item.admin:hover,
+.user-menu-item.admin:active {
+  background-color: var(--primary-100);
+}
+
+.user-menu-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: var(--bg-surface-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-600);
+  flex-shrink: 0;
+}
+
+.user-menu-item.admin .user-menu-item-icon {
+  background-color: var(--primary-100);
+  color: var(--primary-indigo);
+}
+
+.user-menu-item-arrow {
+  color: var(--ink-400);
+  transition: transform 0.15s ease;
+}
+
+.user-menu-item:hover .user-menu-item-arrow {
+  transform: translateX(2px);
+  color: var(--ink-700);
+}
+
+.user-menu-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--danger-600);
+  background-color: var(--danger-50);
+  border: 1px solid var(--danger-200);
+  border-radius: 10px;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 0.25rem;
+}
+
+.user-menu-logout-btn:hover {
+  background-color: var(--danger-100);
+  border-color: var(--danger-300);
+}
+
 /* Compact Impact & Rewards Section */
 .impact-dual-container {
   display: grid;
