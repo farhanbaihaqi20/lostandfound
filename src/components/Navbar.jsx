@@ -291,10 +291,10 @@ export const Navbar = () => {
           />
           <div>
             <div style={{ 
-              fontFamily: 'var(--font-serif)', 
-              fontWeight: 700, 
-              fontSize: '1.15rem', 
-              letterSpacing: '-0.02em',
+              fontFamily: 'var(--font-sans)', 
+              fontWeight: 800, 
+              fontSize: '1.05rem', 
+              letterSpacing: '-0.025em',
               color: 'var(--ink-900)',
               lineHeight: 1.15
             }}>
@@ -305,7 +305,8 @@ export const Navbar = () => {
               fontSize: '0.625rem', 
               color: 'var(--ink-500)', 
               letterSpacing: '0.06em', 
-              textTransform: 'uppercase' 
+              textTransform: 'uppercase',
+              fontWeight: 600
             }}>
               UNIVERSITAS NEGERI SEMARANG
             </div>

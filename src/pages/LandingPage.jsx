@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, 
   ArrowRight, 
-  AlertCircle,
-  Building2,
+  MapPin,
+  ChevronDown,
   Award,
   ShieldCheck,
   EyeOff,
   FileCheck2,
-  Sparkles,
   Layers,
-  ChevronRight
+  X,
+  PackageCheck,
+  AlertCircle,
+  CheckCircle2
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { ItemCard } from '../components/ItemCard';
@@ -26,6 +29,27 @@ export const LandingPage = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [activeTab, setActiveTab] = useState('semua'); // 'semua' | 'hilang' | 'temuan'
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
+
+  const locationRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Close desktop dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (locationRef.current && !locationRef.current.contains(e.target)) {
+        setShowLocationModal(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -41,344 +65,375 @@ export const LandingPage = () => {
     navigate(`/jelajahi?q=${encodeURIComponent(cleanWord)}`);
   };
 
-  // Filter items for tab
+  const handleSelectLocation = (loc) => {
+    setSelectedLocation(loc);
+    setShowLocationModal(false);
+  };
+
+  // Filter items for tab (10 items gives clean full rows in 5-col desktop & 2-col mobile)
   const filteredRecentItems = approvedItems
     .filter(item => {
       if (activeTab === 'hilang') return item.type === 'hilang';
       if (activeTab === 'temuan') return item.type === 'temuan';
       return true;
     })
-    .slice(0, 6);
+    .slice(0, 10);
 
   const countHilang = approvedItems.filter(i => i.type === 'hilang').length;
   const countTemuan = approvedItems.filter(i => i.type === 'temuan').length;
   const countKembali = approvedItems.filter(i => i.item_status === 'dikembalikan').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }} className="pb-mobile-nav">
+    <div className="landing-page-wrap pb-mobile-nav">
       
-      {/* 1. Hero Section: Unified & Functional Campus Hub */}
+      {/* HERO SECTION: Balanced, Minimalist & Focused */}
       <section className="hero-section">
         <div className="container hero-container">
           
           {/* Official Campus Pill */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '4px 12px',
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-full)',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            color: 'var(--ink-700)',
-            letterSpacing: '0.02em',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)'
-          }}>
-            <span style={{ 
-              width: '7px', 
-              height: '7px', 
-              borderRadius: '50%', 
-              backgroundColor: '#10B981',
-              display: 'inline-block' 
-            }} />
+          <div className="hero-official-badge">
+            <span className="hero-pulse-dot" />
             <span>Layanan Resmi Lost &amp; Found Kampus UNNES</span>
           </div>
 
-          {/* Proper, Harmonious Title */}
-          <h1 style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: 'clamp(1.75rem, 4.5vw, 3.2rem)',
-            fontWeight: 800,
-            lineHeight: 1.2,
-            letterSpacing: '-0.035em',
-            color: 'var(--ink-900)',
-            margin: '0.1rem 0 0.35rem',
-            textAlign: 'center'
-          }}>
-            Hilang di area kampus? <br />
-            <span style={{ 
-              color: 'var(--primary-indigo)',
-              fontWeight: 800
-            }}>
-              Laporkan &amp; temukan kembali di sini.
-            </span>
-          </h1>
+          {/* Proportional Headline & Description */}
+          <div className="hero-title-group">
+            <h1 className="hero-main-title">
+              Hilang di area kampus?{' '}
+              <span className="hero-highlight-title">
+                Laporkan &amp; temukan kembali di sini.
+              </span>
+            </h1>
+            <p className="hero-subtitle">
+              Pusat pencatatan terpadu dan aman bagi seluruh civitas Universitas Negeri Semarang untuk mengembalikan barang tertinggal.
+            </p>
+          </div>
 
-          {/* Search Box Bar */}
-          <form 
-            onSubmit={handleSearchSubmit}
-            className="hero-search-form"
-          >
-            <div className="hero-search-input-wrap">
-              <Search size={19} color="var(--ink-500)" style={{ flexShrink: 0 }} />
-              <input 
-                type="text" 
-                placeholder="Cari nama barang, nomor seri, atau kata kunci..."
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                style={{
-                  border: 'none',
-                  outline: 'none',
-                  width: '100%',
-                  background: 'transparent',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '0.95rem',
-                  color: 'var(--ink-900)',
-                  padding: '10px 0'
-                }}
-              />
-            </div>
+          {/* Unified Compact Search Bar (Positioned directly below headline & description) */}
+          <div className="hero-search-wrapper">
+            <form onSubmit={handleSearchSubmit} className="hero-search-bar-compact">
+              {/* Text Input Field */}
+              <div className="search-input-field">
+                <Search size={17} className="search-icon-left" />
+                <input 
+                  type="text" 
+                  placeholder="Cari barang hilang atau temuan..."
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  aria-label="Cari nama barang"
+                />
+                {searchKeyword && (
+                  <button 
+                    type="button" 
+                    onClick={() => setSearchKeyword('')} 
+                    className="search-clear-btn"
+                    aria-label="Hapus kata kunci"
+                  >
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
 
-            <div className="search-divider" />
+              <div className="search-bar-divider" />
 
-            <div className="hero-search-select-wrap">
-              <Building2 size={17} color="var(--ink-500)" style={{ flexShrink: 0 }} />
-              <select 
-                value={selectedLocation}
-                onChange={(e) => setSelectedLocation(e.target.value)}
-                style={{
-                  border: 'none',
-                  outline: 'none',
-                  background: 'transparent',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '0.875rem',
-                  color: selectedLocation ? 'var(--ink-900)' : 'var(--ink-500)',
-                  width: '100%',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="">Semua Fakultas / Lokasi</option>
-                {UNNES_BUILDINGS.map(b => (
-                  <option key={b.id || b.name} value={b.name}>{b.name}</option>
-                ))}
-              </select>
-            </div>
+              {/* Compact Location Filter Button */}
+              <div className="search-location-wrapper" ref={locationRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowLocationModal(!showLocationModal)}
+                  className={`search-location-btn ${selectedLocation ? 'is-selected' : ''}`}
+                  title={selectedLocation || 'Semua Lokasi / Fakultas'}
+                  aria-label="Filter lokasi"
+                >
+                  <MapPin size={13} className="location-btn-icon" />
+                  <span className="location-btn-text">
+                    {selectedLocation ? selectedLocation.replace(/^Gedung\s+/, '').split(' (')[0] : 'Lokasi'}
+                  </span>
+                  <ChevronDown size={12} className={`location-btn-chevron ${showLocationModal ? 'open' : ''}`} />
+                </button>
 
-            <button 
-              type="submit" 
-              className="btn btn-primary hero-search-btn"
-            >
-              <Search size={16} strokeWidth={2.5} /> Cari Barang
-            </button>
-          </form>
+                {/* Desktop Dropdown Popover */}
+                {showLocationModal && !isMobile && (
+                  <div className="location-dropdown-desktop">
+                    <div className="location-dropdown-header">
+                      <span>Pilih Lokasi Kampus</span>
+                      {selectedLocation && (
+                        <button 
+                          type="button" 
+                          onClick={() => handleSelectLocation('')}
+                          className="location-reset-btn"
+                        >
+                          Reset
+                        </button>
+                      )}
+                    </div>
+                    <div className="location-dropdown-list">
+                      <button
+                        type="button"
+                        onClick={() => handleSelectLocation('')}
+                        className={`location-item-btn ${!selectedLocation ? 'active' : ''}`}
+                      >
+                        <span>Semua Lokasi / Fakultas</span>
+                        {!selectedLocation && <span className="location-check">✓</span>}
+                      </button>
+                      {UNNES_BUILDINGS.map(b => (
+                        <button
+                          key={b.id || b.name}
+                          type="button"
+                          onClick={() => handleSelectLocation(b.name)}
+                          className={`location-item-btn ${selectedLocation === b.name ? 'active' : ''}`}
+                        >
+                          <span>{b.name}</span>
+                          {selectedLocation === b.name && <span className="location-check">✓</span>}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
-          {/* Quick Popular Keywords Row */}
-          <div className="search-tags-row">
-            <span className="search-tags-label">Sering dicari:</span>
-            {POPULAR_TAGS.map(tag => (
-              <button 
-                key={tag}
-                type="button"
-                className="search-tag-chip"
-                onClick={() => handleTagClick(tag)}
-              >
-                {tag}
+              {/* Search Submit Button */}
+              <button type="submit" className="search-submit-btn" aria-label="Cari barang">
+                <Search size={14} strokeWidth={2.5} />
+                <span className="search-submit-text">Cari</span>
               </button>
-            ))}
-          </div>
+            </form>
 
-          {/* Quick Action Dock: Dua Tombol Aksi Utama yang Rapi & Proporsional */}
-          <div style={{ width: '100%', maxWidth: '1060px', marginTop: '0.15rem' }}>
-            <div className="hero-action-grid">
-              
-              {/* Lost Action Card */}
-              <Link 
-                to="/lapor/hilang" 
-                className="action-dock-card action-dock-lost"
-              >
-                <div className="action-dock-icon lost">
-                  <AlertCircle size={20} strokeWidth={2.2} />
-                </div>
-                <div className="action-dock-content">
-                  <div className="action-dock-header">
-                    <span className="action-dock-title">
-                      Saya Kehilangan Barang
-                    </span>
-                    <ArrowRight size={17} className="action-dock-arrow" />
-                  </div>
-                  <p className="action-dock-desc">
-                    Catat ciri &amp; pantau barang tertinggal
-                  </p>
-                </div>
-              </Link>
-
-              {/* Found Action Card */}
-              <Link 
-                to="/lapor/temuan" 
-                className="action-dock-card action-dock-found"
-              >
-                <div className="action-dock-icon found">
-                  <Sparkles size={20} strokeWidth={2.2} />
-                </div>
-                <div className="action-dock-content">
-                  <div className="action-dock-header">
-                    <span className="action-dock-title">
-                      Saya Menemukan Barang
-                    </span>
-                    <ArrowRight size={17} className="action-dock-arrow" />
-                  </div>
-                  <p className="action-dock-desc">
-                    Titipkan &amp; amankan ke posko fakultas
-                  </p>
-                </div>
-              </Link>
-
+            {/* Quick Popular Keywords Row */}
+            <div className="search-tags-row">
+              <span className="search-tags-label">Sering dicari:</span>
+              <div className="search-tags-chips">
+                {POPULAR_TAGS.map(tag => (
+                  <button 
+                    key={tag}
+                    type="button"
+                    className="search-tag-chip"
+                    onClick={() => handleTagClick(tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Jaminan Layanan & Verifikasi Terpadu */}
+          {/* Mobile Bottom Sheet for Location Filter via Portal */}
+          {showLocationModal && isMobile && typeof document !== 'undefined' && createPortal(
+            <div 
+              className="location-sheet-backdrop"
+              onClick={() => setShowLocationModal(false)}
+            >
+              <div 
+                className="location-sheet-mobile"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="location-sheet-handle" />
+                <div className="location-sheet-header">
+                  <div>
+                    <h3 className="location-sheet-title">Pilih Lokasi Kampus</h3>
+                    <p className="location-sheet-sub">Saring barang berdasarkan gedung atau fakultas</p>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowLocationModal(false)}
+                    className="location-sheet-close"
+                    aria-label="Tutup"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className="location-sheet-list">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectLocation('')}
+                    className={`location-sheet-item ${!selectedLocation ? 'active' : ''}`}
+                  >
+                    <span>Semua Lokasi / Fakultas</span>
+                    {!selectedLocation && <span className="location-check">✓</span>}
+                  </button>
+                  {UNNES_BUILDINGS.map(b => (
+                    <button
+                      key={b.id || b.name}
+                      type="button"
+                      onClick={() => handleSelectLocation(b.name)}
+                      className={`location-sheet-item ${selectedLocation === b.name ? 'active' : ''}`}
+                    >
+                      <span>{b.name}</span>
+                      {selectedLocation === b.name && <span className="location-check">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
+
+          {/* Micro-Trust Bar (Subtle, Compact & Fully Responsive) */}
           <div className="hero-trust-bar">
             <div className="trust-item">
-              <EyeOff size={16} className="trust-icon" />
+              <EyeOff size={14} className="trust-icon" />
               <span>Sensor Privasi Publik</span>
             </div>
             <div className="trust-divider" />
             <div className="trust-item">
-              <ShieldCheck size={16} className="trust-icon" />
+              <ShieldCheck size={14} className="trust-icon" />
               <span>Verifikasi Posko Fakultas</span>
             </div>
             <div className="trust-divider" />
             <div className="trust-item">
-              <FileCheck2 size={16} className="trust-icon" />
+              <FileCheck2 size={14} className="trust-icon" />
               <span>Berita Acara Digital (BAST)</span>
             </div>
+          </div>
+
+          {/* Desktop Hero Activity Strip (900-1100px wide distribution, reduces dead whitespace) */}
+          <div className="hero-activity-strip">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('temuan');
+                document.querySelector('.catalog-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="activity-strip-item"
+              title="Lihat barang temuan di posko kampus"
+            >
+              <div className="activity-strip-badge temuan">
+                <PackageCheck size={14} />
+                <span>{countTemuan} Barang</span>
+              </div>
+              <div className="activity-strip-text">
+                <strong>Temuan Baru di Posko</strong>
+                <span>Diamankan petugas posko fakultas</span>
+              </div>
+              <ArrowRight size={13} className="activity-strip-arrow" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('hilang');
+                document.querySelector('.catalog-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="activity-strip-item"
+              title="Lihat laporan kehilangan aktif"
+            >
+              <div className="activity-strip-badge hilang">
+                <AlertCircle size={14} />
+                <span>{countHilang} Laporan</span>
+              </div>
+              <div className="activity-strip-text">
+                <strong>Sedang Dicari Civitas</strong>
+                <span>Laporan aktif dalam pencarian</span>
+              </div>
+              <ArrowRight size={13} className="activity-strip-arrow" />
+            </button>
+
+            <Link
+              to="/jelajahi?status=dikembalikan"
+              className="activity-strip-item"
+              title="Lihat riwayat barang yang berhasil diserahkan"
+            >
+              <div className="activity-strip-badge kembali">
+                <CheckCircle2 size={14} />
+                <span>{countKembali} Sukses</span>
+              </div>
+              <div className="activity-strip-text">
+                <strong>Telah Diserahterimakan</strong>
+                <span>Verifikasi BAST digital resmi</span>
+              </div>
+              <ArrowRight size={13} className="activity-strip-arrow" />
+            </Link>
           </div>
 
         </div>
       </section>
 
-      {/* 2. Section: Barang Terbaru Dilaporkan (Immediate Catalog) */}
-      <section className="container">
-        <div style={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
-          justifyContent: 'space-between', 
-          alignItems: 'flex-end', 
-          gap: '1rem',
-          marginBottom: '1.5rem',
-          paddingBottom: '1rem',
-          borderBottom: '1px solid var(--border-subtle)'
-        }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--ink-500)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+      {/* SECTION: KATALOG BARANG TERBARU DILAPORKAN (Fokus Utama Homepage) */}
+      <section className="container catalog-section">
+        {/* Header & Tabs */}
+        <div className="catalog-header-bar">
+          <div className="catalog-header-text">
+            <div className="catalog-section-eyebrow">
               KATALOG KAMPUS TERBARU
             </div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.65rem', fontWeight: 700, color: 'var(--ink-900)', margin: '0.15rem 0' }}>
+            <h2 className="catalog-section-heading">
               Barang Terbaru Dilaporkan
             </h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--ink-600)', margin: 0 }}>
-              Daftar laporan aktif dari civitas UNNES yang diverifikasi posko fakultas.
+            <p className="catalog-section-desc">
+              Laporan aktif dari civitas akademika UNNES yang telah diverifikasi petugas.
             </p>
           </div>
 
           {/* Filter Tabs */}
-          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+          <div className="catalog-filter-tabs">
             <button
               onClick={() => setActiveTab('semua')}
               className={`filter-chip ${activeTab === 'semua' ? 'active' : ''}`}
             >
-              SEMUA ({approvedItems.length})
+              Semua ({approvedItems.length})
             </button>
             <button
               onClick={() => setActiveTab('hilang')}
               className={`filter-chip ${activeTab === 'hilang' ? 'active' : ''}`}
             >
-              BARANG HILANG ({countHilang})
+              Hilang ({countHilang})
             </button>
             <button
               onClick={() => setActiveTab('temuan')}
               className={`filter-chip ${activeTab === 'temuan' ? 'active' : ''}`}
             >
-              BARANG TEMUAN ({countTemuan})
+              Temuan ({countTemuan})
             </button>
           </div>
         </div>
 
-        {/* Item Grid */}
+        {/* Item Grid (Strictly 2 Columns on Mobile, 3-4 Columns on Desktop) */}
         {filteredRecentItems.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '3.5rem 1rem',
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '8px'
-          }}>
-            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--ink-700)', margin: 0 }}>
-              Belum ada laporan barang untuk kategori ini.
-            </p>
-            <div style={{ marginTop: '1rem' }}>
-              <Link to="/lapor/pilih" className="btn btn-secondary btn-sm">
-                Buat Laporan Baru
-              </Link>
-            </div>
+          <div className="catalog-empty-state">
+            <p>Belum ada laporan barang untuk kategori ini.</p>
+            <Link to="/lapor/pilih" className="btn btn-secondary btn-sm" style={{ marginTop: '0.75rem' }}>
+              Buat Laporan Baru
+            </Link>
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
-            gap: '1.5rem'
-          }}>
+          <div className="catalog-grid">
             {filteredRecentItems.map(item => (
               <ItemCard key={item.id} item={item} />
             ))}
           </div>
         )}
 
-        {/* Link to Explore */}
-        <div style={{ textAlign: 'center', marginTop: '2.25rem' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--ink-500)', marginBottom: '0.75rem' }}>
+        {/* Link to Explore Page */}
+        <div className="catalog-footer-actions">
+          <div className="catalog-counter-text">
             Menampilkan {filteredRecentItems.length} dari {approvedItems.length} laporan aktif
           </div>
           <Link 
             to="/jelajahi" 
-            className="btn btn-secondary"
-            style={{ 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              gap: '0.5rem',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.8rem',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase'
-            }}
+            className="btn btn-secondary catalog-all-btn"
           >
-            LIHAT SEMUA BARANG <ArrowRight size={14} />
+            <span>Lihat Semua Barang</span>
+            <ArrowRight size={14} />
           </Link>
         </div>
       </section>
 
-      {/* 3. Section: Harmonisasi Statistik & Apresiasi Kejujuran */}
-      <section className="container">
+      {/* SECTION: STATISTIK & APRESIASI KEJUJURAN */}
+      <section className="container impact-section">
         <div className="impact-dual-container">
           
           {/* Card A: Statistik Aktivitas Kampus */}
           <div className="stats-card-box">
             <div>
-              <div style={{ 
-                fontFamily: 'var(--font-mono)', 
-                fontSize: '0.7rem', 
-                color: 'var(--ink-500)', 
-                letterSpacing: '0.08em', 
-                textTransform: 'uppercase',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem'
-              }}>
+              <div className="stats-eyebrow">
                 <Layers size={13} color="var(--primary-indigo)" />
                 TRANSPARANSI KAMPUS
               </div>
-              <h3 style={{ 
-                fontFamily: 'var(--font-serif)', 
-                fontSize: '1.35rem', 
-                fontWeight: 700, 
-                color: 'var(--ink-900)', 
-                margin: '0.3rem 0 0.25rem' 
-              }}>
+              <h3 className="stats-title">
                 Aktivitas Laporan Terkini
               </h3>
-              <p style={{ fontSize: '0.825rem', color: 'var(--ink-600)', margin: 0, lineHeight: 1.5 }}>
+              <p className="stats-desc">
                 Pencatatan terbuka dan terpantau untuk seluruh civitas fakultas di lingkungan Universitas Negeri Semarang.
               </p>
             </div>
@@ -405,7 +460,7 @@ export const LandingPage = () => {
                   {countTemuan}
                 </div>
                 <div className="stat-quad-label">Barang Temuan</div>
-                <div className="stat-quad-sub">Diamankan di posko</div>
+                <div className="stat-quad-sub">Diamankan posko</div>
               </div>
 
               <div className="stat-quad-item">
@@ -424,35 +479,20 @@ export const LandingPage = () => {
               <span className="badge badge-bounty" style={{ width: 'fit-content' }}>
                 <Award size={12} strokeWidth={2.5} /> PROGRAM APRESIASI
               </span>
-              <h3 style={{ 
-                fontFamily: 'var(--font-serif)', 
-                fontSize: '1.45rem', 
-                fontWeight: 700, 
-                color: 'var(--ink-900)', 
-                margin: 0,
-                lineHeight: 1.3
-              }}>
+              <h3 className="bounty-title">
                 Hargai Kejujuran dengan Apresiasi Terbuka
               </h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--ink-700)', lineHeight: 1.55, margin: 0 }}>
+              <p className="bounty-desc">
                 Pemilik barang dapat menyertakan imbalan sukarela sebagai tanda terima kasih kepada civitas yang mengembalikan barang berharga Anda.
               </p>
 
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '0.4rem', 
-                fontFamily: 'var(--font-sans)', 
-                fontSize: '0.8rem', 
-                color: 'var(--ink-700)',
-                marginTop: '0.25rem'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ color: 'var(--tag-bounty-ink)', fontWeight: 800 }}>✓</span>
+              <div className="bounty-features-list">
+                <div className="bounty-feature-item">
+                  <span className="bounty-check">✓</span>
                   <span>Nominal imbalan tertera transparan di halaman barang</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ color: 'var(--tag-bounty-ink)', fontWeight: 800 }}>✓</span>
+                <div className="bounty-feature-item">
+                  <span className="bounty-check">✓</span>
                   <span>Serah terima aman &amp; dicatat dengan BAST digital</span>
                 </div>
               </div>
@@ -461,18 +501,10 @@ export const LandingPage = () => {
             <div style={{ paddingTop: '0.5rem' }}>
               <Link 
                 to="/jelajahi?hadiah=true" 
-                className="btn btn-dark btn-sm"
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.78rem',
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.45rem'
-                }}
+                className="btn btn-dark btn-sm bounty-cta-btn"
               >
-                LIHAT BARANG DENGAN HADIAH <ArrowRight size={14} />
+                <span>Lihat Barang dengan Hadiah</span>
+                <ArrowRight size={14} />
               </Link>
             </div>
           </div>

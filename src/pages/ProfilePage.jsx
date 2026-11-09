@@ -280,11 +280,7 @@ export const ProfilePage = () => {
                 </Link>
               </div>
             ) : (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                gap: '1.25rem'
-              }}>
+              <div className="catalog-grid">
                 {myReports.map(item => (
                   <ItemCard key={item.id} item={item} />
                 ))}

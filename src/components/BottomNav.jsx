@@ -330,8 +330,10 @@ export const BottomNav = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           zIndex: 40,
-          boxShadow: '0 8px 32px rgba(15, 23, 42, 0.18)',
-          border: '1px solid var(--border-glass)'
+          boxShadow: '0 6px 20px rgba(15, 23, 42, 0.08)',
+          border: '1px solid var(--border-color)',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(12px)'
         }}
       >
         {/* Navigation Links */}
@@ -371,17 +373,17 @@ export const BottomNav = () => {
         <button
           onClick={() => setShowReportSheet(true)}
           style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '10px',
+            width: '42px',
+            height: '42px',
+            borderRadius: '12px',
             background: 'var(--primary-indigo)',
             color: '#FFFFFF',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             border: 'none',
-            boxShadow: '0 4px 14px rgba(79, 70, 229, 0.45)',
-            transform: 'translateY(-4px)',
+            boxShadow: '0 4px 12px rgba(79, 70, 229, 0.28)',
+            transform: 'translateY(-3px)',
             transition: 'transform var(--trans-fast)',
             cursor: 'pointer'
           }}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, AlertCircle, PackageCheck, Award, RotateCcw, Building2, SlidersHorizontal, ArrowUpDown, ChevronDown } from 'lucide-react';
+import { Search, AlertCircle, PackageCheck, Award, RotateCcw, Building2, SlidersHorizontal, ArrowUpDown, ChevronDown, X } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { UNNES_BUILDINGS, CATEGORIES } from '../data/initialData';
 import { ItemCard } from '../components/ItemCard';
@@ -112,19 +112,15 @@ export const ExplorePage = () => {
           {query && (
             <button
               onClick={() => setQuery('')}
+              className="search-clear-btn"
               style={{
                 position: 'absolute',
-                right: '1rem',
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--ink-500)',
-                cursor: 'pointer',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.75rem',
-                fontWeight: 700
+                right: '0.85rem'
               }}
+              title="Hapus kata kunci"
+              aria-label="Hapus kata kunci"
             >
-              [HAPUS]
+              <X size={14} />
             </button>
           )}
         </div>
@@ -471,11 +467,7 @@ export const ExplorePage = () => {
           </button>
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
-          gap: '1.5rem'
-        }}>
+        <div className="catalog-grid">
           {filteredItems.map(item => (
             <ItemCard key={item.id} item={item} />
           ))}
