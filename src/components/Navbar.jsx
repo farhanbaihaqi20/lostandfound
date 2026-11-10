@@ -16,7 +16,8 @@ import {
   Home,
   ChevronDown,
   ChevronRight,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
@@ -29,16 +30,34 @@ export const Navbar = () => {
 
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const notifRef = useRef(null);
   const userRef = useRef(null);
   const sheetRef = useRef(null);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Lock body scroll when mobile user sheet is open
+  useEffect(() => {
+    if (showUserDropdown && isMobile) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showUserDropdown, isMobile]);
+
+  // Automatically close dropdown/sheet when route changes
+  useEffect(() => {
+    setShowUserDropdown(false);
+    setShowNotifDropdown(false);
+  }, [location.pathname]);
 
   const userNotifs = notifications.filter(n => 
     isAdmin ? true : n.user_id === user?.id
@@ -50,7 +69,7 @@ export const Navbar = () => {
       if (notifRef.current && !notifRef.current.contains(event.target)) {
         setShowNotifDropdown(false);
       }
-      // If clicking inside mobile bottom sheet or mobile backdrop, do not dismiss on mousedown
+      // If clicking inside mobile bottom sheet or mobile backdrop, do not dismiss on mousedown/touchstart
       if (
         (sheetRef.current && sheetRef.current.contains(event.target)) ||
         (event.target.closest && (
@@ -65,7 +84,11 @@ export const Navbar = () => {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   const isActive = (path) => location.pathname === path;
@@ -83,26 +106,34 @@ export const Navbar = () => {
 
   const renderUserMenuContent = (isMobileSheet) => (
     <>
-      {/* User Profile Header */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between',
-        padding: isMobileSheet ? '0.2rem 0 0.75rem' : '0.2rem 0.2rem 0.6rem',
-        borderBottom: '1px solid var(--border-subtle)',
-        marginBottom: '0.4rem'
-      }}>
+      {/* User Profile Header (Clickable to go to Profile) */}
+      <div 
+        onClick={() => handleUserMenuNav('/profil')}
+        title="Klik untuk membuka profil lengkap"
+        className="user-menu-header-card"
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          padding: isMobileSheet ? '0.4rem 0.5rem 0.85rem' : '0.4rem 0.4rem 0.65rem',
+          borderBottom: '1px solid var(--border-subtle)',
+          marginBottom: '0.45rem',
+          cursor: 'pointer',
+          borderRadius: '8px',
+          transition: 'background-color 0.15s ease'
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0, flex: 1 }}>
           {user.avatar_url ? (
             <img 
               src={user.avatar_url} 
               alt={user.full_name || 'User'} 
-              style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
+              style={{ width: '42px', height: '42px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border-subtle)' }}
             />
           ) : (
             <div style={{
-              width: '40px',
-              height: '40px',
+              width: '42px',
+              height: '42px',
               borderRadius: '10px',
               background: 'var(--primary-indigo)',
               color: '#FFFFFF',
@@ -110,7 +141,7 @@ export const Navbar = () => {
               alignItems: 'center',
               justifyContent: 'center',
               fontFamily: 'var(--font-mono)',
-              fontSize: '1rem',
+              fontSize: '1.05rem',
               fontWeight: 700,
               flexShrink: 0
             }}>
@@ -129,7 +160,7 @@ export const Navbar = () => {
               overflow: 'hidden',
               textOverflow: 'ellipsis'
             }}>
-              {user.full_name || 'DANIEL KRISTIAWAN'}
+              {user.full_name || 'Civitas UNNES'}
             </div>
             <div style={{ 
               fontSize: '0.75rem', 
@@ -161,7 +192,7 @@ export const Navbar = () => {
           </div>
         </div>
 
-        {isMobileSheet && (
+        {isMobileSheet ? (
           <button 
             type="button"
             onClick={(e) => {
@@ -186,6 +217,8 @@ export const Navbar = () => {
           >
             <X size={16} />
           </button>
+        ) : (
+          <ChevronRight size={16} className="user-menu-item-arrow" style={{ opacity: 0.5 }} />
         )}
       </div>
 
@@ -193,12 +226,26 @@ export const Navbar = () => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
         <button 
           type="button"
-          onClick={() => handleUserMenuNav('/laporan-saya')}
+          onClick={() => handleUserMenuNav('/profil')}
           className="user-menu-item"
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div className="user-menu-item-icon">
               <User size={16} />
+            </div>
+            <span style={{ fontWeight: 600 }}>Profil Saya</span>
+          </div>
+          <ChevronRight size={16} className="user-menu-item-arrow" />
+        </button>
+
+        <button 
+          type="button"
+          onClick={() => handleUserMenuNav('/laporan-saya')}
+          className="user-menu-item"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div className="user-menu-item-icon">
+              <FileText size={16} />
             </div>
             <span style={{ fontWeight: 600 }}>Laporan Saya</span>
           </div>
@@ -251,7 +298,7 @@ export const Navbar = () => {
         </button>
       </div>
 
-      <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.3rem 0' }} />
+      <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.35rem 0' }} />
 
       {/* Keluar Akun Button */}
       <button 
@@ -541,6 +588,7 @@ export const Navbar = () => {
           {user ? (
             <div ref={userRef} style={{ position: 'relative' }}>
               <button 
+                type="button"
                 onClick={() => setShowUserDropdown(!showUserDropdown)}
                 style={{
                   display: 'flex',
@@ -548,13 +596,14 @@ export const Navbar = () => {
                   gap: '0.45rem',
                   padding: '4px 8px 4px 5px',
                   borderRadius: '6px',
-                  border: '1px solid var(--border-subtle)',
+                  border: showUserDropdown ? '1px solid var(--primary-indigo)' : '1px solid var(--border-subtle)',
                   cursor: 'pointer',
-                  background: 'var(--bg-card)',
+                  background: showUserDropdown ? 'var(--bg-surface-alt)' : 'var(--bg-card)',
                   color: 'var(--ink-900)',
                   transition: 'all 0.15s ease'
                 }}
                 title={user?.full_name || 'Profil Pengguna'}
+                aria-expanded={showUserDropdown}
               >
                 {user.avatar_url ? (
                   <img 
@@ -582,7 +631,15 @@ export const Navbar = () => {
                 <span className="nav-user-label" style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', fontWeight: 600 }}>
                   {user.full_name?.split(' ')[0] || 'Akun'}
                 </span>
-                <ChevronDown size={14} color="var(--ink-500)" style={{ marginLeft: '1px' }} />
+                <ChevronDown 
+                  size={14} 
+                  color="var(--ink-500)" 
+                  style={{ 
+                    marginLeft: '1px', 
+                    transform: showUserDropdown ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease'
+                  }} 
+                />
               </button>
 
               {/* Desktop User Dropdown */}

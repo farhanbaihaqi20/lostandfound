@@ -2861,3 +2861,182 @@ img {
 .item-card:hover .item-card-go {
   transform: translateX(4px);
 }
+
+/* ==========================================================================
+   USER PROFILE DROPDOWN & MOBILE BOTTOM SHEET
+   ========================================================================== */
+
+/* Desktop Dropdown Popover */
+.user-dropdown-desktop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 290px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 14px 35px rgba(15, 23, 42, 0.12), 0 4px 10px rgba(15, 23, 42, 0.04);
+  padding: 0.75rem;
+  z-index: 100;
+  animation: userDropdownFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+}
+
+@keyframes userDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Mobile Bottom Sheet Modal */
+.user-menu-backdrop-mobile {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  animation: userBackdropFadeIn 0.2s ease-out;
+}
+
+@keyframes userBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.user-menu-sheet-mobile {
+  width: 100%;
+  max-width: 500px;
+  background-color: var(--bg-card);
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  padding: 0.85rem 1.25rem calc(2.25rem + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.25);
+  border: 1px solid var(--border-subtle);
+  border-bottom: none;
+  animation: userSheetSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+@keyframes userSheetSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.user-sheet-handle {
+  width: 38px;
+  height: 4px;
+  background-color: var(--border-medium);
+  border-radius: 99px;
+  margin: 0 auto 1rem;
+}
+
+/* User Menu Card & Items */
+.user-menu-header-card {
+  transition: background-color 0.15s ease;
+}
+
+.user-menu-header-card:hover {
+  background-color: var(--bg-surface-alt);
+}
+
+.user-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--ink-800);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.user-menu-item:hover {
+  background-color: var(--bg-surface-alt);
+  color: var(--primary-indigo);
+}
+
+.user-menu-item.admin:hover {
+  background-color: #EEF2FF;
+  color: var(--primary-indigo);
+}
+
+.user-menu-item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-surface-alt);
+  color: var(--ink-600);
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.user-menu-item:hover .user-menu-item-icon {
+  background-color: #EEF2FF;
+  color: var(--primary-indigo);
+}
+
+.user-menu-item-icon.admin {
+  background-color: #EEF2FF;
+  color: var(--primary-indigo);
+}
+
+.user-menu-item-arrow {
+  color: var(--ink-400);
+  flex-shrink: 0;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.user-menu-item:hover .user-menu-item-arrow {
+  transform: translateX(2px);
+  color: var(--primary-indigo);
+}
+
+.user-menu-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--danger-600);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.825rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.user-menu-logout-btn:hover {
+  background-color: var(--danger-50);
+  color: var(--danger-700);
+}
