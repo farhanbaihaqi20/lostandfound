@@ -19,6 +19,7 @@ import {
 import { useData } from '../contexts/DataContext';
 import { ItemCard } from '../components/ItemCard';
 import { UNNES_BUILDINGS } from '../data/initialData';
+import { sortItemsByPriority } from '../lib/itemSorting';
 
 const POPULAR_TAGS = ['KTM / Dompet', 'Kunci Motor', 'Helm', 'Jaket / Hoodie', 'Flashdisk', 'Botol Minum'];
 
@@ -71,7 +72,7 @@ export const LandingPage = () => {
   };
 
   // Filter items for tab (10 items gives clean full rows in 5-col desktop & 2-col mobile)
-  const filteredRecentItems = approvedItems
+  const filteredRecentItems = sortItemsByPriority(approvedItems)
     .filter(item => {
       if (activeTab === 'hilang') return item.type === 'hilang';
       if (activeTab === 'temuan') return item.type === 'temuan';

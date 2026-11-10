@@ -4,6 +4,7 @@ import { Search, AlertCircle, PackageCheck, Award, RotateCcw, Building2, Sliders
 import { useData } from '../contexts/DataContext';
 import { UNNES_BUILDINGS, CATEGORIES } from '../data/initialData';
 import { ItemCard } from '../components/ItemCard';
+import { compareItemsByPriority } from '../lib/itemSorting';
 
 export const ExplorePage = () => {
   const { approvedItems } = useData();
@@ -15,14 +16,14 @@ export const ExplorePage = () => {
   const [buildingFilter, setBuildingFilter] = useState(searchParams.get('lokasi') || searchParams.get('gedung') || 'semua');
   const [onlyBounty, setOnlyBounty] = useState(searchParams.get('hadiah') === 'true' || searchParams.get('bounty') === 'true');
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'semua');
-  const [sortBy, setSortBy] = useState('terbaru');
+  const [sortBy, setSortBy] = useState(searchParams.get('sort') || searchParams.get('sortBy') || 'prioritas');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Active secondary filters count for badge
   const activeSecondaryFiltersCount = (categoryFilter !== 'semua' ? 1 : 0) +
     (buildingFilter !== 'semua' ? 1 : 0) +
     (statusFilter !== 'semua' ? 1 : 0) +
-    (sortBy !== 'terbaru' ? 1 : 0);
+    (sortBy !== 'prioritas' ? 1 : 0);
 
   // Filter items
   const filteredItems = approvedItems.filter(item => {
@@ -44,14 +45,20 @@ export const ExplorePage = () => {
 
     return matchesQuery && matchesType && matchesCategory && matchesBuilding && matchesBounty && matchesStatus;
   }).sort((a, b) => {
+    if (sortBy === 'prioritas') {
+      return compareItemsByPriority(a, b);
+    }
     if (sortBy === 'terlama') {
       return new Date(a.created_at || a.date_lost_found) - new Date(b.created_at || b.date_lost_found);
     }
     if (sortBy === 'hadiah') {
       return (b.bounty_amount || 0) - (a.bounty_amount || 0);
     }
-    // default: terbaru
-    return new Date(b.created_at || b.date_lost_found) - new Date(a.created_at || a.date_lost_found);
+    if (sortBy === 'terbaru') {
+      return new Date(b.created_at || b.date_lost_found) - new Date(a.created_at || a.date_lost_found);
+    }
+    // default: prioritas
+    return compareItemsByPriority(a, b);
   });
 
   const countTotal = approvedItems.length;
@@ -66,11 +73,11 @@ export const ExplorePage = () => {
     setBuildingFilter('semua');
     setOnlyBounty(false);
     setStatusFilter('semua');
-    setSortBy('terbaru');
+    setSortBy('prioritas');
     setSearchParams({});
   };
 
-  const isFiltered = query || typeFilter !== 'semua' || categoryFilter !== 'semua' || buildingFilter !== 'semua' || onlyBounty || statusFilter !== 'semua' || sortBy !== 'terbaru';
+  const isFiltered = query || typeFilter !== 'semua' || categoryFilter !== 'semua' || buildingFilter !== 'semua' || onlyBounty || statusFilter !== 'semua' || sortBy !== 'prioritas';
 
   return (
     <div className="container pb-mobile-nav" style={{ paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -400,6 +407,7 @@ export const ExplorePage = () => {
                   cursor: 'pointer'
                 }}
               >
+                <option value="prioritas">Skala Prioritas (Hadiah &amp; Aktif Teratas)</option>
                 <option value="terbaru">Waktu Laporan (Terbaru)</option>
                 <option value="terlama">Waktu Laporan (Terlama)</option>
                 <option value="hadiah">Nominal Hadiah Tertinggi</option>

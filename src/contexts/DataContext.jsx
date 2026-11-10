@@ -11,6 +11,7 @@ import {
 import { useAuth } from './AuthContext';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { deleteCloudinaryImage, generateReturnedBannerSvg } from '../lib/storageService';
+import { sortItemsByPriority } from '../lib/itemSorting';
 
 const isUuid = (id) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 const isLegacyDummyId = (id) => typeof id === 'string' && (id.startsWith('item-00') || id.startsWith('claim-00') || id.startsWith('ord-00') || id.startsWith('notif-00') || id.startsWith('LF-UNNES-20'));
@@ -2187,7 +2188,7 @@ export const DataProvider = ({ children }) => {
   return (
     <DataContext.Provider value={{
       items,
-      approvedItems: items.filter(i => i.post_status === 'disetujui'),
+      approvedItems: sortItemsByPriority(items.filter(i => i.post_status === 'disetujui')),
       claims,
       matches,
       messages,
