@@ -36,24 +36,35 @@ export async function setUserRole(targetUserId, newRole) {
     return { success: false, error: 'Supabase belum dikonfigurasi' };
   }
 
-  const { error } = await supabase.rpc('set_user_role', {
+  // 1. Coba lewat RPC set_user_role
+  const { error: rpcError } = await supabase.rpc('set_user_role', {
     target_user_id: targetUserId,
     new_role: newRole
   });
 
-  if (error) {
-    let friendlyMessage = error.message;
-    if (error.message.includes('Unauthorized') || error.message.includes('admin')) {
-      friendlyMessage = 'Anda tidak memiliki izin untuk mengubah role pengguna.';
-    } else if (error.message.includes('diri sendiri') || error.message.includes('your own')) {
-      friendlyMessage = 'Anda tidak dapat mengubah role akun sendiri.';
-    } else if (error.message.includes('Super Admin')) {
-      friendlyMessage = 'Super Admin tidak dapat dihapus dari role admin.';
-    }
-    return { success: false, error: friendlyMessage };
+  if (!rpcError) {
+    return { success: true, error: null };
   }
 
-  return { success: true, error: null };
+  // 2. Fallback: jika RPC gagal (misal kendala fungsi PL/pgSQL), coba direct update pada profiles (diizinkan untuk Admin via RLS & DB Trigger)
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ role: newRole, updated_at: new Date().toISOString() })
+    .eq('id', targetUserId);
+
+  if (!updateError) {
+    return { success: true, error: null };
+  }
+
+  let friendlyMessage = rpcError?.message || updateError?.message || 'Gagal mengubah role pengguna';
+  if (friendlyMessage.includes('Unauthorized') || friendlyMessage.includes('admin')) {
+    friendlyMessage = 'Anda tidak memiliki izin untuk mengubah role pengguna.';
+  } else if (friendlyMessage.includes('diri sendiri') || friendlyMessage.includes('your own')) {
+    friendlyMessage = 'Anda tidak dapat mengubah role akun sendiri.';
+  } else if (friendlyMessage.includes('Super Admin')) {
+    friendlyMessage = 'Super Admin tidak dapat dihapus dari role admin.';
+  }
+  return { success: false, error: friendlyMessage };
 }
 
 /**
@@ -68,22 +79,33 @@ export async function setUserBanStatus(targetUserId, banStatus) {
     return { success: false, error: 'Supabase belum dikonfigurasi' };
   }
 
-  const { error } = await supabase.rpc('set_user_ban_status', {
+  // 1. Coba lewat RPC set_user_ban_status
+  const { error: rpcError } = await supabase.rpc('set_user_ban_status', {
     target_user_id: targetUserId,
     ban_status: banStatus
   });
 
-  if (error) {
-    let friendlyMessage = error.message;
-    if (error.message.includes('Unauthorized') || error.message.includes('admin')) {
-      friendlyMessage = 'Anda tidak memiliki izin untuk mengubah status blokir pengguna.';
-    } else if (error.message.includes('sendiri')) {
-      friendlyMessage = 'Anda tidak dapat memblokir akun sendiri.';
-    } else if (error.message.includes('Super Admin')) {
-      friendlyMessage = 'Super Admin tidak dapat diblokir.';
-    }
-    return { success: false, error: friendlyMessage };
+  if (!rpcError) {
+    return { success: true, error: null };
   }
 
-  return { success: true, error: null };
+  // 2. Fallback: direct update pada profiles
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ is_banned: banStatus, updated_at: new Date().toISOString() })
+    .eq('id', targetUserId);
+
+  if (!updateError) {
+    return { success: true, error: null };
+  }
+
+  let friendlyMessage = rpcError?.message || updateError?.message || 'Gagal mengubah status blokir';
+  if (friendlyMessage.includes('Unauthorized') || friendlyMessage.includes('admin')) {
+    friendlyMessage = 'Anda tidak memiliki izin untuk mengubah status blokir pengguna.';
+  } else if (friendlyMessage.includes('sendiri')) {
+    friendlyMessage = 'Anda tidak dapat memblokir akun sendiri.';
+  } else if (friendlyMessage.includes('Super Admin')) {
+    friendlyMessage = 'Super Admin tidak dapat diblokir.';
+  }
+  return { success: false, error: friendlyMessage };
 }

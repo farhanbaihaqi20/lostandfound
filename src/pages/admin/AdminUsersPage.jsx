@@ -140,6 +140,10 @@ export const AdminUsersPage = () => {
     setConfirmModal({ type: 'ban', targetUser, newBanStatus });
   };
 
+  // Alias untuk kompatibilitas
+  const openConfirm = openConfirmRole;
+  const handleRoleChange = handleConfirmAction;
+
   const adminCount = users.filter(u => u.role === 'admin').length;
   const userCount = users.filter(u => u.role === 'user').length;
 
@@ -465,7 +469,7 @@ export const AdminUsersPage = () => {
                     </div>
                   ) : isAdmin ? (
                     <button
-                      onClick={() => openConfirm(u, 'user')}
+                      onClick={() => openConfirmRole(u, 'user')}
                       className="btn btn-sm"
                       style={{
                         fontSize: '0.75rem', fontWeight: 600,
@@ -480,7 +484,7 @@ export const AdminUsersPage = () => {
                     </button>
                   ) : (
                     <button
-                      onClick={() => openConfirm(u, 'admin')}
+                      onClick={() => openConfirmRole(u, 'admin')}
                       className="btn btn-sm"
                       style={{
                         fontSize: '0.75rem', fontWeight: 600,
@@ -577,30 +581,50 @@ export const AdminUsersPage = () => {
             <div style={{
               width: '52px', height: '52px', borderRadius: '50%', margin: '0 auto 1rem',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: confirmModal.newRole === 'admin' ? 'var(--primary-100)' : 'var(--danger-bg)'
+              background: confirmModal.type === 'ban'
+                ? 'var(--danger-bg)'
+                : confirmModal.newRole === 'admin'
+                  ? 'var(--primary-100)'
+                  : 'var(--danger-bg)'
             }}>
-              {confirmModal.newRole === 'admin'
-                ? <ShieldCheck size={26} color="var(--primary-700)" />
-                : <AlertTriangle size={26} color="var(--danger)" />
+              {confirmModal.type === 'ban'
+                ? <AlertTriangle size={26} color="var(--danger)" />
+                : confirmModal.newRole === 'admin'
+                  ? <ShieldCheck size={26} color="var(--primary-700)" />
+                  : <ShieldOff size={26} color="var(--danger)" />
               }
             </div>
 
             {/* Title */}
             <h3 style={{ textAlign: 'center', fontSize: '1.05rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-              {confirmModal.newRole === 'admin' ? 'Jadikan Admin?' : 'Hapus Hak Admin?'}
+              {confirmModal.type === 'ban'
+                ? (confirmModal.newBanStatus ? 'Blokir Akun Pengguna?' : 'Buka Blokir Akun?')
+                : (confirmModal.newRole === 'admin' ? 'Jadikan Admin?' : 'Hapus Hak Admin?')}
             </h3>
 
             {/* Description */}
             <p style={{ textAlign: 'center', fontSize: '0.84rem', color: 'var(--text-muted)', marginBottom: '1.25rem', lineHeight: 1.5 }}>
-              {confirmModal.newRole === 'admin' ? (
+              {confirmModal.type === 'ban' ? (
+                confirmModal.newBanStatus ? (
+                  <>
+                    Akun <strong style={{ color: 'var(--text-primary)' }}>{confirmModal.targetUser.full_name}</strong>{' '}
+                    ({confirmModal.targetUser.email}) akan diblokir dari sistem. Pengguna ini tidak akan bisa login atau menggunakan layanan.
+                  </>
+                ) : (
+                  <>
+                    Blokir akun <strong style={{ color: 'var(--text-primary)' }}>{confirmModal.targetUser.full_name}</strong>{' '}
+                    ({confirmModal.targetUser.email}) akan dibuka kembali. Pengguna dapat login dan mengakses layanan seperti biasa.
+                  </>
+                )
+              ) : confirmModal.newRole === 'admin' ? (
                 <>
-                  <strong style={{ color: 'var(--text-primary)' }}>{confirmModal.targetUser.full_name}</strong>
-                  {' '}({confirmModal.targetUser.email}) akan mendapatkan hak akses admin untuk moderasi laporan, verifikasi klaim, dan kelola pesanan.
+                  <strong style={{ color: 'var(--text-primary)' }}>{confirmModal.targetUser.full_name}</strong>{' '}
+                  ({confirmModal.targetUser.email}) akan mendapatkan hak akses admin untuk moderasi laporan, verifikasi klaim, dan kelola pesanan.
                 </>
               ) : (
                 <>
-                  Hak akses admin <strong style={{ color: 'var(--text-primary)' }}>{confirmModal.targetUser.full_name}</strong>
-                  {' '}({confirmModal.targetUser.email}) akan dicabut. Pengguna ini tidak akan bisa mengakses panel admin.
+                  Hak akses admin <strong style={{ color: 'var(--text-primary)' }}>{confirmModal.targetUser.full_name}</strong>{' '}
+                  ({confirmModal.targetUser.email}) akan dicabut menjadi Mahasiswa biasa. Pengguna ini tidak akan bisa lagi mengakses panel admin.
                 </>
               )}
             </p>
@@ -620,18 +644,22 @@ export const AdminUsersPage = () => {
                 Batal
               </button>
               <button
-                onClick={handleRoleChange}
+                onClick={handleConfirmAction}
                 disabled={processing}
                 style={{
                   flex: 1, padding: '0.65rem', borderRadius: 'var(--radius-md)',
                   fontSize: '0.85rem', fontWeight: 700, cursor: processing ? 'not-allowed' : 'pointer',
-                  background: confirmModal.newRole === 'admin' ? 'var(--primary-600)' : 'var(--danger)',
+                  background: confirmModal.type === 'ban'
+                    ? (confirmModal.newBanStatus ? 'var(--danger)' : 'var(--success)')
+                    : confirmModal.newRole === 'admin' ? 'var(--primary-600)' : 'var(--danger)',
                   color: '#fff', border: 'none', transition: 'all 0.2s',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem'
                 }}
               >
                 {processing ? (
                   <><Loader2 size={15} style={{ animation: 'spin 0.8s linear infinite' }} /> Memproses...</>
+                ) : confirmModal.type === 'ban' ? (
+                  confirmModal.newBanStatus ? <><UserX size={15} /> Ya, Blokir</> : <><UserCheck size={15} /> Ya, Buka Blokir</>
                 ) : confirmModal.newRole === 'admin' ? (
                   <><ShieldCheck size={15} /> Ya, Jadikan Admin</>
                 ) : (
