@@ -111,12 +111,17 @@ export const ReportPage = () => {
       });
 
       setSubmitting(false);
-      alert(`Laporan #${submitted?.item_code || 'LF-UNNES'} berhasil diajukan! Status: Menunggu Verifikasi Posko.`);
+      const isApproved = submitted?.post_status === 'disetujui';
+      alert(
+        isApproved
+          ? `Laporan #${submitted?.item_code || 'LF-UNNES'} berhasil dipublikasikan langsung ke katalog publik UNNES!`
+          : `Laporan #${submitted?.item_code || 'LF-UNNES'} berhasil diajukan! Status: Menunggu Verifikasi Posko (Admin).`
+      );
       navigate(`/barang/${submitted?.id || ''}`);
     } catch (err) {
       setSubmitting(false);
       console.error('Gagal mengajukan laporan:', err);
-      alert('Terjadi kendala saat mengajukan laporan. Silakan coba lagi.');
+      alert('Terjadi kendala saat mengajukan laporan ke database: ' + (err.message || 'Silakan coba lagi.'));
     }
   };
 

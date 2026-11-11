@@ -103,6 +103,71 @@ export const DataProvider = ({ children }) => {
     return [];
   });
 
+  // Sinkronisasi otomatis item lokal yang tertinggal ke Supabase (misal akibat error trigger atau koneksi sebelumnya)
+  const syncLocalPendingItems = async (pendingItems) => {
+    if (!isSupabaseConfigured() || !supabase || !user?.id || !isUuid(user.id)) return;
+    if (!pendingItems || pendingItems.length === 0) return;
+
+    for (const item of pendingItems) {
+      const isOwnerOrAdmin = item.user_id === user.id || item.user_id === 'anonymous' || user?.role === 'admin' || user?.is_super_admin;
+      if (!isOwnerOrAdmin) continue;
+
+      try {
+        const isAdmin = user?.role === 'admin' || user?.is_super_admin;
+        const initialPostStatus = (isAdmin || item.post_status === 'disetujui') ? 'disetujui' : 'menunggu_review';
+
+        const { data: dbItem, error: insertError } = await supabase
+          .from('items')
+          .insert({
+            user_id: user.id,
+            item_code: item.item_code || `LF-UNNES-${Math.floor(100 + Math.random() * 900)}`,
+            type: item.type || 'hilang',
+            title: item.title,
+            description: item.description || '',
+            category: item.category || 'elektronik',
+            location_building: item.location_building || 'FMIPA (Fakultas MIPA - Gedung D)',
+            location_floor: item.location_floor || '',
+            location_room: item.location_room || '',
+            location_detail: item.location_detail || '',
+            post_status: initialPostStatus,
+            item_status: item.item_status || 'terbuka',
+            photo_urls: item.photo_urls || [],
+            hidden_details: null,
+            blind_test_questions: item.blind_test_questions || [],
+            bounty_amount: Number(item.bounty_amount) || 0,
+            bounty_status: Number(item.bounty_amount) > 0 ? 'aktif' : 'tidak_ada',
+            date_lost_found: item.date_lost_found ? new Date(item.date_lost_found).toISOString() : new Date().toISOString()
+          })
+          .select('*, profiles:user_id(full_name, avatar_url, email)')
+          .single();
+
+        if (!insertError && dbItem) {
+          if (item.hidden_details && item.hidden_details.trim()) {
+            try {
+              await supabase
+                .from('item_secrets')
+                .upsert({
+                  item_id: dbItem.id,
+                  hidden_details: item.hidden_details.trim()
+                });
+            } catch (sErr) {}
+          }
+
+          // Update local state: ganti ID lokal dengan ID UUID Supabase yang valid
+          setItems(prev => prev.map(p => p.id === item.id ? {
+            ...p,
+            ...dbItem,
+            id: dbItem.id,
+            hidden_details: item.hidden_details || '',
+            user_name: dbItem.profiles?.full_name || user.full_name || 'Mahasiswa UNNES'
+          } : p));
+        }
+      } catch (syncErr) {
+        console.warn('Gagal sinkronkan item lokal ke Supabase:', syncErr);
+      }
+    }
+  };
+
   // Fetch items dari Supabase & sinkronisasi otomatis
   const fetchSupabaseItems = async () => {
     if (!isSupabaseConfigured() || !supabase) return;
@@ -121,6 +186,9 @@ export const DataProvider = ({ children }) => {
 
         setItems(prev => {
           const localOnly = prev.filter(i => !isUuid(i.id) && !isLegacyDummyId(i.id) && !formatted.some(f => f.id === i.id));
+          if (localOnly.length > 0) {
+            setTimeout(() => syncLocalPendingItems(localOnly), 500);
+          }
           return [...formatted, ...localOnly];
         });
       }
@@ -674,11 +742,14 @@ export const DataProvider = ({ children }) => {
 
   /**
    * User melaporkan barang hilang / temuan
-   * Status awal selalu 'menunggu_review' (Harus di-ACC Admin)
+   * Jika Admin/Posko yang melapor, otomatis langsung 'disetujui'
+   * Jika Mahasiswa biasa, status awal 'menunggu_review' (Harus di-ACC Admin di /admin/moderasi)
    */
   const submitItem = async (itemData) => {
     const itemCode = `LF-UNNES-${Math.floor(100 + Math.random() * 900)}`;
     const isRealUser = isUuid(user?.id);
+    const isAdminUser = Boolean(user?.role === 'admin' || user?.is_super_admin);
+    const initialPostStatus = isAdminUser ? 'disetujui' : 'menunggu_review';
 
     // 1. Simpan ke Supabase jika terhubung & user login resmi
     if (isSupabaseConfigured() && supabase && isRealUser) {
@@ -696,58 +767,84 @@ export const DataProvider = ({ children }) => {
             location_floor: itemData.location_floor || '',
             location_room: itemData.location_room || '',
             location_detail: itemData.location_detail || '',
-            post_status: 'menunggu_review',
+            post_status: initialPostStatus,
             item_status: 'terbuka',
             photo_urls: itemData.photo_urls || [],
-            hidden_details: itemData.hidden_details || '',
+            hidden_details: null, // PENTING: biarkan null agar tidak memicu bug Foreign Key trigger BEFORE INSERT
             blind_test_questions: itemData.blind_test_questions || [],
             bounty_amount: Number(itemData.bounty_amount) || 0,
             bounty_status: Number(itemData.bounty_amount) > 0 ? 'aktif' : 'tidak_ada',
             date_lost_found: itemData.date_lost_found ? new Date(itemData.date_lost_found).toISOString() : new Date().toISOString()
           })
-          .select('*, profiles:user_id(full_name, avatar_url, email), item_secrets(hidden_details)')
+          .select('*, profiles:user_id(full_name, avatar_url, email)')
           .single();
 
         if (!error && data) {
+          // Simpan hidden_details ke tabel terpisah item_secrets setelah baris items resmi dibuat
+          if (itemData.hidden_details && itemData.hidden_details.trim()) {
+            try {
+              await supabase
+                .from('item_secrets')
+                .upsert({
+                  item_id: data.id,
+                  hidden_details: itemData.hidden_details.trim()
+                });
+            } catch (secErr) {
+              console.warn('Gagal menyimpan hidden_details ke item_secrets:', secErr);
+            }
+          }
+
           const newItem = {
             ...data,
-            hidden_details: data.item_secrets?.hidden_details || itemData.hidden_details || '',
+            hidden_details: itemData.hidden_details || '',
             user_name: data.profiles?.full_name || user.full_name || 'Mahasiswa UNNES'
           };
           setItems(prev => [newItem, ...prev.filter(i => i.id !== newItem.id)]);
 
-          addNotification({
-            user_id: 'user-admin-01',
-            type: 'moderasi',
-            title: 'Laporan Baru Masuk 📝',
-            body: `${newItem.user_name} melaporkan barang ${newItem.type}: "${newItem.title}". Menunggu persetujuan.`,
-            link: '/admin/moderasi'
-          });
+          if (initialPostStatus === 'disetujui') {
+            addNotification({
+              user_id: user?.id,
+              type: 'moderasi',
+              title: 'Laporan Posko Aktif 📢',
+              body: `Laporan #${itemCode} ("${newItem.title}") langsung dipublikasikan ke katalog publik UNNES.`,
+              link: `/barang/${newItem.id}`
+            });
+          } else {
+            addNotification({
+              user_id: 'user-admin-01',
+              type: 'moderasi',
+              title: 'Laporan Baru Masuk 📝',
+              body: `${newItem.user_name} melaporkan barang ${newItem.type}: "${newItem.title}". Menunggu persetujuan.`,
+              link: '/admin/moderasi'
+            });
 
-          addNotification({
-            user_id: user?.id,
-            type: 'moderasi',
-            title: 'Laporan Berhasil Diajukan ⏳',
-            body: `Laporan #${itemCode} sedang ditinjau oleh Admin. Anda akan mendapat notifikasi setelah disetujui.`,
-            link: `/barang/${newItem.id}`
-          });
+            addNotification({
+              user_id: user?.id,
+              type: 'moderasi',
+              title: 'Laporan Berhasil Diajukan ⏳',
+              body: `Laporan #${itemCode} sedang ditinjau oleh Admin. Anda akan mendapat notifikasi setelah disetujui.`,
+              link: `/barang/${newItem.id}`
+            });
+          }
 
           return newItem;
         } else if (error) {
-          console.warn('Gagal insert ke Supabase, menggunakan penyimpanan lokal:', error);
+          console.error('Gagal insert ke Supabase:', error);
+          throw error;
         }
       } catch (err) {
-        console.warn('Gagal insert ke Supabase, menggunakan penyimpanan lokal:', err);
+        console.error('Gagal insert ke Supabase:', err);
+        throw err;
       }
     }
 
-    // 2. Fallback: Simpan ke local state / demo user
+    // 2. Fallback: Simpan ke local state / demo user (hanya jika Supabase belum terkonfigurasi atau demo offline)
     const newItem = {
       id: `item-${Date.now()}`,
       user_id: user?.id || 'anonymous',
       user_name: user?.full_name || 'Mahasiswa UNNES',
       item_code: itemCode,
-      post_status: 'menunggu_review',
+      post_status: isAdminUser ? 'disetujui' : 'menunggu_review',
       item_status: 'terbuka',
       created_at: new Date().toISOString(),
       date_lost_found: itemData.date_lost_found || new Date().toISOString(),
@@ -757,23 +854,31 @@ export const DataProvider = ({ children }) => {
 
     setItems(prev => [newItem, ...prev]);
 
-    // Notifikasi ke Admin
-    addNotification({
-      user_id: 'user-admin-01',
-      type: 'moderasi',
-      title: 'Laporan Baru Masuk 📝',
-      body: `${newItem.user_name} melaporkan barang ${newItem.type}: "${newItem.title}". Menunggu persetujuan.`,
-      link: '/admin/moderasi'
-    });
+    if (isAdminUser) {
+      addNotification({
+        user_id: user?.id,
+        type: 'moderasi',
+        title: 'Laporan Posko Aktif 📢',
+        body: `Laporan #${itemCode} ("${newItem.title}") langsung dipublikasikan ke katalog publik UNNES.`,
+        link: `/barang/${newItem.id}`
+      });
+    } else {
+      addNotification({
+        user_id: 'user-admin-01',
+        type: 'moderasi',
+        title: 'Laporan Baru Masuk 📝',
+        body: `${newItem.user_name} melaporkan barang ${newItem.type}: "${newItem.title}". Menunggu persetujuan.`,
+        link: '/admin/moderasi'
+      });
 
-    // Notifikasi ke User Pelapor
-    addNotification({
-      user_id: user?.id,
-      type: 'moderasi',
-      title: 'Laporan Berhasil Diajukan ⏳',
-      body: `Laporan #${itemCode} sedang ditinjau oleh Admin. Anda akan mendapat notifikasi setelah disetujui.`,
-      link: `/barang/${newItem.id}`
-    });
+      addNotification({
+        user_id: user?.id,
+        type: 'moderasi',
+        title: 'Laporan Berhasil Diajukan ⏳',
+        body: `Laporan #${itemCode} sedang ditinjau oleh Admin. Anda akan mendapat notifikasi setelah disetujui.`,
+        link: `/barang/${newItem.id}`
+      });
+    }
 
     return newItem;
   };

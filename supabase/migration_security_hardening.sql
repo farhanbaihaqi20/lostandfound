@@ -79,6 +79,7 @@ CREATE POLICY "Only item owner or admin can delete item_secrets" ON public.item_
   );
 
 -- Trigger: Otomatis sinkronisasi hidden_details saat item dibuat/diedit ke item_secrets
+-- Catatan: Menggunakan AFTER INSERT OR UPDATE agar relasi FK (item_secrets_item_id_fkey) valid
 CREATE OR REPLACE FUNCTION public.sync_item_secrets()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -89,7 +90,7 @@ BEGIN
     SET hidden_details = EXCLUDED.hidden_details, updated_at = NOW();
 
     -- Hapus isi plaintext dari items agar tetap aman
-    NEW.hidden_details := NULL;
+    UPDATE public.items SET hidden_details = NULL WHERE id = NEW.id AND hidden_details IS NOT NULL;
   END IF;
   RETURN NEW;
 END;
@@ -97,7 +98,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS trg_sync_item_secrets ON public.items;
 CREATE TRIGGER trg_sync_item_secrets
-  BEFORE INSERT OR UPDATE ON public.items
+  AFTER INSERT OR UPDATE ON public.items
   FOR EACH ROW
   EXECUTE FUNCTION public.sync_item_secrets();
 
