@@ -596,13 +596,22 @@ export const ItemDetailPage = () => {
                 )}
               </div>
 
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '0.6rem'
+              }}>
                 {/* Tombol Tandai Kembali ke Pemilik */}
                 {item.item_status !== 'dikembalikan' ? (
                   <button
                     onClick={handleMarkReturned}
                     className="btn btn-teal btn-sm"
-                    style={{ gap: '0.4rem', flex: 1, minWidth: '220px' }}
+                    style={{
+                      gap: '0.45rem',
+                      justifyContent: 'center',
+                      width: '100%',
+                      padding: '0.55rem 0.85rem'
+                    }}
                     title="Tandai kasus selesai, hapus foto asli di Cloudinary & ganti banner status"
                   >
                     <CheckCheck size={16} /> Tandai Barang Telah Kembali
@@ -611,15 +620,17 @@ export const ItemDetailPage = () => {
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.4rem',
+                    justifyContent: 'center',
+                    gap: '0.45rem',
                     fontSize: '0.8rem',
                     fontWeight: 600,
                     color: 'var(--success)',
-                    padding: '0.4rem 0.75rem',
-                    borderRadius: 'var(--radius-sm)',
+                    padding: '0.55rem 0.85rem',
+                    borderRadius: 'var(--radius-xs)',
                     background: 'rgba(16, 185, 129, 0.1)',
                     border: '1px solid rgba(16, 185, 129, 0.3)',
-                    flex: 1
+                    width: '100%',
+                    textAlign: 'center'
                   }}>
                     <CheckCircle2 size={16} /> Barang Sudah Dikembalikan (Foto Asli Dihapus Demi Privasi)
                   </div>
@@ -630,7 +641,12 @@ export const ItemDetailPage = () => {
                   <button
                     onClick={handleAdminRevoke}
                     className="btn btn-outline btn-danger btn-sm"
-                    style={{ gap: '0.4rem', flex: 1, minWidth: '220px' }}
+                    style={{
+                      gap: '0.45rem',
+                      justifyContent: 'center',
+                      width: '100%',
+                      padding: '0.55rem 0.85rem'
+                    }}
                     title="Batalkan status verifikasi jika terindikasi klaim palsu atau ada sanggahan valid dari pemilik asli"
                   >
                     <AlertTriangle size={15} /> Batalkan Verifikasi (Klaim Palsu / Buka Kasus)
@@ -641,7 +657,12 @@ export const ItemDetailPage = () => {
                 <button
                   onClick={handleDeleteItem}
                   className="btn btn-danger btn-sm"
-                  style={{ gap: '0.4rem' }}
+                  style={{
+                    gap: '0.45rem',
+                    justifyContent: 'center',
+                    width: '100%',
+                    padding: '0.55rem 0.85rem'
+                  }}
                   title="Hapus permanen dari Supabase & bersihkan foto Cloudinary"
                 >
                   <Trash2 size={16} /> Hapus Postingan

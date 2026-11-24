@@ -32,6 +32,13 @@ import { RunnerOrderModal } from '../components/RunnerOrderModal';
 import { BASTModal } from '../components/BASTModal';
 import { StatusBadge } from '../components/StatusBadge';
 
+// Official WhatsApp logo SVG
+const WhatsAppLogo = ({ size = 18, color = "#25D366" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} style={{ display: 'block', flexShrink: 0 }}>
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+  </svg>
+);
+
 const QUICK_REPLIES = [
   "Saya sudah di posko",
   "Bisa ketemu di mana ya?",
@@ -417,8 +424,13 @@ export const MessagesPage = () => {
                     title="Kembali ke daftar obrolan"
                     aria-label="Kembali ke daftar obrolan"
                     style={{
-                      padding: '0.35rem 0.45rem',
-                      borderRadius: '6px',
+                      width: '32px',
+                      height: '32px',
+                      padding: 0,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '50%',
                       color: 'var(--ink-700)',
                       cursor: 'pointer',
                       flexShrink: 0
@@ -448,8 +460,8 @@ export const MessagesPage = () => {
                   </button>
 
                   <div style={{
-                    width: '36px',
-                    height: '36px',
+                    width: '38px',
+                    height: '38px',
                     borderRadius: '50%',
                     background: 'var(--primary-indigo)',
                     color: '#FFFFFF',
@@ -464,12 +476,35 @@ export const MessagesPage = () => {
                     {getInitials(user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name)}
                   </div>
                   <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'nowrap' }}>
-                      <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.925rem', fontWeight: 700, color: 'var(--ink-900)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', minWidth: 0 }}>
+                      <span style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '0.925rem',
+                        fontWeight: 700,
+                        color: 'var(--ink-900)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        minWidth: 0,
+                        flexShrink: 1
+                      }}>
                         {user?.id === activeMatch.owner_id ? activeMatch.finder_name : activeMatch.owner_name}
                       </span>
-                      <span className="badge badge-verified" style={{ fontSize: '0.58rem', padding: '1px 5px', flexShrink: 0 }}>
-                        TERVERIFIKASI
+                      <span
+                        className="badge badge-verified"
+                        title="Terverifikasi"
+                        style={{
+                          fontSize: '0.58rem',
+                          padding: '1px 5px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          flexShrink: 0,
+                          lineHeight: 1.2
+                        }}
+                      >
+                        <Check size={10} strokeWidth={2.5} />
+                        <span className="chat-btn-label-desktop">TERVERIFIKASI</span>
                       </span>
                     </div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--ink-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -480,26 +515,39 @@ export const MessagesPage = () => {
                 </div>
 
                 {/* Header Action Tools */}
-                <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexShrink: 0 }}>
                   
-                  {/* WhatsApp Coordination Button */}
+                  {/* WhatsApp Coordination Button (Official Logo Only) */}
                   <button 
+                    type="button"
                     onClick={handleCopyWAScript} 
                     className="btn btn-secondary btn-sm"
-                    title="Salin ringkasan koordinasi untuk WhatsApp"
-                    style={{ fontSize: '0.74rem', padding: '0.35rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                    title={copiedScript ? "Tersalin ke papan klip!" : "Salin ringkasan koordinasi untuk WhatsApp"}
+                    aria-label="Salin ringkasan koordinasi untuk WhatsApp"
+                    style={{ 
+                      width: '36px',
+                      height: '36px',
+                      padding: 0,
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      borderRadius: '50%',
+                      backgroundColor: copiedScript ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-surface)',
+                      borderColor: copiedScript ? 'var(--success)' : 'var(--border-subtle)',
+                      cursor: 'pointer',
+                      flexShrink: 0
+                    }}
                   >
-                    {copiedScript ? <Check size={13} color="var(--success)" /> : <Share2 size={13} />}
-                    <span className="chat-btn-label-desktop">{copiedScript ? 'Tersalin!' : 'Salin Info WA'}</span>
-                    <span className="chat-mobile-back-btn">{copiedScript ? 'Tersalin' : 'WA'}</span>
+                    {copiedScript ? <Check size={16} color="var(--success)" /> : <WhatsAppLogo size={18} color="#25D366" />}
                   </button>
 
                   {/* Runner Order Button (only if active, desktop only) */}
                   {activeMatch.status !== 'selesai' && (
                     <button 
+                      type="button"
                       onClick={() => setShowRunnerModal(true)} 
                       className="btn btn-secondary btn-sm chat-desktop-only"
-                      style={{ fontSize: '0.74rem', padding: '0.35rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                      style={{ fontSize: '0.74rem', padding: '0.35rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', height: '36px' }}
                     >
                       <Bike size={13} />
                       <span>Pesan Runner</span>
@@ -507,62 +555,67 @@ export const MessagesPage = () => {
                   )}
 
                   {/* BAST Handover Sign / Status Button */}
-                  {activeMatch.status === 'selesai' ? (
-                    <button 
-                      onClick={() => setShowBASTModal(true)} 
-                      className="btn btn-secondary btn-sm"
-                      style={{ 
-                        fontSize: '0.74rem', 
-                        padding: '0.35rem 0.65rem', 
-                        display: 'inline-flex', 
-                        alignItems: 'center', 
-                        gap: '0.3rem', 
+                  <button 
+                    type="button"
+                    onClick={() => setShowBASTModal(true)} 
+                    className={`btn btn-sm chat-bast-header-btn ${
+                      activeMatch.status === 'selesai' 
+                        ? 'btn-secondary' 
+                        : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at))
+                          ? 'btn-secondary'
+                          : 'btn-primary'
+                    }`}
+                    style={{ 
+                      fontSize: '0.74rem', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      gap: '0.35rem',
+                      height: '36px',
+                      ...(activeMatch.status === 'selesai' ? {
                         color: 'var(--success, #10b981)',
                         borderColor: 'rgba(16, 185, 129, 0.3)',
-                        backgroundColor: 'rgba(16, 185, 129, 0.05)'
-                      }}
-                    >
-                      <CheckCircle2 size={13} />
-                      <span className="chat-btn-label-desktop">Lihat BAST (Selesai)</span>
-                      <span className="chat-mobile-back-btn">BAST</span>
-                    </button>
-                  ) : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at)) ? (
-                    <button 
-                      onClick={() => setShowBASTModal(true)} 
-                      className="btn btn-secondary btn-sm"
-                      style={{ 
-                        fontSize: '0.74rem', 
-                        padding: '0.35rem 0.65rem', 
-                        display: 'inline-flex', 
-                        alignItems: 'center', 
-                        gap: '0.3rem',
+                        backgroundColor: 'rgba(16, 185, 129, 0.08)'
+                      } : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at)) ? {
                         color: 'var(--primary-indigo)',
-                        borderColor: 'var(--primary-300)'
-                      }}
-                    >
-                      <Check size={13} />
-                      <span className="chat-btn-label-desktop">Status BAST (Sudah TTD)</span>
-                      <span className="chat-mobile-back-btn">BAST</span>
-                    </button>
-                  ) : (
-                    <button 
-                      onClick={() => setShowBASTModal(true)} 
-                      className="btn btn-primary btn-sm"
-                      style={{ fontSize: '0.74rem', padding: '0.35rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
-                    >
-                      <FileCheck size={13} />
-                      <span className="chat-btn-label-desktop">Tanda Tangan BAST</span>
-                      <span className="chat-mobile-back-btn">TTD BAST</span>
-                    </button>
-                  )}
+                        borderColor: 'var(--primary-300)',
+                        backgroundColor: 'var(--primary-50)'
+                      } : {})
+                    }}
+                    title={
+                      activeMatch.status === 'selesai'
+                        ? 'Lihat Berita Acara Serah Terima (Selesai)'
+                        : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at))
+                          ? 'Status BAST (Anda Sudah TTD)'
+                          : 'Tanda Tangan Berita Acara Serah Terima (BAST)'
+                    }
+                    aria-label="Dokumen BAST"
+                  >
+                    {activeMatch.status === 'selesai' ? (
+                      <CheckCircle2 size={16} />
+                    ) : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at)) ? (
+                      <Check size={16} />
+                    ) : (
+                      <FileCheck size={16} />
+                    )}
+                    <span className="chat-btn-label-desktop">
+                      {activeMatch.status === 'selesai'
+                        ? 'Lihat BAST'
+                        : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at))
+                          ? 'Status BAST'
+                          : 'TTD BAST'}
+                    </span>
+                  </button>
 
                   {/* Toggle Context Sidebar (Desktop Only) */}
                   <button 
+                    type="button"
                     onClick={() => setShowDetailsPanel(!showDetailsPanel)} 
                     className="btn btn-secondary btn-sm chat-desktop-only"
                     title={showDetailsPanel ? "Tutup rincian barang" : "Lihat rincian barang"}
                     style={{ 
                       padding: '0.35rem 0.55rem', 
+                      height: '36px',
                       backgroundColor: showDetailsPanel ? 'var(--bg-surface-alt)' : 'transparent',
                       color: showDetailsPanel ? 'var(--primary-indigo)' : 'var(--ink-700)'
                     }}
@@ -572,15 +625,94 @@ export const MessagesPage = () => {
 
                   {/* Delete Conversation */}
                   <button 
+                    type="button"
                     onClick={handleDeleteSession} 
                     className="btn btn-secondary btn-sm"
                     title="Hapus sesi percakapan ini"
-                    style={{ padding: '0.35rem 0.5rem', color: 'var(--danger-500)', borderColor: 'var(--border-subtle)' }}
+                    aria-label="Hapus sesi percakapan"
+                    style={{ 
+                      width: '36px',
+                      height: '36px',
+                      padding: 0, 
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '50%',
+                      color: 'var(--danger-500)', 
+                      borderColor: 'var(--border-subtle)',
+                      backgroundColor: 'var(--bg-surface)',
+                      flexShrink: 0
+                    }}
                   >
-                    <Trash2 size={13} />
+                    <Trash2 size={15} />
                   </button>
                 </div>
               </div>
+
+              {/* Pinned BAST Handover Banner (Standard Transactional Chat Style) */}
+              {activeMatch && (
+                <div style={{
+                  background: activeMatch.status === 'selesai'
+                    ? 'rgba(16, 185, 129, 0.08)'
+                    : 'rgba(99, 102, 241, 0.08)',
+                  borderBottom: `1px solid ${activeMatch.status === 'selesai' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(99, 102, 241, 0.18)'}`,
+                  padding: '0.45rem 1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '0.6rem',
+                  fontSize: '0.75rem',
+                  flexShrink: 0
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', minWidth: 0, overflow: 'hidden' }}>
+                    {activeMatch.status === 'selesai' ? (
+                      <CheckCircle2 size={15} style={{ color: 'var(--success, #10b981)', flexShrink: 0 }} />
+                    ) : (
+                      <FileCheck size={15} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
+                    )}
+                    <span style={{
+                      color: activeMatch.status === 'selesai' ? 'var(--success-dark, #065f46)' : 'var(--ink-700)',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      fontWeight: 500
+                    }}>
+                      {activeMatch.status === 'selesai' ? (
+                        <><strong>BAST Selesai:</strong> Serah terima sah &amp; tercatat</>
+                      ) : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at)) ? (
+                        <><strong>BAST Digital:</strong> Anda sudah TTD · Menunggu pihak lain</>
+                      ) : (
+                        <><strong>BAST Digital:</strong> Wajib tanda tangan saat serah terima</>
+                      )}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowBASTModal(true)}
+                    className={`btn btn-sm ${activeMatch.status === 'selesai' ? 'btn-secondary' : 'btn-primary'}`}
+                    style={{
+                      fontSize: '0.72rem',
+                      padding: '0.25rem 0.65rem',
+                      borderRadius: '6px',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      fontWeight: 600,
+                      height: '28px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                      ...(activeMatch.status === 'selesai' ? {
+                        color: 'var(--success, #10b981)',
+                        borderColor: 'rgba(16, 185, 129, 0.3)',
+                        backgroundColor: 'transparent'
+                      } : {})
+                    }}
+                  >
+                    <FileCheck size={13} />
+                    <span>{activeMatch.status === 'selesai' ? 'Lihat BAST' : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at)) ? 'Cek Status' : 'TTD BAST'}</span>
+                  </button>
+                </div>
+              )}
 
               {/* Chat Stream Area */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

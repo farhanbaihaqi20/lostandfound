@@ -935,6 +935,14 @@ img {
 }
 
 /* Chat desktop vs mobile utilities */
+.chat-bast-header-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
 @media (max-width: 768px) {
   .chat-desktop-only {
     display: none !important;
@@ -946,6 +954,14 @@ img {
 
   .chat-btn-label-desktop {
     display: none !important;
+  }
+
+  .chat-bast-header-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
   }
 }
 
@@ -960,6 +976,11 @@ img {
 
   .chat-btn-label-desktop {
     display: inline !important;
+  }
+
+  .chat-bast-header-btn {
+    padding: 0.35rem 0.65rem;
+    border-radius: var(--radius-sm);
   }
 }
 
