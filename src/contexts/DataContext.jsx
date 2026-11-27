@@ -434,7 +434,7 @@ export const DataProvider = ({ children }) => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (user.role !== 'admin' && isUuid(user.id)) {
+      if (isUuid(user.id)) {
         query = query.eq('user_id', user.id);
       }
 
@@ -1119,7 +1119,7 @@ export const DataProvider = ({ children }) => {
       return { error: 'Barang telah memiliki pemilik terverifikasi' };
     }
 
-    const isReapplication = existingClaim?.status === 'ditolak';
+    let isReapplication = existingClaim?.status === 'ditolak';
 
     let savedClaim = {
       id: existingClaim ? existingClaim.id : `claim-${Date.now()}`,
@@ -1143,7 +1143,7 @@ export const DataProvider = ({ children }) => {
     // Sinkronisasi ke Supabase jika configured
     if (isSupabaseConfigured() && supabase && isUuid(itemId) && isUuid(user?.id)) {
       try {
-        const payload = {
+        const buildPayload = (reapplyFlag) => ({
           item_id: itemId,
           item_title: targetItem.title,
           item_code: targetItem.item_code,
@@ -1156,53 +1156,75 @@ export const DataProvider = ({ children }) => {
           blind_test_score: score,
           message: message || '',
           admin_notes: '',
-          is_reapplication: isReapplication,
+          is_reapplication: reapplyFlag,
           updated_at: new Date().toISOString()
-        };
+        });
 
         if (existingClaim && isUuid(existingClaim.id)) {
           const { data, error } = await supabase
             .from('claims')
-            .update(payload)
+            .update(buildPayload(isReapplication))
             .eq('id', existingClaim.id)
             .select()
             .single();
 
-          if (!error && data) {
-            savedClaim = data;
-          } else if (error) {
-            console.warn('Gagal update klaim di Supabase:', error);
+          if (error || !data) {
+            console.error('Gagal update klaim di Supabase:', error);
+            return { error: error?.message || 'Gagal memperbarui pengajuan klaim ke database.' };
           }
+          savedClaim = data;
         } else {
           // Cari dulu jika di database sebenarnya sudah ada klaim dari user untuk item ini
-          const { data: existingDbClaim } = await supabase
+          const { data: existingDbClaim, error: lookupError } = await supabase
             .from('claims')
-            .select('id')
+            .select('id, status')
             .eq('item_id', itemId)
             .eq('claimer_id', user.id)
             .maybeSingle();
 
+          if (lookupError) {
+            console.error('Gagal memeriksa riwayat klaim di Supabase:', lookupError);
+            return { error: lookupError.message || 'Gagal memeriksa riwayat klaim di database.' };
+          }
+
           if (existingDbClaim) {
+            if (existingDbClaim.status === 'dibatalkan') {
+              return { error: 'Akses klaim Anda telah dibatalkan oleh Admin dan tidak dapat diajukan kembali.' };
+            }
+            if (existingDbClaim.status === 'disetujui') {
+              return { error: 'Klaim Anda untuk barang ini sudah disetujui oleh Admin.' };
+            }
+
+            isReapplication = existingDbClaim.status === 'ditolak';
             const { data, error } = await supabase
               .from('claims')
-              .update(payload)
+              .update(buildPayload(isReapplication))
               .eq('id', existingDbClaim.id)
               .select()
               .single();
 
-            if (!error && data) savedClaim = data;
+            if (error || !data) {
+              console.error('Gagal update klaim yang sudah ada di Supabase:', error);
+              return { error: error?.message || 'Gagal memperbarui pengajuan klaim ke database.' };
+            }
+            savedClaim = data;
           } else {
             const { data, error } = await supabase
               .from('claims')
-              .insert(payload)
+              .insert(buildPayload(isReapplication))
               .select()
               .single();
 
-            if (!error && data) savedClaim = data;
+            if (error || !data) {
+              console.error('Gagal insert klaim ke Supabase:', error);
+              return { error: error?.message || 'Gagal mengirim klaim ke database.' };
+            }
+            savedClaim = data;
           }
         }
       } catch (err) {
-        console.warn('Error sinkronisasi klaim ke Supabase:', err);
+        console.error('Error sinkronisasi klaim ke Supabase:', err);
+        return { error: err?.message || 'Terjadi kendala saat menyimpan klaim ke database.' };
       }
     }
 

@@ -19,7 +19,9 @@ export const NotificationsPage = () => {
 
   const [filter, setFilter] = useState('semua');
 
-  const userNotifs = (notifications || []).filter(n => isAdmin ? true : n.user_id === user?.id);
+  const userNotifs = (notifications || []).filter(n =>
+    n.user_id === user?.id || (isAdmin && n.user_id === 'user-admin-01')
+  );
   const displayNotifs = filter === 'unread' ? userNotifs.filter(n => !n.is_read) : userNotifs;
 
   const getIcon = (type) => {

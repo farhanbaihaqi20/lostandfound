@@ -60,7 +60,7 @@ export const Navbar = () => {
   }, [location.pathname]);
 
   const userNotifs = notifications.filter(n => 
-    isAdmin ? true : n.user_id === user?.id
+    n.user_id === user?.id || (isAdmin && n.user_id === 'user-admin-01')
   );
   const unreadCount = userNotifs.filter(n => !n.is_read).length;
 
