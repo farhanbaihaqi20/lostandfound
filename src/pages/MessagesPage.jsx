@@ -118,6 +118,27 @@ export const MessagesPage = () => {
   const activeItem = items.find(i => i.id === activeMatch?.item_id);
   const matchMessages = messages.filter(m => m.match_id === activeMatchId);
 
+  const isMatchCompleted = activeMatch?.status === 'selesai' || Boolean(activeMatch?.owner_signed_at && activeMatch?.finder_signed_at) || Boolean(activeMatch?.admin_signed_at);
+  const isUserOwner = Boolean(
+    (user?.id && user.id === activeMatch?.owner_id) ||
+    (user?.full_name && activeMatch?.owner_name && (
+      activeMatch.owner_name.toLowerCase().includes(user.full_name.toLowerCase()) ||
+      user.full_name.toLowerCase().includes(activeMatch.owner_name.toLowerCase())
+    ))
+  );
+  const isUserFinder = Boolean(
+    (user?.id && user.id === activeMatch?.finder_id) ||
+    (user?.full_name && activeMatch?.finder_name && (
+      activeMatch.finder_name.toLowerCase().includes(user.full_name.toLowerCase()) ||
+      user.full_name.toLowerCase().includes(activeMatch.finder_name.toLowerCase())
+    ))
+  );
+  const isUserSigned = Boolean(
+    (isUserOwner && activeMatch?.owner_signed_at) ||
+    (isUserFinder && activeMatch?.finder_signed_at) ||
+    (user?.role === 'admin' && activeMatch?.admin_signed_at)
+  );
+
   // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -559,9 +580,9 @@ export const MessagesPage = () => {
                     type="button"
                     onClick={() => setShowBASTModal(true)} 
                     className={`btn btn-sm chat-bast-header-btn ${
-                      activeMatch.status === 'selesai' 
+                      isMatchCompleted 
                         ? 'btn-secondary' 
-                        : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at))
+                        : isUserSigned
                           ? 'btn-secondary'
                           : 'btn-primary'
                     }`}
@@ -572,36 +593,36 @@ export const MessagesPage = () => {
                       justifyContent: 'center',
                       gap: '0.35rem',
                       height: '36px',
-                      ...(activeMatch.status === 'selesai' ? {
+                      ...(isMatchCompleted ? {
                         color: 'var(--success, #10b981)',
                         borderColor: 'rgba(16, 185, 129, 0.3)',
                         backgroundColor: 'rgba(16, 185, 129, 0.08)'
-                      } : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at)) ? {
+                      } : isUserSigned ? {
                         color: 'var(--primary-indigo)',
                         borderColor: 'var(--primary-300)',
                         backgroundColor: 'var(--primary-50)'
                       } : {})
                     }}
                     title={
-                      activeMatch.status === 'selesai'
+                      isMatchCompleted
                         ? 'Lihat Berita Acara Serah Terima (Selesai)'
-                        : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at))
+                        : isUserSigned
                           ? 'Status BAST (Anda Sudah TTD)'
                           : 'Tanda Tangan Berita Acara Serah Terima (BAST)'
                     }
                     aria-label="Dokumen BAST"
                   >
-                    {activeMatch.status === 'selesai' ? (
+                    {isMatchCompleted ? (
                       <CheckCircle2 size={16} />
-                    ) : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at)) ? (
+                    ) : isUserSigned ? (
                       <Check size={16} />
                     ) : (
                       <FileCheck size={16} />
                     )}
                     <span className="chat-btn-label-desktop">
-                      {activeMatch.status === 'selesai'
+                      {isMatchCompleted
                         ? 'Lihat BAST'
-                        : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at))
+                        : isUserSigned
                           ? 'Status BAST'
                           : 'TTD BAST'}
                     </span>
@@ -652,10 +673,10 @@ export const MessagesPage = () => {
               {/* Pinned BAST Handover Banner (Standard Transactional Chat Style) */}
               {activeMatch && (
                 <div style={{
-                  background: activeMatch.status === 'selesai'
+                  background: isMatchCompleted
                     ? 'rgba(16, 185, 129, 0.08)'
                     : 'rgba(99, 102, 241, 0.08)',
-                  borderBottom: `1px solid ${activeMatch.status === 'selesai' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(99, 102, 241, 0.18)'}`,
+                  borderBottom: `1px solid ${isMatchCompleted ? 'rgba(16, 185, 129, 0.2)' : 'rgba(99, 102, 241, 0.18)'}`,
                   padding: '0.45rem 1rem',
                   display: 'flex',
                   alignItems: 'center',
@@ -665,21 +686,21 @@ export const MessagesPage = () => {
                   flexShrink: 0
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', minWidth: 0, overflow: 'hidden' }}>
-                    {activeMatch.status === 'selesai' ? (
+                    {isMatchCompleted ? (
                       <CheckCircle2 size={15} style={{ color: 'var(--success, #10b981)', flexShrink: 0 }} />
                     ) : (
                       <FileCheck size={15} style={{ color: 'var(--primary-indigo)', flexShrink: 0 }} />
                     )}
                     <span style={{
-                      color: activeMatch.status === 'selesai' ? 'var(--success-dark, #065f46)' : 'var(--ink-700)',
+                      color: isMatchCompleted ? 'var(--success-dark, #065f46)' : 'var(--ink-700)',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       fontWeight: 500
                     }}>
-                      {activeMatch.status === 'selesai' ? (
+                      {isMatchCompleted ? (
                         <><strong>BAST Selesai:</strong> Serah terima sah &amp; tercatat</>
-                      ) : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at)) ? (
+                      ) : isUserSigned ? (
                         <><strong>BAST Digital:</strong> Anda sudah TTD · Menunggu pihak lain</>
                       ) : (
                         <><strong>BAST Digital:</strong> Wajib tanda tangan saat serah terima</>
@@ -689,7 +710,7 @@ export const MessagesPage = () => {
                   <button
                     type="button"
                     onClick={() => setShowBASTModal(true)}
-                    className={`btn btn-sm ${activeMatch.status === 'selesai' ? 'btn-secondary' : 'btn-primary'}`}
+                    className={`btn btn-sm ${isMatchCompleted ? 'btn-secondary' : 'btn-primary'}`}
                     style={{
                       fontSize: '0.72rem',
                       padding: '0.25rem 0.65rem',
@@ -701,7 +722,7 @@ export const MessagesPage = () => {
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '0.3rem',
-                      ...(activeMatch.status === 'selesai' ? {
+                      ...(isMatchCompleted ? {
                         color: 'var(--success, #10b981)',
                         borderColor: 'rgba(16, 185, 129, 0.3)',
                         backgroundColor: 'transparent'
@@ -709,7 +730,7 @@ export const MessagesPage = () => {
                     }}
                   >
                     <FileCheck size={13} />
-                    <span>{activeMatch.status === 'selesai' ? 'Lihat BAST' : ((user?.id === activeMatch.owner_id && activeMatch.owner_signed_at) || (user?.id === activeMatch.finder_id && activeMatch.finder_signed_at)) ? 'Cek Status' : 'TTD BAST'}</span>
+                    <span>{isMatchCompleted ? 'Lihat BAST' : isUserSigned ? 'Cek Status' : 'TTD BAST'}</span>
                   </button>
                 </div>
               )}
@@ -845,7 +866,7 @@ export const MessagesPage = () => {
 
               {/* Chat Input Bar */}
               {/* Chat Input or Closed Case Banner */}
-              {activeMatch.status === 'selesai' ? (
+              {isMatchCompleted ? (
                 <div style={{
                   borderTop: '1px solid var(--border-subtle)',
                   background: 'var(--bg-card)',

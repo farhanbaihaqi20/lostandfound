@@ -257,7 +257,10 @@ export const DataProvider = ({ children }) => {
       if (!msg || !msg.content || !msg.match_id) return;
       const matchId = String(msg.match_id);
       if (!sigMap[matchId]) {
-        sigMap[matchId] = {};
+        sigMap[matchId] = {
+          hasAnySigMessage: false,
+          isCompleted: false
+        };
       }
 
       // 1. Cek payload terstruktur <!--BAST_SIG:{...}-->
@@ -265,6 +268,7 @@ export const DataProvider = ({ children }) => {
       if (sigTagMatch) {
         try {
           const payload = JSON.parse(sigTagMatch[1]);
+          sigMap[matchId].hasAnySigMessage = true;
           if (payload.role === 'owner') {
             sigMap[matchId].owner_signed_at = payload.time || msg.created_at;
             sigMap[matchId].owner_signer_name = payload.name;
@@ -278,24 +282,38 @@ export const DataProvider = ({ children }) => {
             sigMap[matchId].admin_signer_name = payload.name;
           }
         } catch (e) {}
-      }
+      } else if (msg.content.includes('telah menandatangani')) {
+        // 2. Fallback text parsing HANYA jika pesan tidak memiliki tag metadata terstruktur
+        // PENTING: Hanya cek peran dari pihak penandatangan (subjek di SEBELUM kata 'telah menandatangani')!
+        // JANGAN mengecek teks di setelahnya, karena teks tersebut berisi keterangan pihak lawan yang sedang ditunggu.
+        const parts = msg.content.split(/telah menandatangani/i);
+        const subject = parts[0] || '';
+        const nameMatch = subject.match(/\(([^)]+)\)/);
+        const extractedName = nameMatch ? nameMatch[1].trim() : null;
 
-      // 2. Fallback text parsing untuk pesan yang sudah ada sebelumnya
-      if (msg.content.includes('telah menandatangani Berita Acara Serah Terima')) {
-        const text = msg.content;
-        if (text.includes('Pemilik (') || text.includes('pihak Pemilik')) {
+        if (/pemilik/i.test(subject)) {
+          sigMap[matchId].hasAnySigMessage = true;
           if (!sigMap[matchId].owner_signed_at) {
             sigMap[matchId].owner_signed_at = msg.created_at || new Date().toISOString();
           }
-        }
-        if (text.includes('Penemu (') || text.includes('pihak Penemu')) {
+          if (extractedName && !sigMap[matchId].owner_signer_name) {
+            sigMap[matchId].owner_signer_name = extractedName;
+          }
+        } else if (/penemu/i.test(subject)) {
+          sigMap[matchId].hasAnySigMessage = true;
           if (!sigMap[matchId].finder_signed_at) {
             sigMap[matchId].finder_signed_at = msg.created_at || new Date().toISOString();
           }
-        }
-        if (text.includes('Admin') || text.includes('Petugas Posko')) {
+          if (extractedName && !sigMap[matchId].finder_signer_name) {
+            sigMap[matchId].finder_signer_name = extractedName;
+          }
+        } else if (/(admin|petugas)/i.test(subject)) {
+          sigMap[matchId].hasAnySigMessage = true;
           if (!sigMap[matchId].admin_signed_at) {
             sigMap[matchId].admin_signed_at = msg.created_at || new Date().toISOString();
+          }
+          if (extractedName && !sigMap[matchId].admin_signer_name) {
+            sigMap[matchId].admin_signer_name = extractedName;
           }
         }
       }
@@ -313,6 +331,87 @@ export const DataProvider = ({ children }) => {
     return sigMap;
   };
 
+  // Rekonsiliasi & penyembuhan status match berdasarkan riwayat tanda tangan BAST
+  const syncMatchesWithSignatures = (matchList, sigMap) => {
+    if (!Array.isArray(matchList) || !sigMap) return matchList;
+
+    let anyChanged = false;
+    const nextList = matchList.map(match => {
+      const sig = sigMap[match.id];
+      if (!sig || !sig.hasAnySigMessage) return match;
+
+      let updated = { ...match };
+      let matchChanged = false;
+
+      const authOwnerSignedAt = sig.owner_signed_at || null;
+      const authFinderSignedAt = sig.finder_signed_at || null;
+      const authAdminSignedAt = sig.admin_signed_at || null;
+
+      if (updated.owner_signed_at !== authOwnerSignedAt) {
+        updated.owner_signed_at = authOwnerSignedAt;
+        updated.owner_signer_name = sig.owner_signer_name || (authOwnerSignedAt ? updated.owner_signer_name : null);
+        updated.owner_signer_nim = sig.owner_signer_nim || (authOwnerSignedAt ? updated.owner_signer_nim : null);
+        matchChanged = true;
+      }
+
+      if (updated.finder_signed_at !== authFinderSignedAt) {
+        updated.finder_signed_at = authFinderSignedAt;
+        updated.finder_signer_name = sig.finder_signer_name || (authFinderSignedAt ? updated.finder_signer_name : null);
+        updated.finder_signer_nim = sig.finder_signer_nim || (authFinderSignedAt ? updated.finder_signer_nim : null);
+        matchChanged = true;
+      }
+
+      if (updated.admin_signed_at !== authAdminSignedAt) {
+        updated.admin_signed_at = authAdminSignedAt;
+        updated.admin_signer_name = sig.admin_signer_name || (authAdminSignedAt ? updated.admin_signer_name : null);
+        matchChanged = true;
+      }
+
+      const bothSigned = Boolean(updated.owner_signed_at && updated.finder_signed_at);
+      const shouldBeComplete = bothSigned || Boolean(updated.admin_signed_at) || Boolean(sig.isCompleted);
+      const expectedStatus = shouldBeComplete ? 'selesai' : 'aktif';
+
+      if (updated.status !== expectedStatus) {
+        updated.status = expectedStatus;
+        updated.completed_at = shouldBeComplete ? (updated.completed_at || sig.completed_at || new Date().toISOString()) : null;
+        matchChanged = true;
+
+        // Auto-heal status item jika kasus kembali aktif
+        if (expectedStatus === 'aktif' && match.item_id) {
+          setItems(prevItems => prevItems.map(item => {
+            if (item.id === match.item_id && item.item_status === 'dikembalikan') {
+              return { ...item, item_status: 'ditemukan' };
+            }
+            return item;
+          }));
+        }
+
+        // Sinkronisasi status match yang diperbaiki ke Supabase
+        if (isSupabaseConfigured() && supabase && isUuid(match.id)) {
+          supabase
+            .from('matches')
+            .update({
+              status: expectedStatus,
+              completed_at: shouldBeComplete ? updated.completed_at : null,
+              owner_signed_at: updated.owner_signed_at,
+              finder_signed_at: updated.finder_signed_at,
+              admin_signed_at: updated.admin_signed_at
+            })
+            .eq('id', match.id)
+            .then(() => {});
+        }
+      }
+
+      if (matchChanged) {
+        anyChanged = true;
+        return updated;
+      }
+      return match;
+    });
+
+    return anyChanged ? nextList : matchList;
+  };
+
   // Fetch matches dari Supabase & sinkronisasi otomatis
   const fetchSupabaseMatches = async () => {
     if (!isSupabaseConfigured() || !supabase) return;
@@ -327,28 +426,22 @@ export const DataProvider = ({ children }) => {
         setMatches(prev => {
           const merged = data.map(dbMatch => {
             const local = prev.find(p => p.id === dbMatch.id);
-            const sig = sigMap[dbMatch.id] || {};
-            const isSelesai = dbMatch.status === 'selesai' || local?.status === 'selesai' || sig.isCompleted || Boolean(
-              (dbMatch.owner_signed_at || local?.owner_signed_at || sig.owner_signed_at) &&
-              (dbMatch.finder_signed_at || local?.finder_signed_at || sig.finder_signed_at)
-            );
-
             return {
               ...dbMatch,
-              status: isSelesai ? 'selesai' : dbMatch.status,
-              completed_at: dbMatch.completed_at || local?.completed_at || sig.completed_at || null,
-              owner_signed_at: dbMatch.owner_signed_at || local?.owner_signed_at || sig.owner_signed_at || null,
-              owner_signer_name: dbMatch.owner_signer_name || local?.owner_signer_name || sig.owner_signer_name || null,
-              owner_signer_nim: dbMatch.owner_signer_nim || local?.owner_signer_nim || sig.owner_signer_nim || null,
-              finder_signed_at: dbMatch.finder_signed_at || local?.finder_signed_at || sig.finder_signed_at || null,
-              finder_signer_name: dbMatch.finder_signer_name || local?.finder_signer_name || sig.finder_signer_name || null,
-              finder_signer_nim: dbMatch.finder_signer_nim || local?.finder_signer_nim || sig.finder_signer_nim || null,
-              admin_signed_at: dbMatch.admin_signed_at || local?.admin_signed_at || sig.admin_signed_at || null,
-              admin_signer_name: dbMatch.admin_signer_name || local?.admin_signer_name || sig.admin_signer_name || null
+              completed_at: dbMatch.completed_at || local?.completed_at || null,
+              owner_signed_at: dbMatch.owner_signed_at || local?.owner_signed_at || null,
+              owner_signer_name: dbMatch.owner_signer_name || local?.owner_signer_name || null,
+              owner_signer_nim: dbMatch.owner_signer_nim || local?.owner_signer_nim || null,
+              finder_signed_at: dbMatch.finder_signed_at || local?.finder_signed_at || null,
+              finder_signer_name: dbMatch.finder_signer_name || local?.finder_signer_name || null,
+              finder_signer_nim: dbMatch.finder_signer_nim || local?.finder_signer_nim || null,
+              admin_signed_at: dbMatch.admin_signed_at || local?.admin_signed_at || null,
+              admin_signer_name: dbMatch.admin_signer_name || local?.admin_signer_name || null
             };
           });
           const localOnly = prev.filter(m => !isUuid(m.id) && !data.some(d => d.id === m.id));
-          return [...merged, ...localOnly];
+          const combined = [...merged, ...localOnly];
+          return syncMatchesWithSignatures(combined, sigMap);
         });
       } else if (error) {
         console.warn('Gagal memuat matches dari Supabase:', error);
@@ -381,41 +474,7 @@ export const DataProvider = ({ children }) => {
         // Sinkronisasi tanda tangan BAST ke matches dari pesan yang baru dimuat
         const sigMap = parseSignaturesFromMessages(formatted);
         if (Object.keys(sigMap).length > 0) {
-          setMatches(prev => prev.map(match => {
-            const sig = sigMap[match.id];
-            if (!sig) return match;
-            let updated = { ...match };
-            let changed = false;
-
-            if (sig.owner_signed_at && !updated.owner_signed_at) {
-              updated.owner_signed_at = sig.owner_signed_at;
-              updated.owner_signer_name = sig.owner_signer_name || updated.owner_signer_name;
-              updated.owner_signer_nim = sig.owner_signer_nim || updated.owner_signer_nim;
-              changed = true;
-            }
-            if (sig.finder_signed_at && !updated.finder_signed_at) {
-              updated.finder_signed_at = sig.finder_signed_at;
-              updated.finder_signer_name = sig.finder_signer_name || updated.finder_signer_name;
-              updated.finder_signer_nim = sig.finder_signer_nim || updated.finder_signer_nim;
-              changed = true;
-            }
-            if (sig.admin_signed_at && !updated.admin_signed_at) {
-              updated.admin_signed_at = sig.admin_signed_at;
-              updated.admin_signer_name = sig.admin_signer_name || updated.admin_signer_name;
-              changed = true;
-            }
-
-            const bothSigned = Boolean(updated.owner_signed_at && updated.finder_signed_at);
-            const isCompleted = bothSigned || Boolean(updated.admin_signed_at) || Boolean(sig.isCompleted);
-
-            if (isCompleted && updated.status !== 'selesai') {
-              updated.status = 'selesai';
-              updated.completed_at = updated.completed_at || sig.completed_at || new Date().toISOString();
-              changed = true;
-            }
-
-            return changed ? updated : match;
-          }));
+          setMatches(prev => syncMatchesWithSignatures(prev, sigMap));
         }
       } else if (error) {
         console.warn('Gagal memuat messages dari Supabase:', error);
@@ -614,51 +673,7 @@ export const DataProvider = ({ children }) => {
     const sigMap = parseSignaturesFromMessages(messages);
     if (Object.keys(sigMap).length === 0) return;
 
-    setMatches(prev => {
-      let changed = false;
-      const next = prev.map(match => {
-        const sig = sigMap[match.id];
-        if (!sig) return match;
-
-        let updated = { ...match };
-        let matchChanged = false;
-
-        if (sig.owner_signed_at && !updated.owner_signed_at) {
-          updated.owner_signed_at = sig.owner_signed_at;
-          updated.owner_signer_name = sig.owner_signer_name || updated.owner_signer_name;
-          updated.owner_signer_nim = sig.owner_signer_nim || updated.owner_signer_nim;
-          matchChanged = true;
-        }
-        if (sig.finder_signed_at && !updated.finder_signed_at) {
-          updated.finder_signed_at = sig.finder_signed_at;
-          updated.finder_signer_name = sig.finder_signer_name || updated.finder_signer_name;
-          updated.finder_signer_nim = sig.finder_signer_nim || updated.finder_signer_nim;
-          matchChanged = true;
-        }
-        if (sig.admin_signed_at && !updated.admin_signed_at) {
-          updated.admin_signed_at = sig.admin_signed_at;
-          updated.admin_signer_name = sig.admin_signer_name || updated.admin_signer_name;
-          matchChanged = true;
-        }
-
-        const isBothSigned = Boolean(updated.owner_signed_at && updated.finder_signed_at);
-        const shouldBeComplete = isBothSigned || Boolean(updated.admin_signed_at) || Boolean(sig.isCompleted);
-
-        if (shouldBeComplete && updated.status !== 'selesai') {
-          updated.status = 'selesai';
-          updated.completed_at = updated.completed_at || sig.completed_at || new Date().toISOString();
-          matchChanged = true;
-        }
-
-        if (matchChanged) {
-          changed = true;
-          return updated;
-        }
-        return match;
-      });
-
-      return changed ? next : prev;
-    });
+    setMatches(prev => syncMatchesWithSignatures(prev, sigMap));
   }, [messages]);
 
   // Persist to localStorage
@@ -2126,9 +2141,35 @@ export const DataProvider = ({ children }) => {
     const match = matches.find(m => m.id === matchId);
     if (!match) return { error: 'Sesi koordinasi tidak ditemukan' };
 
-    const isOwner = signerRole === 'owner' || user?.id === match.owner_id;
-    const isFinder = signerRole === 'finder' || user?.id === match.finder_id;
-    const isAdmin = signerRole === 'admin' || (user?.role === 'admin' && !isOwner && !isFinder);
+    let isOwner = false;
+    let isFinder = false;
+    let isAdmin = false;
+
+    if (signerRole === 'owner') {
+      isOwner = true;
+    } else if (signerRole === 'finder') {
+      isFinder = true;
+    } else if (signerRole === 'admin') {
+      isAdmin = true;
+    } else {
+      if (user?.id === match.owner_id) {
+        isOwner = true;
+      } else if (user?.id === match.finder_id) {
+        isFinder = true;
+      } else if (user?.role === 'admin') {
+        isAdmin = true;
+      } else {
+        const normUser = (user?.full_name || signerName || '').trim().toLowerCase();
+        const normOwner = (match.owner_name || '').trim().toLowerCase();
+        const normFinder = (match.finder_name || '').trim().toLowerCase();
+
+        if (normOwner && (normOwner.includes(normUser) || normUser.includes(normOwner))) {
+          isOwner = true;
+        } else if (normFinder && (normFinder.includes(normUser) || normUser.includes(normFinder))) {
+          isFinder = true;
+        }
+      }
+    }
 
     const now = new Date().toISOString();
     let updatedMatch = { ...match };
@@ -2155,6 +2196,9 @@ export const DataProvider = ({ children }) => {
     if (isComplete) {
       updatedMatch.status = 'selesai';
       updatedMatch.completed_at = now;
+    } else {
+      updatedMatch.status = 'aktif';
+      updatedMatch.completed_at = null;
     }
 
     // 1. Update state matches & localStorage
@@ -2243,7 +2287,9 @@ export const DataProvider = ({ children }) => {
 
     // 5. Kirim notifikasi pesan sistem di obrolan dengan tag metadata tanda tangan terstruktur
     const currentSignRole = isOwner ? 'owner' : (isFinder ? 'finder' : 'admin');
-    const sigComment = `<!--BAST_SIG:{"role":"${currentSignRole}","name":"${signerName}","nim":"${signerNIM}","time":"${now}"}-->`;
+    const safeSignerName = (signerName || user?.full_name || (isOwner ? match.owner_name : match.finder_name)).trim();
+    const safeSignerNIM = (signerNIM || user?.nim || '').trim();
+    const sigComment = `<!--BAST_SIG:{"role":"${currentSignRole}","name":"${safeSignerName}","nim":"${safeSignerNIM}","time":"${now}"}-->`;
 
     if (isComplete) {
       const completeComment = `<!--BAST_COMPLETE:{"completed_at":"${now}"}-->`;
@@ -2257,10 +2303,11 @@ export const DataProvider = ({ children }) => {
       } catch (e) {}
     } else {
       const roleText = isOwner ? 'Pemilik' : 'Penemu';
-      const oppositeText = isOwner ? `Penemu (${match.finder_name})` : `Pemilik (${match.owner_name})`;
+      const oppositeRoleText = isOwner ? 'Penemu' : 'Pemilik';
+      const oppositeName = isOwner ? match.finder_name : match.owner_name;
       await sendMessage(
         matchId,
-        `📝 ${roleText} (${signerName}) telah menandatangani Berita Acara Serah Terima (BAST) Digital. Menunggu tanda tangan dari pihak ${oppositeText} untuk menyelesaikan kasus ini secara resmi.${sigComment}`,
+        `📝 ${roleText} (${safeSignerName}) telah menandatangani Berita Acara Serah Terima (BAST) Digital. Menunggu tanda tangan dari pihak ${oppositeRoleText} (${oppositeName}) untuk menyelesaikan kasus ini secara resmi.${sigComment}`,
         'system'
       );
     }

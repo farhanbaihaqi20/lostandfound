@@ -17,20 +17,41 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
   const isFinder = (user?.id && user.id === match.finder_id) || (normUser && normFinder && (normFinder.includes(normUser) || normUser.includes(normFinder)));
   const isAdmin = user?.role === 'admin' && !isOwner && !isFinder;
 
-  const currentRole = isOwner ? 'owner' : (isFinder ? 'finder' : 'admin');
-
   const isOwnerSigned = Boolean(match.owner_signed_at);
   const isFinderSigned = Boolean(match.finder_signed_at);
   const isAdminSigned = Boolean(match.admin_signed_at);
   const isCompleted = match.status === 'selesai' || (isOwnerSigned && isFinderSigned) || isAdminSigned;
 
+  // Tentukan peran penandatangan yang relevan secara adaptif
+  let currentRole = 'finder';
+  if (isOwner && !isFinder) {
+    currentRole = 'owner';
+  } else if (isFinder && !isOwner) {
+    currentRole = 'finder';
+  } else if (isOwner && isFinder) {
+    // Jika satu akun pengguna terdaftar di kedua pihak (misal saat pengujian mandiri)
+    if (isFinderSigned && !isOwnerSigned) {
+      currentRole = 'owner';
+    } else {
+      currentRole = 'finder';
+    }
+  } else if (isAdmin) {
+    currentRole = 'admin';
+  } else {
+    if (isFinderSigned && !isOwnerSigned) {
+      currentRole = 'owner';
+    } else {
+      currentRole = 'finder';
+    }
+  }
+
   const hasCurrentPartySigned = 
-    (isOwner && isOwnerSigned) ||
-    (isFinder && isFinderSigned) ||
-    (isAdmin && isAdminSigned);
+    (currentRole === 'owner' && isOwnerSigned) ||
+    (currentRole === 'finder' && isFinderSigned) ||
+    (currentRole === 'admin' && isAdminSigned);
 
   const [signerName, setSignerName] = useState(
-    user?.full_name || (isOwner ? match.owner_name : (isFinder ? match.finder_name : ''))
+    (currentRole === 'owner' ? match.owner_name : (currentRole === 'finder' ? match.finder_name : user?.full_name)) || user?.full_name || ''
   );
   const [signerNIM, setSignerNIM] = useState(user?.nim || '');
   const [agreed, setAgreed] = useState(false);
@@ -38,11 +59,12 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
 
   React.useEffect(() => {
     if (isOpen) {
-      setSignerName(user?.full_name || (isOwner ? match.owner_name : (isFinder ? match.finder_name : '')));
+      const defaultName = (currentRole === 'owner' ? match.owner_name : (currentRole === 'finder' ? match.finder_name : user?.full_name)) || user?.full_name || '';
+      setSignerName(defaultName);
       setSignerNIM(user?.nim || '');
       setAgreed(false);
     }
-  }, [isOpen, match?.id, user?.id, isOwner, isFinder]);
+  }, [isOpen, match?.id, user?.id, currentRole]);
 
   // Pernyataan khusus yang berbeda antara Pemilik vs Penemu vs Admin
   let docBadge = 'SURAT PENERIMAAN BARANG (PEMILIK SAH)';
@@ -53,7 +75,7 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
   let checkboxText = 'Saya menyatakan data di atas benar dan barang telah sah saya terima kembali dari posko/penemu dalam kondisi baik.';
   let buttonLabel = 'Tanda Tangani BAST sebagai Pemilik';
 
-  if (isFinder) {
+  if (currentRole === 'finder') {
     docBadge = 'SURAT PENYERAHAN BARANG (PENEMU)';
     statementHeading = 'Pernyataan Resmi Penyerahan Barang (Penemu):';
     statementQuote = `"Saya yang bertanda tangan di bawah ini menyatakan bahwa barang temuan #${match.item_code} (${match.item_title}) telah saya serahkan kembali secara langsung kepada pemilik yang sah secara sukarela, aman, dan tanpa paksaan. Dengan ini serah terima dinyatakan sah dan selesai."`;
@@ -61,7 +83,7 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
     nimLabel = 'NIM Mahasiswa Penemu:';
     checkboxText = 'Saya menyatakan data di atas benar dan telah menyerahkan barang temuan tersebut kepada pemilik sah secara langsung.';
     buttonLabel = 'Tanda Tangani BAST sebagai Penemu';
-  } else if (isAdmin) {
+  } else if (currentRole === 'admin') {
     docBadge = 'PENGESAHAN SERAH TERIMA POSKO (PETUGAS ADMIN)';
     statementHeading = 'Pengesahan Berita Acara Petugas Posko:';
     statementQuote = `"Saya selaku Petugas Posko UNNES Lost & Found mengesahkan bahwa proses verifikasi identitas dan serah terima barang #${match.item_code} (${match.item_title}) antara penemu (${match.finder_name}) dan pemilik (${match.owner_name}) telah dilaksanakan sesuai SOP resmi kampus UNNES."`;
@@ -289,7 +311,7 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
               <strong style={{ display: 'block', marginBottom: '2px', color: '#B45309' }}>
                 Tanda Tangan Anda Sudah Terekam!
               </strong>
-              Anda telah menandatangani BAST ini. Sesi koordinasi akan otomatis dinyatakan <strong>SELESAI</strong> begitu pihak {isOwner ? 'Penemu' : 'Pemilik'} ikut menandatangani.
+              Anda telah menandatangani BAST ini. Sesi koordinasi akan otomatis dinyatakan <strong>SELESAI</strong> begitu pihak {currentRole === 'owner' ? 'Penemu' : 'Pemilik'} ikut menandatangani.
             </div>
           </div>
         ) : null}
