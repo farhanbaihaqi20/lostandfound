@@ -317,15 +317,14 @@ export const DataProvider = ({ children }) => {
           }
         }
       }
+    });
 
-      // 3. Cek pesan serah terima selesai
-      if (
-        msg.content.includes('BAST_COMPLETE') ||
-        msg.content.includes('Serah Terima Barang Resmi Selesai!')
-      ) {
-        sigMap[matchId].isCompleted = true;
-        sigMap[matchId].completed_at = msg.created_at || new Date().toISOString();
-      }
+    // 3. Status selesai HANYA boleh bernilai true jika KEDUA pihak (pemilik DAN penemu) telah TTD secara sah, atau admin posko mengesahkan
+    Object.keys(sigMap).forEach(matchId => {
+      const s = sigMap[matchId];
+      const bothSigned = Boolean(s.owner_signed_at && s.finder_signed_at);
+      const adminSigned = Boolean(s.admin_signed_at);
+      s.isCompleted = bothSigned || adminSigned;
     });
 
     return sigMap;
@@ -338,7 +337,27 @@ export const DataProvider = ({ children }) => {
     let anyChanged = false;
     const nextList = matchList.map(match => {
       const sig = sigMap[match.id];
-      if (!sig || !sig.hasAnySigMessage) return match;
+      if (!sig || !sig.hasAnySigMessage) {
+        // Jika match tidak memiliki riwayat tanda tangan sah di pesan, tapi statusnya 'selesai' atau ada tanda tangan hantu:
+        // Bersihkan tanda tangan hantu dan kembalikan status ke 'aktif'
+        if (match.owner_signed_at || match.finder_signed_at || match.admin_signed_at || match.status === 'selesai') {
+          anyChanged = true;
+          return {
+            ...match,
+            status: 'aktif',
+            completed_at: null,
+            owner_signed_at: null,
+            owner_signer_name: null,
+            owner_signer_nim: null,
+            finder_signed_at: null,
+            finder_signer_name: null,
+            finder_signer_nim: null,
+            admin_signed_at: null,
+            admin_signer_name: null
+          };
+        }
+        return match;
+      }
 
       let updated = { ...match };
       let matchChanged = false;
@@ -368,12 +387,13 @@ export const DataProvider = ({ children }) => {
       }
 
       const bothSigned = Boolean(updated.owner_signed_at && updated.finder_signed_at);
-      const shouldBeComplete = bothSigned || Boolean(updated.admin_signed_at) || Boolean(sig.isCompleted);
+      const adminSigned = Boolean(updated.admin_signed_at);
+      const shouldBeComplete = bothSigned || adminSigned;
       const expectedStatus = shouldBeComplete ? 'selesai' : 'aktif';
 
       if (updated.status !== expectedStatus) {
         updated.status = expectedStatus;
-        updated.completed_at = shouldBeComplete ? (updated.completed_at || sig.completed_at || new Date().toISOString()) : null;
+        updated.completed_at = shouldBeComplete ? (updated.completed_at || new Date().toISOString()) : null;
         matchChanged = true;
 
         // Auto-heal status item jika kasus kembali aktif
@@ -394,8 +414,13 @@ export const DataProvider = ({ children }) => {
               status: expectedStatus,
               completed_at: shouldBeComplete ? updated.completed_at : null,
               owner_signed_at: updated.owner_signed_at,
+              owner_signer_name: updated.owner_signer_name,
+              owner_signer_nim: updated.owner_signer_nim,
               finder_signed_at: updated.finder_signed_at,
-              admin_signed_at: updated.admin_signed_at
+              finder_signer_name: updated.finder_signer_name,
+              finder_signer_nim: updated.finder_signer_nim,
+              admin_signed_at: updated.admin_signed_at,
+              admin_signer_name: updated.admin_signer_name
             })
             .eq('id', match.id)
             .then(() => {});
@@ -422,25 +447,24 @@ export const DataProvider = ({ children }) => {
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        const sigMap = parseSignaturesFromMessages(messages);
         setMatches(prev => {
           const merged = data.map(dbMatch => {
-            const local = prev.find(p => p.id === dbMatch.id);
             return {
               ...dbMatch,
-              completed_at: dbMatch.completed_at || local?.completed_at || null,
-              owner_signed_at: dbMatch.owner_signed_at || local?.owner_signed_at || null,
-              owner_signer_name: dbMatch.owner_signer_name || local?.owner_signer_name || null,
-              owner_signer_nim: dbMatch.owner_signer_nim || local?.owner_signer_nim || null,
-              finder_signed_at: dbMatch.finder_signed_at || local?.finder_signed_at || null,
-              finder_signer_name: dbMatch.finder_signer_name || local?.finder_signer_name || null,
-              finder_signer_nim: dbMatch.finder_signer_nim || local?.finder_signer_nim || null,
-              admin_signed_at: dbMatch.admin_signed_at || local?.admin_signed_at || null,
-              admin_signer_name: dbMatch.admin_signer_name || local?.admin_signer_name || null
+              completed_at: dbMatch.completed_at || null,
+              owner_signed_at: dbMatch.owner_signed_at || null,
+              owner_signer_name: dbMatch.owner_signer_name || null,
+              owner_signer_nim: dbMatch.owner_signer_nim || null,
+              finder_signed_at: dbMatch.finder_signed_at || null,
+              finder_signer_name: dbMatch.finder_signer_name || null,
+              finder_signer_nim: dbMatch.finder_signer_nim || null,
+              admin_signed_at: dbMatch.admin_signed_at || null,
+              admin_signer_name: dbMatch.admin_signer_name || null
             };
           });
           const localOnly = prev.filter(m => !isUuid(m.id) && !data.some(d => d.id === m.id));
           const combined = [...merged, ...localOnly];
+          const sigMap = parseSignaturesFromMessages(messages || []);
           return syncMatchesWithSignatures(combined, sigMap);
         });
       } else if (error) {
@@ -648,9 +672,10 @@ export const DataProvider = ({ children }) => {
                 return {
                   ...localMatch,
                   ...remote,
-                  status: (remote.status === 'selesai' || localMatch.status === 'selesai') ? 'selesai' : remote.status,
-                  owner_signed_at: remote.owner_signed_at || localMatch.owner_signed_at || null,
-                  finder_signed_at: remote.finder_signed_at || localMatch.finder_signed_at || null
+                  status: remote.status || localMatch.status,
+                  owner_signed_at: remote.owner_signed_at ?? null,
+                  finder_signed_at: remote.finder_signed_at ?? null,
+                  admin_signed_at: remote.admin_signed_at ?? null
                 };
               });
             });
@@ -669,10 +694,7 @@ export const DataProvider = ({ children }) => {
 
   // Ekstraksi & sinkronisasi otomatis tanda tangan BAST setiap kali state messages berubah
   useEffect(() => {
-    if (!messages || messages.length === 0) return;
-    const sigMap = parseSignaturesFromMessages(messages);
-    if (Object.keys(sigMap).length === 0) return;
-
+    const sigMap = parseSignaturesFromMessages(messages || []);
     setMatches(prev => syncMatchesWithSignatures(prev, sigMap));
   }, [messages]);
 
@@ -2174,21 +2196,48 @@ export const DataProvider = ({ children }) => {
     const now = new Date().toISOString();
     let updatedMatch = { ...match };
 
+    // Dapatkan riwayat tanda tangan sah yang ada dari pesan untuk memastikan pihak lawan hanya tercatat jika benar-benar pernah menandatangani
+    const matchMsgs = messages.filter(m => String(m.match_id) === String(matchId));
+    const currentSigMap = parseSignaturesFromMessages(matchMsgs)[String(matchId)] || {};
+
+    const safeSignerName = (signerName || user?.full_name || (isOwner ? match.owner_name : match.finder_name)).trim();
+    const safeSignerNIM = (signerNIM || user?.nim || '').trim();
+
     if (isOwner) {
       updatedMatch.owner_signed_at = now;
-      updatedMatch.owner_signer_name = signerName || user?.full_name || match.owner_name;
-      updatedMatch.owner_signer_nim = signerNIM || user?.nim || '';
+      updatedMatch.owner_signer_name = safeSignerName;
+      updatedMatch.owner_signer_nim = safeSignerNIM;
+      // Validasi ketat pihak penemu dari riwayat pesan
+      if (!currentSigMap.finder_signed_at) {
+        updatedMatch.finder_signed_at = null;
+        updatedMatch.finder_signer_name = null;
+        updatedMatch.finder_signer_nim = null;
+      } else {
+        updatedMatch.finder_signed_at = currentSigMap.finder_signed_at;
+        updatedMatch.finder_signer_name = currentSigMap.finder_signer_name || match.finder_name;
+        updatedMatch.finder_signer_nim = currentSigMap.finder_signer_nim || '';
+      }
     } else if (isFinder) {
       updatedMatch.finder_signed_at = now;
-      updatedMatch.finder_signer_name = signerName || user?.full_name || match.finder_name;
-      updatedMatch.finder_signer_nim = signerNIM || user?.nim || '';
+      updatedMatch.finder_signer_name = safeSignerName;
+      updatedMatch.finder_signer_nim = safeSignerNIM;
+      // Validasi ketat pihak pemilik dari riwayat pesan
+      if (!currentSigMap.owner_signed_at) {
+        updatedMatch.owner_signed_at = null;
+        updatedMatch.owner_signer_name = null;
+        updatedMatch.owner_signer_nim = null;
+      } else {
+        updatedMatch.owner_signed_at = currentSigMap.owner_signed_at;
+        updatedMatch.owner_signer_name = currentSigMap.owner_signer_name || match.owner_name;
+        updatedMatch.owner_signer_nim = currentSigMap.owner_signer_nim || '';
+      }
     } else if (isAdmin) {
       updatedMatch.admin_signed_at = now;
-      updatedMatch.admin_signer_name = signerName || user?.full_name || 'Admin Posko';
+      updatedMatch.admin_signer_name = safeSignerName || 'Admin Posko';
     }
 
-    // Kasus otomatis terselesaikan jika:
-    // 1. Penemu DAN Pemilik keduanya telah menandatangani BAST
+    // Kasus otomatis terselesaikan HANYA jika:
+    // 1. Penemu DAN Pemilik keduanya telah menandatangani BAST secara sah
     // 2. ATAU Admin posko menandatangani pengesahan
     const bothPartiesSigned = Boolean(updatedMatch.owner_signed_at && updatedMatch.finder_signed_at);
     const isComplete = bothPartiesSigned || Boolean(updatedMatch.admin_signed_at);
@@ -2287,8 +2336,6 @@ export const DataProvider = ({ children }) => {
 
     // 5. Kirim notifikasi pesan sistem di obrolan dengan tag metadata tanda tangan terstruktur
     const currentSignRole = isOwner ? 'owner' : (isFinder ? 'finder' : 'admin');
-    const safeSignerName = (signerName || user?.full_name || (isOwner ? match.owner_name : match.finder_name)).trim();
-    const safeSignerNIM = (signerNIM || user?.nim || '').trim();
     const sigComment = `<!--BAST_SIG:{"role":"${currentSignRole}","name":"${safeSignerName}","nim":"${safeSignerNIM}","time":"${now}"}-->`;
 
     if (isComplete) {
@@ -2322,6 +2369,88 @@ export const DataProvider = ({ children }) => {
       signerNIM: user?.nim || '',
       signerRole: user?.role === 'admin' ? 'admin' : (user?.id === matches.find(m => m.id === matchId)?.owner_id ? 'owner' : 'finder')
     });
+  };
+
+  /**
+   * Mengatur ulang status tanda tangan BAST ke kondisi awal (belum ditandatangani)
+   * Berguna untuk pengujian atau jika terjadi sengketa serah terima
+   */
+  const resetBASTSignature = async (matchId) => {
+    if (!matchId) return { error: 'ID sesi tidak valid' };
+    const match = matches.find(m => m.id === matchId);
+    if (!match) return { error: 'Sesi koordinasi tidak ditemukan' };
+
+    const updatedMatch = {
+      ...match,
+      status: 'aktif',
+      completed_at: null,
+      owner_signed_at: null,
+      owner_signer_name: null,
+      owner_signer_nim: null,
+      finder_signed_at: null,
+      finder_signer_name: null,
+      finder_signer_nim: null,
+      admin_signed_at: null,
+      admin_signer_name: null
+    };
+
+    setMatches(prev => {
+      const next = prev.map(m => m.id === matchId ? updatedMatch : m);
+      try {
+        localStorage.setItem('unnes_lf_matches', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+
+    // Bersihkan pesan tanda tangan BAST lama dari obrolan ini
+    setMessages(prev => {
+      const nextMsgs = prev.filter(m => !(
+        String(m.match_id) === String(matchId) && (
+          m.content.includes('<!--BAST_SIG:') ||
+          m.content.includes('telah menandatangani') ||
+          m.content.includes('BAST_COMPLETE') ||
+          m.content.includes('Serah Terima Barang Resmi Selesai!')
+        )
+      ));
+      try {
+        localStorage.setItem('unnes_lf_messages', JSON.stringify(nextMsgs));
+      } catch (e) {}
+      return nextMsgs;
+    });
+
+    if (isSupabaseConfigured() && supabase && isUuid(matchId)) {
+      try {
+        await supabase
+          .from('matches')
+          .update({
+            status: 'aktif',
+            completed_at: null,
+            owner_signed_at: null,
+            owner_signer_name: null,
+            owner_signer_nim: null,
+            finder_signed_at: null,
+            finder_signer_name: null,
+            finder_signer_nim: null,
+            admin_signed_at: null,
+            admin_signer_name: null
+          })
+          .eq('id', matchId);
+      } catch (e) {}
+    }
+
+    if (match.item_id) {
+      setItems(prev => prev.map(i => i.id === match.item_id && i.item_status === 'dikembalikan' ? { ...i, item_status: 'ditemukan' } : i));
+    }
+
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('unnes_lf_bast_channel');
+        bc.postMessage({ type: 'BAST_SIGNED', updatedMatch });
+        bc.close();
+      }
+    } catch (e) {}
+
+    return { success: true, match: updatedMatch };
   };
 
   // --- STATS CALCULATION ---
@@ -2371,6 +2500,7 @@ export const DataProvider = ({ children }) => {
       deleteMatchSession,
       completeHandover,
       signBAST,
+      resetBASTSignature,
       addNotification,
       markNotificationAsRead: async (id) => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));

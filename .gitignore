@@ -16,4 +16,6 @@ dist/
 /Referensi
 /dist
 .continue
-.dev.logsupabase.env
+.dev.log
+supabase.env
+

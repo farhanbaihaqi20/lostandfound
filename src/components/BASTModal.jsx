@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { X, FileCheck, CheckCircle2, Clock, ShieldCheck } from 'lucide-react';
+import { X, FileCheck, CheckCircle2, Clock, ShieldCheck, RotateCcw } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 
 export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
-  const { signBAST } = useData();
+  const { signBAST, resetBASTSignature } = useData();
   const { user } = useAuth();
 
   if (!isOpen || !match) return null;
@@ -15,33 +15,29 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
 
   const isOwner = (user?.id && user.id === match.owner_id) || (normUser && normOwner && (normOwner.includes(normUser) || normUser.includes(normOwner)));
   const isFinder = (user?.id && user.id === match.finder_id) || (normUser && normFinder && (normFinder.includes(normUser) || normUser.includes(normFinder)));
-  const isAdmin = user?.role === 'admin' && !isOwner && !isFinder;
+  const isAdmin = user?.role === 'admin';
 
   const isOwnerSigned = Boolean(match.owner_signed_at);
   const isFinderSigned = Boolean(match.finder_signed_at);
   const isAdminSigned = Boolean(match.admin_signed_at);
-  const isCompleted = match.status === 'selesai' || (isOwnerSigned && isFinderSigned) || isAdminSigned;
+  // BAST hanya benar-benar selesai jika KEDUA belah pihak (pemilik DAN penemu) telah TTD sah, atau admin posko
+  const isCompleted = (isOwnerSigned && isFinderSigned) || isAdminSigned;
 
   // Tentukan peran penandatangan yang relevan secara adaptif
-  let currentRole = 'finder';
-  if (isOwner && !isFinder) {
-    currentRole = 'owner';
-  } else if (isFinder && !isOwner) {
-    currentRole = 'finder';
-  } else if (isOwner && isFinder) {
-    // Jika satu akun pengguna terdaftar di kedua pihak (misal saat pengujian mandiri)
-    if (isFinderSigned && !isOwnerSigned) {
+  const [selectedRole, setSelectedRole] = useState(null);
+
+  let currentRole = selectedRole;
+  if (!currentRole) {
+    if (isOwner && !isFinder) {
       currentRole = 'owner';
+    } else if (isFinder && !isOwner) {
+      currentRole = isFinderSigned && !isOwnerSigned && isAdmin ? 'owner' : 'finder';
+    } else if (isOwner && isFinder) {
+      currentRole = isFinderSigned && !isOwnerSigned ? 'owner' : 'finder';
+    } else if (isAdmin) {
+      currentRole = isFinderSigned && !isOwnerSigned ? 'owner' : (isOwnerSigned && !isFinderSigned ? 'finder' : 'admin');
     } else {
-      currentRole = 'finder';
-    }
-  } else if (isAdmin) {
-    currentRole = 'admin';
-  } else {
-    if (isFinderSigned && !isOwnerSigned) {
-      currentRole = 'owner';
-    } else {
-      currentRole = 'finder';
+      currentRole = isFinderSigned && !isOwnerSigned ? 'owner' : 'finder';
     }
   }
 
@@ -271,6 +267,77 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
           </p>
         </div>
 
+        {/* Role Switcher jika Admin / Pengujian Mandiri */}
+        {(isAdmin || (isOwner && isFinder)) && !isCompleted && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.5rem',
+            background: '#F1F5F9',
+            padding: '0.45rem 0.75rem',
+            borderRadius: '8px',
+            marginBottom: '1rem',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ fontSize: '0.74rem', color: '#475569', fontWeight: 600 }}>
+              Peran Tanda Tangan:
+            </div>
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <button
+                type="button"
+                onClick={() => setSelectedRole('finder')}
+                style={{
+                  padding: '4px 10px',
+                  fontSize: '0.74rem',
+                  borderRadius: '6px',
+                  border: currentRole === 'finder' ? '1px solid #059669' : '1px solid #CBD5E1',
+                  background: currentRole === 'finder' ? '#ECFDF5' : '#FFFFFF',
+                  color: currentRole === 'finder' ? '#065F46' : '#64748B',
+                  fontWeight: currentRole === 'finder' ? 700 : 500,
+                  cursor: 'pointer'
+                }}
+              >
+                Pihak Penemu {isFinderSigned && '✓'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedRole('owner')}
+                style={{
+                  padding: '4px 10px',
+                  fontSize: '0.74rem',
+                  borderRadius: '6px',
+                  border: currentRole === 'owner' ? '1px solid #059669' : '1px solid #CBD5E1',
+                  background: currentRole === 'owner' ? '#ECFDF5' : '#FFFFFF',
+                  color: currentRole === 'owner' ? '#065F46' : '#64748B',
+                  fontWeight: currentRole === 'owner' ? 700 : 500,
+                  cursor: 'pointer'
+                }}
+              >
+                Pihak Pemilik {isOwnerSigned && '✓'}
+              </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('admin')}
+                  style={{
+                    padding: '4px 10px',
+                    fontSize: '0.74rem',
+                    borderRadius: '6px',
+                    border: currentRole === 'admin' ? '1px solid #059669' : '1px solid #CBD5E1',
+                    background: currentRole === 'admin' ? '#ECFDF5' : '#FFFFFF',
+                    color: currentRole === 'admin' ? '#065F46' : '#64748B',
+                    fontWeight: currentRole === 'admin' ? 700 : 500,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Admin Posko {isAdminSigned && '✓'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Kasus Selesai Banner / Sudah TTD Banner */}
         {isCompleted ? (
           <div style={{
@@ -429,7 +496,34 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
             </div>
           </form>
         ) : (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '0.75rem', borderTop: '1px solid #E2DDD5' }}>
+          <div style={{ display: 'flex', justifyContent: isAdmin ? 'space-between' : 'flex-end', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid #E2DDD5' }}>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (window.confirm('Reset tanda tangan BAST sesi ini untuk pengujian ulang? Status akan kembali menjadi belum ditandatangani.')) {
+                    await resetBASTSignature(match.id);
+                    alert('Tanda tangan BAST berhasil di-reset ke kondisi awal (belum ditandatangani).');
+                    onClose();
+                  }
+                }}
+                style={{
+                  background: 'transparent',
+                  border: '1px dashed #CBD5E1',
+                  color: '#64748B',
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  fontSize: '0.75rem',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="Reset status tanda tangan BAST untuk simulasi ulang"
+              >
+                <RotateCcw size={13} /> Reset BAST (Testing)
+              </button>
+            )}
             <button
               type="button"
               onClick={onClose}

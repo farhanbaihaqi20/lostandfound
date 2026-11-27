@@ -118,7 +118,7 @@ export const MessagesPage = () => {
   const activeItem = items.find(i => i.id === activeMatch?.item_id);
   const matchMessages = messages.filter(m => m.match_id === activeMatchId);
 
-  const isMatchCompleted = activeMatch?.status === 'selesai' || Boolean(activeMatch?.owner_signed_at && activeMatch?.finder_signed_at) || Boolean(activeMatch?.admin_signed_at);
+  const isMatchCompleted = (Boolean(activeMatch?.owner_signed_at && activeMatch?.finder_signed_at) || Boolean(activeMatch?.admin_signed_at)) && activeMatch?.status === 'selesai';
   const isUserOwner = Boolean(
     (user?.id && user.id === activeMatch?.owner_id) ||
     (user?.full_name && activeMatch?.owner_name && (
