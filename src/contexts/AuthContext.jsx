@@ -528,6 +528,12 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.removeItem('unnes_oauth_action');
     sessionStorage.removeItem('unnes_auth_flash_error');
     localStorage.removeItem('unnes_lf_current_user');
+    localStorage.removeItem('unnes_lf_matches');
+    localStorage.removeItem('unnes_lf_messages');
+    localStorage.removeItem('unnes_lf_notifications');
+    localStorage.removeItem('unnes_lf_claims');
+    localStorage.removeItem('unnes_lf_orders');
+    localStorage.removeItem('unnes_lf_found_reports');
     sessionStorage.removeItem('unnes_lf_current_user');
   };
 

@@ -3,26 +3,34 @@ import { X, FileCheck, CheckCircle2, Clock, ShieldCheck } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 
+const isUuid = (id) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
 export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
   const { signBAST } = useData();
   const { user } = useAuth();
 
-  if (!isOpen || !match) return null;
-
+  const hasUuidIds = Boolean(isUuid(user?.id) && match && (isUuid(match.owner_id) || isUuid(match.finder_id)));
   const normUser = (user?.full_name || '').trim().toLowerCase();
-  const normOwner = (match.owner_name || '').trim().toLowerCase();
-  const normFinder = (match.finder_name || '').trim().toLowerCase();
+  const normOwner = (match?.owner_name || '').trim().toLowerCase();
+  const normFinder = (match?.finder_name || '').trim().toLowerCase();
 
-  const isOwner = (user?.id && user.id === match.owner_id) || (normUser && normOwner && (normOwner.includes(normUser) || normUser.includes(normOwner)));
-  const isFinder = (user?.id && user.id === match.finder_id) || (normUser && normFinder && (normFinder.includes(normUser) || normUser.includes(normFinder)));
-  const isAdmin = user?.role === 'admin' && !isOwner && !isFinder;
+  const isOwner = Boolean(match && (
+    (user?.id && user.id === match.owner_id) ||
+    (!hasUuidIds && normUser && normOwner && normUser === normOwner)
+  ));
+  const isFinder = Boolean(match && !isOwner && (
+    (user?.id && user.id === match.finder_id) ||
+    (!hasUuidIds && normUser && normFinder && normUser === normFinder)
+  ));
+  const isAdmin = Boolean(match && user?.role === 'admin' && !isOwner && !isFinder);
 
   const currentRole = isOwner ? 'owner' : (isFinder ? 'finder' : 'admin');
 
-  const isOwnerSigned = Boolean(match.owner_signed_at);
-  const isFinderSigned = Boolean(match.finder_signed_at);
-  const isAdminSigned = Boolean(match.admin_signed_at);
-  const isCompleted = match.status === 'selesai' || (isOwnerSigned && isFinderSigned) || isAdminSigned;
+  const isOwnerSigned = Boolean(match?.owner_signed_at);
+  const isFinderSigned = Boolean(match?.finder_signed_at);
+  const isAdminSigned = Boolean(match?.admin_signed_at);
+  // Kasus hanya dianggap selesai jika KEDUA pihak (Pemilik dan Penemu) telah menandatangani
+  const isCompleted = isOwnerSigned && isFinderSigned;
 
   const hasCurrentPartySigned = 
     (isOwner && isOwnerSigned) ||
@@ -30,19 +38,21 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
     (isAdmin && isAdminSigned);
 
   const [signerName, setSignerName] = useState(
-    user?.full_name || (isOwner ? match.owner_name : (isFinder ? match.finder_name : ''))
+    user?.full_name || (isOwner ? match?.owner_name : (isFinder ? match?.finder_name : '')) || ''
   );
   const [signerNIM, setSignerNIM] = useState(user?.nim || '');
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   React.useEffect(() => {
-    if (isOpen) {
-      setSignerName(user?.full_name || (isOwner ? match.owner_name : (isFinder ? match.finder_name : '')));
+    if (isOpen && match) {
+      setSignerName(user?.full_name || (isOwner ? match.owner_name : (isFinder ? match.finder_name : '')) || '');
       setSignerNIM(user?.nim || '');
       setAgreed(false);
     }
-  }, [isOpen, match?.id, user?.id, isOwner, isFinder]);
+  }, [isOpen, match?.id, user?.id, user?.full_name, user?.nim, isOwner, isFinder]);
+
+  if (!isOpen || !match) return null;
 
   // Pernyataan khusus yang berbeda antara Pemilik vs Penemu vs Admin
   let docBadge = 'SURAT PENERIMAAN BARANG (PEMILIK SAH)';
@@ -289,7 +299,10 @@ export const BASTModal = ({ match, isOpen, onClose, onSuccess }) => {
               <strong style={{ display: 'block', marginBottom: '2px', color: '#B45309' }}>
                 Tanda Tangan Anda Sudah Terekam!
               </strong>
-              Anda telah menandatangani BAST ini. Sesi koordinasi akan otomatis dinyatakan <strong>SELESAI</strong> begitu pihak {isOwner ? 'Penemu' : 'Pemilik'} ikut menandatangani.
+              {isAdmin
+                ? 'Pengesahan saksi Posko telah dicatat. Kasus akan dinyatakan SELESAI setelah Penemu dan Pemilik masing-masing menandatangani.'
+                : <>Anda telah menandatangani BAST ini. Sesi koordinasi akan otomatis dinyatakan <strong>SELESAI</strong> begitu pihak {isOwner ? 'Penemu' : 'Pemilik'} ikut menandatangani.</>
+              }
             </div>
           </div>
         ) : null}
